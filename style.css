@@ -1,0 +1,100 @@
+@import url("style/custom.css");
+
+/* @@ only import this if print */
+
+/* @import url("style/print.css"); */
+
+/* @@ only import this if IE */
+
+/* @import url("style/ie.css"); */
+
+/* hide .anchor links from regular links */
+
+a.anchor {
+    color: black;
+}
+
+a.anchor:hover {
+    text-decoration: none;
+}
+
+/* fix up display of figures and captions */
+
+div.figure, p.caption {
+    display: block;
+    padding-top: 1.5em;
+}
+
+p.caption {
+    text-align: center;
+}
+
+/* shrink large images to fit container */
+
+div.figure img {
+    max-width: 100%;
+}
+
+/* remove unneeded em dash from attribution divs */
+
+.attribution::before {
+    content: "";
+}
+
+/* fix up sidebar TOC with shrinking font sizes */
+
+.sidebar ul {
+    font-size: 0.9em;
+    padding-left: 2em;
+    list-style-type: square;
+}
+
+/* add disabled class for inactive navigation links */
+
+.disabled {
+    color: #BBB;
+}
+
+/* make links stand out in info_bubble */
+
+.info_bubble a {
+    color: #BBB;
+}
+
+/* make links stand out in footer */
+
+.footer a {
+    color: #BBB;
+}
+
+/* fix up iframe styles */
+
+iframe {
+    height: 360px;
+    overflow: hidden;
+}
+
+/* fix up iframe document styles */
+
+.buybuttonswidget {
+    padding-bottom: 100px;
+    background: #FFF;
+}
+
+/* fix up pre overflow */
+
+pre {
+    white-space: pre;
+	overflow-x: none; /* needed for FF 2, but not FF 3 */
+	white-space: pre-wrap; /* CSS 3 */
+	white-space: -moz-pre-wrap !important; /* FF */
+	white-space: -pre-wrap; /* Opera 4-6 */
+	white-space: -o-pre-wrap; /* Opera 7 */
+	word-wrap: break-word; /* IE 5.5+ */
+}
+
+/* make pre smaller */
+
+pre {
+    font-size: 12px;
+}
