@@ -40,7 +40,7 @@
 
 <p>However, breaking down a single request like this and looking for how much time is spent in each component is also misleading. Even if only a small percentage of the time is spent in your database under normal load, that doesn’t teach you what will happen during traffic spikes. If all requests are hitting the same database, then any locking there could block many web requests. Your database may have minimal impact on total query time, under normal load, but under spike load it may turn into a bottleneck, magnifying the effect of the spike on the application servers. CouchDB can minimize this by dedicating an Erlang process to each connection, ensuring that all clients are handled, even if latency goes up a bit.
 
-<h3 id="performance">High Performance CouchDB</h3>
+<h3 id="high">High Performance CouchDB</h3>
 
 <p>Now that you see database performance is only a small part of overall web performance, we’ll give you some tips to squeeze the most out of CouchDB.
 
