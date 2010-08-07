@@ -187,12 +187,15 @@ Inserted 100000 docs in 9.37 seconds with batch size of 1000.
 <dl>
 
 <dt>Memory</dt>
+
 <dd>Instead of doing computations over and over, Tool X might have a cute caching layer that saves recomputation by storing results in memory. If you are CPU bound, that might be good; if you are memory bound, it might not. A trade-off.</dd>
 
 <dt>Concurrency</dt>
+
 <dd>The clever data structures in Tool X are extremely fast when only one request at a time is processed, and because it is so fast most of the time, it appears as if it would process multiple requests in parallel. Eventually, though, a high number of concurrent requests fill up the request queue and response time suffers. A variation on this is that Tool X might work exceptionally well on a single CPU or core, but not on many, leaving your beefy servers idling.</dd>
 
 <dt>Reliability</dt>
+
 <dd>Making sure data is actually stored is an expensive operation. Making sure a data store is in a consistent state and not corrupted is another. There are two trade-offs here. First, buffers store data in memory before committing it to disk to ensure a higher data throughput. In the event of a power loss or crash (of hard- or software), the data is gone. This may or may not be acceptable for your application. Second, a consistency check is required to run after a failure, and if you have a lot of data, this can take days. If you can afford to be offline, that’s OK, but maybe you can’t afford it.</dd>
 
 </dl>
