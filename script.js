@@ -110,9 +110,9 @@ function add_notice(text) {
 function add_notice_draft() {
     add_notice('\
         <p class="inner info_bubble">\
-            This edition of the book is a work in progress.\
-            Please <a href="#">create a ticket</a> for any corrections\
-            or suggestions you may have.\
+            This edition of the book is a work in progress. Please\
+            <a href="http://github.com/oreilly/couchdb-guide/issues">create\
+            a ticket</a> for any corrections or suggestions you may have.\
         </p>\
     ');
 }
