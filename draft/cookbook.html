@@ -10,7 +10,12 @@
 
 <h2 id="cookbook">View Cookbook for SQL Jockeys</h2>
 
-<p>This is a collection of some common SQL queries and how to get the same result in CouchDB. The key to remember here is that CouchDB does not work like an SQL database at all and that best practices from the SQL world do not translate well or at all to CouchDB. This chapter’s “cookbook” assumes that you are familiar with the CouchDB basics such as creating and updating databases and documents.
+<p>This is a collection of some common SQL queries and how to get the same
+result in CouchDB. The key to remember here is that CouchDB does not work like
+an SQL database at all and that best practices from the SQL world do not
+translate well or at all to CouchDB. This chapter’s “cookbook” assumes that you
+are familiar with the CouchDB basics such as creating and updating databases
+and documents.
 
 <h3 id="using">Using Views</h3>
 
@@ -26,11 +31,20 @@ CREATE TABLE
 ALTER TABLE
 </pre>
 
-<p>Using views is a two-step process. First you <em>define</em> a view; then you <em>query</em> it. This is analogous to defining a table structure (with indexes) using <code>CREATE TABLE</code> or <code>ALTER TABLE</code> and querying it using an SQL query.
+<p>Using views is a two-step process. First you <em>define</em> a view; then
+you <em>query</em> it. This is analogous to defining a table structure (with
+indexes) using <code>CREATE TABLE</code> or <code>ALTER TABLE</code> and
+querying it using an SQL query.
 
 <h4 id="defining">Defining a View</h4>
 
-<p>Defining a view is done by creating a special document in a CouchDB database. The only real specialness is the <code>_id</code> of the document, which starts with <code>_design/</code>—for example, <code>_design/application</code>. Other than that, it is just a regular CouchDB document. To make sure CouchDB understands that you are defining a view, you need to prepare the contents of that design document in a special format. Here is an example:
+<p>Defining a view is done by creating a special document in a CouchDB
+database. The only real specialness is the <code>_id</code> of the document,
+which starts with <code>_design/</code>—for example,
+<code>_design/application</code>. Other than that, it is just a regular CouchDB
+document. To make sure CouchDB understands that you are defining a view, you
+need to prepare the contents of that design document in a special format. Here
+is an example:
 
 <pre>
 {
@@ -45,9 +59,15 @@ ALTER TABLE
 }
 </pre>
 
-<p>We are defining a view <code>viewname</code>. The definition of the view consists of two functions: the <em>map</em> function and the <em>reduce</em> function. Specifying a reduce function is optional. We’ll look at the nature of the functions later. Note that <code>viewname</code> can be whatever you like: <code>users</code>, <code>by-name</code>, or <code>by-date</code> are just some examples.
+<p>We are defining a view <code>viewname</code>. The definition of the view
+consists of two functions: the <em>map</em> function and the <em>reduce</em>
+function. Specifying a reduce function is optional. We’ll look at the nature of
+the functions later. Note that <code>viewname</code> can be whatever you like:
+<code>users</code>, <code>by-name</code>, or <code>by-date</code> are just some
+examples.
 
-<p>A single design document can also include multiple view definitions, each identified by a unique name:
+<p>A single design document can also include multiple view definitions, each
+identified by a unique name:
 
 <pre>
 {
@@ -68,23 +88,42 @@ ALTER TABLE
 
 <h4 id="querying">Querying a View</h4>
 
-<p>The name of the design document and the name of the view are significant for querying the view. To query the view <code>viewname</code>, you perform an HTTP <code>GET</code> request to the following URI:
+<p>The name of the design document and the name of the view are significant for
+querying the view. To query the view <code>viewname</code>, you perform an HTTP
+<code>GET</code> request to the following URI:
 
 <pre>
 /database/_design/application/_view/viewname
 </pre>
 
-<p><code>database</code> is the name of the database you created your design document in. Next up is the design document name, and then the view name prefixed with <code>_view/</code>. To query <code>anotherview</code>, replace <code>viewname</code> in that URI with <code>anotherview</code>. If you want to query a view in a different design document, adjust the design document name.
+<p><code>database</code> is the name of the database you created your design
+document in. Next up is the design document name, and then the view name
+prefixed with <code>_view/</code>. To query <code>anotherview</code>, replace
+<code>viewname</code> in that URI with <code>anotherview</code>. If you want to
+query a view in a different design document, adjust the design document name.
 
 <h4 id="mapreduce">MapReduce Functions</h4>
 
-<p>MapReduce is a concept that solves problems by applying a two-step process, aptly named the <em>map</em> phase and the <em>reduce</em> phase. The map phase looks at all documents in CouchDB separately one after the other and creates a <em>map result</em>. The map result is an ordered list of key/value pairs. Both <code>key</code> and <code>value</code> can be specified by the user writing the map function. A map function may call the built-in <code>emit(key, value)</code> function 0 to <em>N</em> times per document, creating a row in the map result per invocation.
+<p>MapReduce is a concept that solves problems by applying a two-step process,
+aptly named the <em>map</em> phase and the <em>reduce</em> phase. The map phase
+looks at all documents in CouchDB separately one after the other and creates a
+<em>map result</em>. The map result is an ordered list of key/value pairs. Both
+<code>key</code> and <code>value</code> can be specified by the user writing
+the map function. A map function may call the built-in <code>emit(key,
+value)</code> function 0 to <em>N</em> times per document, creating a row in
+the map result per invocation.
 
-<p>CouchDB is smart enough to run a map function only once for every document, even on subsequent queries on a view. Only changes to documents or new documents need to be processed anew.
+<p>CouchDB is smart enough to run a map function only once for every document,
+even on subsequent queries on a view. Only changes to documents or new
+documents need to be processed anew.
 
 <h5 id="map">Map functions</h5>
 
-<p>Map functions run in isolation for every document. They can’t modify the document, and they can’t talk to the outside world—they can’t have <em>side effects</em>. This is required so that CouchDB can guarantee correct results without having to recalculate a complete result when only one document gets changed.
+<p>Map functions run in isolation for every document. They can’t modify the
+document, and they can’t talk to the outside world—they can’t have <em>side
+effects</em>. This is required so that CouchDB can guarantee correct results
+without having to recalculate a complete result when only one document gets
+changed.
 
 <p>The map result looks like this:
 
@@ -96,7 +135,10 @@ ALTER TABLE
 ]}
 </pre>
 
-<p>It is a list of rows sorted by the value of <code>key</code>. The <code>id</code> is added automatically and refers back to the document that created this row. The <code>value</code> is the data you’re looking for. For example purposes, it’s the girl’s age.
+<p>It is a list of rows sorted by the value of <code>key</code>. The
+<code>id</code> is added automatically and refers back to the document that
+created this row. The <code>value</code> is the data you’re looking for. For
+example purposes, it’s the girl’s age.
 
 <p>The map function that produces this result is:
 
@@ -108,11 +150,14 @@ function(doc) {
 }
 </pre>
 
-<p>It includes the <code>if</code> statement as a sanity check to ensure that we’re operating on the right fields and calls the <code>emit</code> function with the name and age as the key and value.
+<p>It includes the <code>if</code> statement as a sanity check to ensure that
+we’re operating on the right fields and calls the <code>emit</code> function
+with the name and age as the key and value.
 
 <h5 id="reduce">Reduce functions</h5>
 
-<p>Reduce functions are explained in <a href="#aggregate">the section called “Aggregate Functions”</a>.
+<p>Reduce functions are explained in <a href="#aggregate">the section called
+“Aggregate Functions”</a>.
 
 <h3 id="key">Look Up by Key</h3>
 
@@ -122,11 +167,16 @@ function(doc) {
 SELECT <em>field</em> FROM <em>table</em> WHERE value="<em>searchterm</em>"
 </pre>
 
-<p>Use case: get a <em>result</em> (which can be a record or set of records) associated with a <em>key</em> (<code>"searchterm"</code>).
+<p>Use case: get a <em>result</em> (which can be a record or set of records)
+associated with a <em>key</em> (<code>"searchterm"</code>).
 
-<p>To look something up quickly, regardless of the storage mechanism, an index is needed. An index is a data structure optimized for quick search and retrieval. CouchDB’s map result is stored in such an index, which happens to be a B+ tree.
+<p>To look something up quickly, regardless of the storage mechanism, an index
+is needed. An index is a data structure optimized for quick search and
+retrieval. CouchDB’s map result is stored in such an index, which happens to be
+a B+ tree.
 
-<p>To look up a value by <code>"searchterm"</code>, we need to put all values into the key of a view. All we need is a simple map function:
+<p>To look up a value by <code>"searchterm"</code>, we need to put all values
+into the key of a view. All we need is a simple map function:
 
 <pre>
 function(doc) {
@@ -136,13 +186,17 @@ function(doc) {
 }
 </pre>
 
-<p>This creates a list of documents that have a <code>value</code> field sorted by the data in the <code>value</code> field. To find all the records that match <code>"searchterm"</code>, we query the view and specify the search term as a query parameter:
+<p>This creates a list of documents that have a <code>value</code> field sorted
+by the data in the <code>value</code> field. To find all the records that match
+<code>"searchterm"</code>, we query the view and specify the search term as a
+query parameter:
 
 <pre>
 /database/_design/application/_view/viewname?key="searchterm"
 </pre>
 
-<p>Consider the documents from the previous section, and say we’re indexing on the <code>age</code> field of the documents to find all the five-year-olds:
+<p>Consider the documents from the previous section, and say we’re indexing on
+the <code>age</code> field of the documents to find all the five-year-olds:
 
 <pre>
 function(doc) {
@@ -168,7 +222,10 @@ function(doc) {
 
 <p>Easy.
 
-<p>Note that you have to emit a value. The view result includes the associated document ID in every row. We can use it to look up more data from the document itself. We can also use the <code>?include_docs=true</code> parameter to have CouchDB fetch the documents individually for us.
+<p>Note that you have to emit a value. The view result includes the associated
+document ID in every row. We can use it to look up more data from the document
+itself. We can also use the <code>?include_docs=true</code> parameter to have
+CouchDB fetch the documents individually for us.
 
 <h3 id="prefix">Look Up by Prefix</h3>
 
@@ -178,9 +235,14 @@ function(doc) {
 SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searchterm</em>%"
 </pre>
 
-<p>Use case: find all documents that have a field value that starts with <code>searchterm</code>. For example, say you stored a MIME type (like <code>text/html</code> or <code>image/jpg</code>) for each document and now you want to find all documents that are images according to the MIME type.
+<p>Use case: find all documents that have a field value that starts with
+<code>searchterm</code>. For example, say you stored a MIME type (like
+<code>text/html</code> or <code>image/jpg</code>) for each document and now you
+want to find all documents that are images according to the MIME type.
 
-<p>The solution is very similar to the previous example: all we need is a map function that is a little more clever than the first one. But first, an example document:
+<p>The solution is very similar to the previous example: all we need is a map
+function that is a little more clever than the first one. But first, an example
+document:
 
 <pre>
 {
@@ -191,7 +253,9 @@ SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searcht
 }
 </pre>
 
-<p>The clue lies in extracting the prefix that we want to search for from our document and putting it into our view index. We use a regular expression to match our prefix:
+<p>The clue lies in extracting the prefix that we want to search for from our
+document and putting it into our view index. We use a regular expression to
+match our prefix:
 
 <pre>
 function(doc) {
@@ -206,7 +270,8 @@ function(doc) {
 }
 </pre>
 
-<p>We can now query this view with our desired MIME type prefix and not only find all images, but also text, video, and all other formats:
+<p>We can now query this view with our desired MIME type prefix and not only
+find all images, but also text, video, and all other formats:
 
 <pre>
 /files/_design/finder/_view/by-mime-type?key="image/"
@@ -222,11 +287,16 @@ SELECT COUNT(<em>field</em>) FROM <em>table</em>
 
 <p>Use case: calculate a derived value from your data.
 
-<p>We haven’t explained reduce functions yet. Reduce functions are similar to aggregate functions in SQL. They compute a value over multiple documents.
+<p>We haven’t explained reduce functions yet. Reduce functions are similar to
+aggregate functions in SQL. They compute a value over multiple documents.
 
-<p>To explain the mechanics of reduce functions, we’ll create one that doesn’t make a whole lot of sense. But this example is easy to understand. We’ll explore more useful reductions later.
+<p>To explain the mechanics of reduce functions, we’ll create one that doesn’t
+make a whole lot of sense. But this example is easy to understand. We’ll
+explore more useful reductions later.
 
-<p>Reduce functions operate on the output of the map function (also called the <em>map re⁠sult</em> or <em>intermediate result</em>). The reduce function’s job, unsurprisingly, is to reduce the list that the map function produces.
+<p>Reduce functions operate on the output of the map function (also called the
+<em>map re⁠sult</em> or <em>intermediate result</em>). The reduce function’s
+job, unsurprisingly, is to reduce the list that the map function produces.
 
 <p>Here’s what our summing reduce function looks like:
 
@@ -252,11 +322,21 @@ function(keys, values) {
 }
 </pre>
 
-<p>This reduce function takes two arguments: a list of <code>keys</code> and a list of <code>values</code>. For our summing purposes we can ignore the <code>keys</code>-list and consider only the <code>value</code> list. We’re looping over the list and add each item to a running total that we’re returning at the end of the function.
+<p>This reduce function takes two arguments: a list of <code>keys</code> and a
+list of <code>values</code>. For our summing purposes we can ignore the
+<code>keys</code>-list and consider only the <code>value</code> list. We’re
+looping over the list and add each item to a running total that we’re returning
+at the end of the function.
 
-<p>You’ll see one difference between the map and the reduce function. The map function uses <code>emit()</code> to create its result, whereas the reduce function returns a value.
+<p>You’ll see one difference between the map and the reduce function. The map
+function uses <code>emit()</code> to create its result, whereas the reduce
+function returns a value.
 
-<p>For example, from a list of integer values that specify the age, calculate the sum of all years of life for the news headline, “786 life years present at event.” A little contrived, but very simple and thus good for demonstration purposes. Consider the documents and the map view we used earlier in this chapter.
+<p>For example, from a list of integer values that specify the age, calculate
+the sum of all years of life for the news headline, “786 life years present at
+event.” A little contrived, but very simple and thus good for demonstration
+purposes. Consider the documents and the map view we used earlier in this
+chapter.
 
 <p>The reduce function to calculate the total age of all girls is:
 
@@ -266,7 +346,9 @@ function(keys, values) {
 }
 </pre>
 
-<p>Note that, instead of the two earlier versions, we use CouchDB’s predefined <code>sum()</code> function. It does the same thing as the other two, but it is such a common piece of code that CouchDB has it included.
+<p>Note that, instead of the two earlier versions, we use CouchDB’s predefined
+<code>sum()</code> function. It does the same thing as the other two, but it is
+such a common piece of code that CouchDB has it included.
 
 <p>The result for our reduce view now looks like this:
 
@@ -276,9 +358,17 @@ function(keys, values) {
 ]}
 </pre>
 
-<p>The total sum of all <code>age</code> fields in all our documents is <code>15</code>. Just what we wanted. The <code>key</code> member of the result object is <code>null</code>, as we can’t know anymore which documents took part in the creation of the reduced result. We’ll cover more advanced reduce cases later on.
+<p>The total sum of all <code>age</code> fields in all our documents is
+<code>15</code>. Just what we wanted. The <code>key</code> member of the result
+object is <code>null</code>, as we can’t know anymore which documents took part
+in the creation of the reduced result. We’ll cover more advanced reduce cases
+later on.
 
-<p>As a rule of thumb, the reduce function should reduce a single scalar value. That is, an integer; a string; or a small, fixed-size list or object that includes an aggregated value (or values) from the <code>values</code> argument. It should never just return <code>values</code> or similar. CouchDB will give you a warning if you try to use reduce “the wrong way”:
+<p>As a rule of thumb, the reduce function should reduce a single scalar value.
+That is, an integer; a string; or a small, fixed-size list or object that
+includes an aggregated value (or values) from the <code>values</code> argument.
+It should never just return <code>values</code> or similar. CouchDB will give
+you a warning if you try to use reduce “the wrong way”:
 
 <pre>
 {"error":"reduce_overflow_error","message":"Reduce output must shrink more rapidly: Current output: ..."}
@@ -292,9 +382,12 @@ function(keys, values) {
 SELECT DISTINCT <em>field</em> FROM <em>table</em>
 </pre>
 
-<p>Getting unique values is not as easy as adding a keyword. But a reduce view and a special query parameter give us the same result. Let’s say you want a list of tags that your users have tagged themselves with and no duplicates.
+<p>Getting unique values is not as easy as adding a keyword. But a reduce view
+and a special query parameter give us the same result. Let’s say you want a
+list of tags that your users have tagged themselves with and no duplicates.
 
-<p>First, let’s look at the source documents. We punt on <code>_id</code> and <code>_rev</code> attributes here:
+<p>First, let’s look at the source documents. We punt on <code>_id</code> and
+<code>_rev</code> attributes here:
 
 <pre>
 {
@@ -341,7 +434,10 @@ function(dude) {
 ]}
 </pre>
 
-<p>As promised, these are all the tags, including duplicates. Since each document gets run through the map function in isolation, it cannot know if the same key has been emitted already. At this stage, we need to live with that. To achieve uniqueness, we need a reduce:
+<p>As promised, these are all the tags, including duplicates. Since each
+document gets run through the map function in isolation, it cannot know if the
+same key has been emitted already. At this stage, we need to live with that. To
+achieve uniqueness, we need a reduce:
 
 <pre>
 function(keys, values) {
@@ -349,7 +445,8 @@ function(keys, values) {
 }
 </pre>
 
-<p>This reduce doesn’t do anything, but it allows us to specify a special query parameter when querying the view:
+<p>This reduce doesn’t do anything, but it allows us to specify a special query
+parameter when querying the view:
 
 <pre>
 /dudes/_design/dude-data/_view/tags?group=true
@@ -369,9 +466,13 @@ function(keys, values) {
 ]}
 </pre>
 
-<p>In this case, we can ignore the value part because it is always true, but the result includes a list of all our tags and no duplicates!
+<p>In this case, we can ignore the value part because it is always true, but
+the result includes a list of all our tags and no duplicates!
 
-<p>With a small change we can put the reduce to good use, too. Let’s see how many of the non-unique tags are there for each tag. To calculate the tag frequency, we just use the summing up we already learned about. In the map function, we emit a <code>1</code> instead of <code>null</code>:
+<p>With a small change we can put the reduce to good use, too. Let’s see how
+many of the non-unique tags are there for each tag. To calculate the tag
+frequency, we just use the summing up we already learned about. In the map
+function, we emit a <code>1</code> instead of <code>null</code>:
 
 <pre>
 function(dude) {
@@ -391,7 +492,8 @@ function(keys, values) {
 }
 </pre>
 
-<p>Now, if we query the view with the <code>?group=true</code> parameter, we get back the count for each tag:
+<p>Now, if we query the view with the <code>?group=true</code> parameter, we
+get back the count for each tag:
 
 <pre>
 {"rows":[
@@ -413,10 +515,18 @@ function(keys, values) {
 UNIQUE KEY(<em>column</em>)
 </pre>
 
-<p>Use case: your applications require that a certain value exists only once in a database.
+<p>Use case: your applications require that a certain value exists only once in
+a database.
 
-<p>This is an easy one: within a CouchDB database, each document must have a unique <code>_id</code> field. If you require unique values in a database, just assign them to a document’s <code>_id</code> field and CouchDB will enforce uniqueness for you.
+<p>This is an easy one: within a CouchDB database, each document must have a
+unique <code>_id</code> field. If you require unique values in a database, just
+assign them to a document’s <code>_id</code> field and CouchDB will enforce
+uniqueness for you.
 
-<p>There’s one caveat, though: in the distributed case, when you are running more than one CouchDB node that accepts write requests, uniqueness can be guaranteed only per node or outside of CouchDB. CouchDB will allow two identical IDs to be written to two different nodes. On replication, CouchDB will detect a conflict and flag the document accordingly.
+<p>There’s one caveat, though: in the distributed case, when you are running
+more than one CouchDB node that accepts write requests, uniqueness can be
+guaranteed only per node or outside of CouchDB. CouchDB will allow two
+identical IDs to be written to two different nodes. On replication, CouchDB
+will detect a conflict and flag the document accordingly.
 
 <script src="../script.js"></script>
