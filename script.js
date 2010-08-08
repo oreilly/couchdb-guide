@@ -31,7 +31,7 @@ function raise_flag() {
 
 function get_header() {
     return '\
-      <header>\
+      <div class="page_header">\
         <h1 class="logo">\
           <a href="#" title="home">\
             CouchDB <span>The Definitive Guide</span>\
@@ -44,13 +44,13 @@ function get_header() {
             <input type="submit" value="Search" class="search_btn" />\
           </form>\
         </div>\
-      </header>\
+      </div>\
     ';
 }
 
 function get_footer() {
     return '\
-      <footer class="footer">\
+      <div class="footer">\
         <div class="container">\
           <p>An\
           <a href="http://oreilly.com/">O&rsquo;Reilly</a>\
@@ -63,7 +63,7 @@ function get_footer() {
           &\
           <a href="http://nslater.org/">Noah Slater</a>\
         </div>\
-      </footer>\
+      </div>\
     ';
 }
 

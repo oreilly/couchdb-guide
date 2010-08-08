@@ -295,7 +295,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   max-width: 100%;
 }
 /* header */
-header {
+.page_header {
   overflow: hidden;
   margin: 1.5em 0;
 }
@@ -423,14 +423,14 @@ header {
 }
 
 /* footer */
-footer {
+.footer {
   background: #4A4A4A url(../image/couchg_bg_footer.png) repeat-x 0 0;
   margin: 1.5em 0 0 0;
   padding: 1.5em 0 0 0;
   overflow: hidden;
 }
 
-footer p {
+.footer p {
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
 }
