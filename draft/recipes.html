@@ -8,6 +8,8 @@
 
 <link rel="next" href="unix.html">
 
+<script src="../script.js"></script>
+
 <h2 id="recipes">Recipes</h2>
 
 <p>This chapter shows some common tasks and how to solve them with CouchDB using best practices and easy-to-follow step-by-step instructions.
@@ -460,5 +462,3 @@ function hasNext()
 <p>One drawback of the linked list style pagination is that you can’t pre-compute the rows for a particular page from the page number and the rows per page. Jumping to a specific page doesn’t really work. Our gut reaction, if that concern is raised, is, “Not even Google is doing that!” and we tend to get away with it. Google always pretends on the first page to find 10 more pages of results. Only if you click on the second page (something very few people actually do) might Google display a reduced set of pages. If you page through the results, you get links for the previous and next 10 pages, but no more. Pre-computing the necessary <code>startkey</code> and <code>startkey_docid</code> for 20 pages is a feasible operation and a pragmatic optimization to know the rows for every page in a result set that is potentially tens of thousands of rows long, or more.
 
 <p>If you really do need to jump to a page over the full range of documents (we have seen applications that require that), you can still maintain an integer value index as the view index and take a hybrid approach at solving pagination.
-
-<script src="../script.js"></script>

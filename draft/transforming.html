@@ -8,6 +8,8 @@
 
 <link rel="next" href="standalone.html">
 
+<script src="../script.js"></script>
+
 <h2 id="transforming">Transforming Views with List Functions</h2>
 
 <p>Just as show functions convert documents to arbitrary output formats, CouchDB <em>list functions</em> allow you to render the output of view queries in any format. The powerful iterator API allows for flexibility to filter and aggregate rows on the fly, as well as output raw transformations for an easy way to make Atom feeds, HTML lists, CSV files, config files, or even just modified JSON.
@@ -256,5 +258,3 @@ GET /db/_design/sofa/_list/index/recent-posts?descending=true&amp;limit=10&amp;f
 <h3 id="caching">Lists, Etags, and Caching</h3>
 
 <p>Just like show functions and view queries, lists are sent with proper HTTP Etags, which makes them cacheable by intermediate proxies. This means that if your server is starting to bog down in list-rendering code, it should be possible to relieve load by using a caching reverse proxy like Squid. We won’t go into the details of Etags and caching here, as they were covered in <a href="show.html">Chapter 8, Show Functions</a>.
-
-<script src="../script.js"></script>

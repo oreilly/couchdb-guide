@@ -8,6 +8,8 @@
 
 <link rel="next" href="views.html">
 
+<script src="../script.js"></script>
+
 <h2 id="design">Design Documents</h2>
 
 <p><em>Design documents</em> are a special type of CouchDB document that contains application code. Because it runs inside a database, the application API is highly structured. We’ve seen JavaScript views and other functions in the previous chapters. In this section, we’ll take a look at the function APIs, and talk about how functions in a design document are related within applications.
@@ -139,5 +141,3 @@ curl http://127.0.0.1:5984/basic/_design/example/_view/foo
 <p>The goal here is to provide a way to build standalone apps that can also be easily indexed by search engines and used via screen readers. Hence, the push for plain old HTML. You can pretty much rely on JavaScript getting executed (except when you can’t). Having HTML resources means CouchDB is suitable for public-facing web apps.
 
 <p>On the horizon are a rewrite handler and a database event handler, as they seem to flesh out the application capabilities nicely. A rewrite handler would allow your application to present its own URL space, which would make integration into existing systems a bit easier. An event handler would allow you to run asynchronous processes when the database changes, so that, for instance, a document update can trigger a workflow, multi-document validation, or message queue.
-
-<script src="../script.js"></script>

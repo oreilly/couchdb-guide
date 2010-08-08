@@ -8,6 +8,8 @@
 
 <link rel="next" href="documents.html">
 
+<script src="../script.js"></script>
+
 <h2 id="managing">Managing Design Documents</h2>
 
 <p>Applications can live in CouchDB—nice. You just attach a bunch of HTML and JavaScript files to a design document and you are good to go. Spice that up with view-powered queries and show functions that render any media type from your JSON documents, and you have all it takes to write self-contained CouchDB applications.
@@ -334,5 +336,3 @@ couchapp push . http://jchris:secretpass@localhost:5984/sofa
 </pre>
 
 <p>With this file set up, you can push your CouchApp with the command <code>couchapp push</code>, which will push the application to the “default” database. CouchApp also supports alternate environments. To push your application to a development database, you could use <code>couchapp push dev</code>. In our experience, taking the time to set up a good <code>.couchapprc</code> is always worth it. Another benefit is that it keeps your passwords off the screen when you are working.
-
-<script src="../script.js"></script>

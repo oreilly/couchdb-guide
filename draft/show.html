@@ -8,6 +8,8 @@
 
 <link rel="next" href="transforming.html">
 
+<script src="../script.js"></script>
+
 <h2 id="show">Show Functions</h2>
 
 <p>CouchDB’s JSON documents are great for programmatic access in most environments. Almost all languages have HTTP and JSON libraries, and in the unlikely event that yours doesn’t, writing them is fairly simple. However, there is one important use case that JSON documents don’t cover: building plain old HTML web pages. Browsers are powerful, and it’s exciting that we can build Ajax applications using only CouchDB’s JSON and HTTP APIs, but this approach is not appropriate for most public-facing websites.
@@ -294,5 +296,3 @@ function(doc, req) {
 <p>Trust us when we say that looking at this HTML page is much more relaxing than trying to understand what a raw JavaScript one is trying to do. The template library we’re using in the example blog is by John Resig and was chosen for simplicity. It could easily be replaced by one of many other options, such as the Django template language, available in JavaScript.
 
 <p>This is a good time to note that CouchDB’s architecture is designed to make it simple to swap out languages for the query servers. With a query server written in Lisp, Python, or Ruby (or any language that supports JSON and <em>stdio</em>), you could have an even wider variety of templating options. However, the CouchDB team recommends sticking with JavaScript as it provides the highest level of support and interoperability, though other options are available.
-
-<script src="../script.js"></script>

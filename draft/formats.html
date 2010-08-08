@@ -8,6 +8,8 @@
 
 <link rel="next" href="lists.html">
 
+<script src="../script.js"></script>
+
 <h2 id="formats">Showing Documents in Custom Formats</h2>
 
 <p>CouchDB’s show functions are a RESTful API inspired by a similar feature in Lotus Notes. In a nutshell, they allow you to serve documents to clients, in any format you choose.
@@ -129,5 +131,3 @@ function(doc, req) {
 </pre>
 
 <p>We include this detail about the browser-side JavaScript implementation not to teach you about Ajax, but because it epitomizes the kind of thinking that makes sense when you are presenting documents to client applications. CouchDB should provide the most useful format for the document, as requested by the client. But when it comes time to integrate information from other queries or bring the display up-to-date with other web services, by asking the client’s application to do the lifting, you move computing cycles and memory costs from CouchDB to the client. Since there are typically many more clients than CouchDBs, pushing the load back to the clients means each CouchDB can serve more users.
-
-<script src="../script.js"></script>

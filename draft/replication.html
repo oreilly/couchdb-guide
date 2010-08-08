@@ -8,6 +8,8 @@
 
 <link rel="next" href="conflicts.html">
 
+<script src="../script.js"></script>
+
 <h2 id="replication">Replication</h2>
 
 <p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
@@ -114,5 +116,3 @@ POST /_replicate HTTP/1.1
 <p>Replication is the foundation on which the following chapters build on. Make sure you have understood this chapter. If you don’t feel comfortable yet, just read it again and play around with the replication interface in Futon.
 
 <p>We haven’t yet told you everything about replication. The next chapters show you how to manage replication conflicts (see <a href="conflicts.html">Chapter 17, Conflict Management</a>), how to use a set of synchronized CouchDB instances for load balancing (see <a href="balancing.html">Chapter 18, Load Balancing</a>), and how to build a cluster of CouchDBs that can handle more data or write requests than a single node (see <a href="clustering.html">Chapter 19, Clustering</a>).
-
-<script src="../script.js"></script>

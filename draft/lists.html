@@ -8,6 +8,8 @@
 
 <link rel="next" href="scaling.html">
 
+<script src="../script.js"></script>
+
 <h2 id="lists">Viewing Lists of Blog Posts</h2>
 
 <p>The last few chapters dealt with getting data into and out of CouchDB. You learned how to model your data into documents and retrieve it via the HTTP API. In this chapter, we’ll look at the views used to power Sofa’s index page, and the list function that renders those views as HTML or XML, depending on the client’s request.
@@ -264,5 +266,3 @@ send(template(templates.index.row, {
 </div>
 
 <p>This is our final list of blog posts. That wasn’t too hard, was it? We now have the front page of the blog, we know how to query single documents as well as views, and we know how to pass arguments to views.
-
-<script src="../script.js"></script>

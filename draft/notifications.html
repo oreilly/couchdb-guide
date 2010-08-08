@@ -8,6 +8,8 @@
 
 <link rel="next" href="cookbook.html">
 
+<script src="../script.js"></script>
+
 <h2 id="notifications">Change Notifications</h2>
 
 <p>Say you are building a message service with CouchDB. Each user has an inbox database and other users send messages by dropping them into the inbox database. When users want to read all messages received, they can just open their inbox databases and see all messages.
@@ -233,5 +235,3 @@ function(doc, req)
 <h3 id="wrap">Wrapping Up</h3>
 
 <p>The changes API lets you build sophisticated notification schemes useful in many scenarios with isolated and asynchronous components yet working to the same beat. In combination with replication, this API is the foundation for building distributed, highly available, and high-performance CouchDB clusters.
-
-<script src="../script.js"></script>
