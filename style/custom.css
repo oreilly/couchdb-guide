@@ -414,6 +414,14 @@ header {
   background: #906;
 }
 
+.asterisk {
+  padding: 0 .25em 0 0;
+  font-size: 2.6em;
+  margin: 0;
+  color: #FFF;
+  float: left;
+}
+
 /* footer */
 footer {
   background: #4A4A4A url(../image/couchg_bg_footer.png) repeat-x 0 0;
@@ -543,8 +551,8 @@ input[type="submit"]:active {
 
 @media screen and (max-device-width: 680px), screen and (max-width: 680px) {
   .stage {
-    background-position: 100% 5em;
-    padding: 3em 1.5em 1.5em 1.5em;
+    background-position: 100% 0;
+    padding: 24em 1.5em 1.5em 1.5em;
   }
 
   .lead {

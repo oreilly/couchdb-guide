@@ -3,6 +3,10 @@
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style/screen.css" type="text/css" media="screen, projection">
+<link rel="stylesheet" href="style/print.css" type="text/css" media="print">
+<!--[if IE]><link rel="stylesheet" href="style/ie_hack.css" type="text/css" media="screen, projection"><![endif]-->
+<!--[if lt IE 8]><link rel="stylesheet" href="style/ie.css" type="text/css" media="screen, projection"><![endif]-->
 
 <div class="inner stage home">
 
@@ -28,7 +32,7 @@
 
     <ul class="edition_list">
 
-      <li class="inner">
+      <li class="inner ie_buggy">
 
         <h2 class="edition_h span4">1st Edition</h2>
 
@@ -48,7 +52,7 @@
 
       <li class="inner">
 
-        <h2 class="edition_h span4">Draft</h2>
+        <h2 class="edition_h span4">Draft*</h2>
 
         <div class="lang_list_wrapper span8 last">
 
@@ -71,7 +75,7 @@
   <div class="span4 last">
 
     <div class="inner info_bubble">
-
+      <p class="asterisk">*</p>
       <p>This edition of the book is a work in progress. Please <a href="#">create a ticket</a> for any corrections or suggestions you may have.
 
     </div>
@@ -96,7 +100,7 @@
 
     <blockquote>
 
-      <p>&ldquo;This is book is pure awesome.&rdquo;
+      <p>&ldquo;This book is pure awesome.&rdquo;
 
       <p class="attribution">&mdash; Damien Katz, creator of CouchDB</p>
 

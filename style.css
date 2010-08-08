@@ -70,8 +70,11 @@ div.figure img {
 /* fix up iframe styles */
 
 iframe {
-    height: 360px;
-    overflow: hidden;
+  width: 100%;
+  min-height: 28em;
+  height:auto !important;
+  height: 28em;
+  overflow: hidden;
 }
 
 /* fix up iframe document styles */
@@ -85,12 +88,12 @@ iframe {
 
 pre {
     white-space: pre;
-	overflow-x: none; /* needed for FF 2, but not FF 3 */
-	white-space: pre-wrap; /* CSS 3 */
-	white-space: -moz-pre-wrap !important; /* FF */
-	white-space: -pre-wrap; /* Opera 4-6 */
-	white-space: -o-pre-wrap; /* Opera 7 */
-	word-wrap: break-word; /* IE 5.5+ */
+  overflow-x: none; /* needed for FF 2, but not FF 3 */
+  white-space: pre-wrap; /* CSS 3 */
+  white-space: -moz-pre-wrap !important; /* FF */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* IE 5.5+ */
 }
 
 /* make pre smaller */
