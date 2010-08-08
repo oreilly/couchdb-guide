@@ -9,15 +9,15 @@ var scripts = [
     "http://www.google-analytics.com/ga.js"
 ];
 
+for(i = 0; i < scripts.length; i++) {
+    document.write("<script src='" + scripts[i] + "'></script>");
+};
+
 var urls = [
     ["/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
     ["/draft/([a-z]+).html", "build_draft"],
     ["/index.html", "build_index"]
 ];
-
-for(i = 0; i < scripts.length; i++) {
-    document.write("<script src='" + scripts[i] + "'></script>");
-};
 
 function check_flag() {
     if ($("body").hasClass("complete")) {
@@ -256,7 +256,7 @@ document.onready = function() {
         template();
         build();
         autolink();
-        track();
+        // track();
     } catch (error) {
         // uh oh
     }
