@@ -207,8 +207,8 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* container */
 
-.clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
-.clearfix, .container {display:block;}
+.editions:after, .blocks:after, .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
+.editions, .blocks, .clearfix, .container {display:block;}
 .clear {clear:both;}
 
 .container {
@@ -359,8 +359,8 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* bold list of editions on startpage */
-.lang_list_wrapper {
-
+.edition_list div {
+  /* span4 last */
 }
 
 .edition_list {
@@ -386,21 +386,21 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   font-weight: bold;
 }
 
-.lang_list {
+.edition_list ul  {
   margin: 0;
   padding: 0;
   list-style: none;
   display: inline;
 }
 
-.lang_list li {
+.edition_list ul li {
   display: inline;
   margin-right: 1em;
   padding-right: 1em;
   border-right: 1px solid #EBEBEB;
 }
 
-.lang_list li:last-child {
+.edition_list ul li:last-child {
   margin-right: 0;
   padding-right: 0;
   border-right: none;

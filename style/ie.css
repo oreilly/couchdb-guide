@@ -7,7 +7,10 @@ sub {vertical-align:text-bottom;}
 html>body p code {*white-space:normal;}
 hr {margin:-8px auto 11px;}
 img {-ms-interpolation-mode:bicubic;}
-.clearfix, .container {display:inline-block;}
+.editions,
+.blocks,
+.clearfix, 
+.container {display:inline-block;}
 * html .clearfix, * html .container {height:1%;}
 fieldset {padding-top:0;}
 textarea {overflow:auto;}
