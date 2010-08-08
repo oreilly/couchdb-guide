@@ -254,7 +254,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 */
 
 .span2, .span3, .span4, .span6, .span8, .span10 {
-  margin-right: 2.439%;
+  margin-right: 2.4%;
   float: left;
 }
 
@@ -336,8 +336,9 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* modules */
+.stage,
 .info_bubble,
-.edition_list li,
+.edition_list > li,
 .inner {
   padding: 1em 1.5em .5em 1.5em;
   background: #FFF;
@@ -378,7 +379,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   font-style: italic;
 }
 
-.edition_h {
+.edition_list h2 {
   margin-bottom: 0;
   font-size: 2em;
   line-height: 1.5;
