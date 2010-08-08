@@ -137,10 +137,6 @@ blockquote p {
   color: #777;
 }
 
-.attribution:before {
-  content: "\2014";
-}
-
 /* tables */
 table {
   margin-bottom: 1.4em;
@@ -340,6 +336,8 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* modules */
+.info_bubble,
+.edition_list li,
 .inner {
   padding: 1em 1.5em .5em 1.5em;
   background: #FFF;
@@ -408,7 +406,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* info bubble on startpage */
-.inner.info_bubble {
+.info_bubble {
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
   background: #906;

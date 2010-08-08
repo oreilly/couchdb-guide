@@ -1,3 +1,9 @@
 /* ie.css */
-.ie_buggy { zoom: 1; background: red;}
+
+
+.edition_list li,
+.ie_buggy { 
+  zoom: 1; 
+  background: red;
+}
 body {background: blue !important;}
