@@ -354,6 +354,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* startpage welcome box */
 .stage {
+  height: 3em;
   margin-bottom: 1.5em;
   padding: 3em 50% 1.5em 3em;
   background: #FFF url(../image/couchdb_book.jpg) no-repeat 100% 50%;
