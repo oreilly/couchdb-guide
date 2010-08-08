@@ -1,23 +1,23 @@
-lastest_edition = "1"
+var lastest_edition = "1";
 
-languages = {
-    "en": "English",
-}
+var languages = {
+    "en": "English"
+};
 
-scripts = [
+var scripts = [
     "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js",
-    "http://www.google-analytics.com/ga.js",
-]
+    "http://www.google-analytics.com/ga.js"
+];
 
-urls = [
+var urls = [
     ["/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
     ["/draft/([a-z]+).html", "build_draft"],
-    ["/index.html", "build_index"],
-]
+    ["/index.html", "build_index"]
+];
 
 for(i = 0; i < scripts.length; i++) {
     document.write("<script src='" + scripts[i] + "'></script>");
-}
+};
 
 function check_flag() {
     if ($("body").hasClass("complete")) {
@@ -159,16 +159,16 @@ function add_next_link() {
 }
 
 function add_toc() {
-    old_depth = 0;
-    html = "";
+    var old_depth = 0;
+    var html = "";
     $("*/[id!='']").each(function(index) {
-        id = $(this).attr("id");
-        name = $(this)[0].nodeName;
-        text = $(this).text();
+        var id = $(this).attr("id");
+        var name = $(this)[0].nodeName;
+        var text = $(this).text();
         if (name.length != 2 || name.slice(0, 1) != "H") {
             return;
         }
-        new_depth = name.slice(1,2);
+        var new_depth = name.slice(1,2);
         if (new_depth > old_depth) {
             html += "<ul>";
         } else if (new_depth < old_depth) {
@@ -186,7 +186,7 @@ function add_toc() {
 
 function build() {
     for(i = 0; i < urls.length; i++) {
-        matches = document.location.href.match(urls[i][0])
+        var matches = document.location.href.match(urls[i][0])
         if (matches) {
             window[urls[i][1]](matches);
             break;
@@ -195,10 +195,10 @@ function build() {
 }
 
 function build_edition(matches) {
-    edition = matches[1];
-    language = languages[matches[2]];
-    page = matches[3];
-    edition_text = "Edition " + edition + " (" + language + ")";
+    var edition = matches[1];
+    var language = languages[matches[2]];
+    var page = matches[3];
+    var edition_text = "Edition " + edition + " (" + language + ")";
     link_logo("../../../index.html");
     add_notice_edition(edition);
     $(".sidebar").append("<h3><a href='../../../index.html'>Home</a></h3>");
@@ -217,7 +217,7 @@ function build_edition(matches) {
 }
 
 function build_draft(matches) {
-    page = matches[1];
+    var page = matches[1];
     link_logo("../index.html");
     add_notice_draft();
     $(".sidebar").append("<h3><a href='../index.html'>Home</a></h3>");
