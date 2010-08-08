@@ -11,7 +11,7 @@ var scripts = [
 
 for(i = 0; i < scripts.length; i++) {
     document.write("<script src='" + scripts[i] + "'></script>");
-};
+}
 
 var urls = [
     ["/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
