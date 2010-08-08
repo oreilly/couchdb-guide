@@ -137,10 +137,6 @@ blockquote p {
   color: #777;
 }
 
-.attribution:before {
-  content: "\2014";
-}
-
 /* tables */
 table {
   margin-bottom: 1.4em;
@@ -211,14 +207,15 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* container */
 
-.clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
-.clearfix, .container {display:block;}
+.editions:after, .blocks:after, .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
+.editions, .blocks, .clearfix, .container {display:block;}
 .clear {clear:both;}
 
 .container {
   max-width: 940px;
   margin: 0 auto;
   padding: 0 8px;
+  text-align: left;
 }
 
 /* grid */
@@ -258,7 +255,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 */
 
 .span2, .span3, .span4, .span6, .span8, .span10 {
-  margin-right: 2.439%;
+  margin-right: 2.4%;
   float: left;
 }
 
@@ -295,7 +292,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   max-width: 100%;
 }
 /* header */
-header {
+.page_header {
   overflow: hidden;
   margin: 1.5em 0;
 }
@@ -340,6 +337,9 @@ header {
 }
 
 /* modules */
+.stage,
+.info_bubble,
+.edition_list > li,
 .inner {
   padding: 1em 1.5em .5em 1.5em;
   background: #FFF;
@@ -354,14 +354,15 @@ header {
 
 /* startpage welcome box */
 .stage {
+  height: 3em;
   margin-bottom: 1.5em;
   padding: 3em 50% 1.5em 3em;
   background: #FFF url(../image/couchdb_book.jpg) no-repeat 100% 50%;
 }
 
 /* bold list of editions on startpage */
-.lang_list_wrapper {
-
+.edition_list div {
+  /* span4 last */
 }
 
 .edition_list {
@@ -380,49 +381,57 @@ header {
   font-style: italic;
 }
 
-.edition_h {
+.edition_list h2 {
   margin-bottom: 0;
   font-size: 2em;
   line-height: 1.5;
   font-weight: bold;
 }
 
-.lang_list {
+.edition_list ul  {
   margin: 0;
   padding: 0;
   list-style: none;
   display: inline;
 }
 
-.lang_list li {
+.edition_list ul li {
   display: inline;
   margin-right: 1em;
   padding-right: 1em;
   border-right: 1px solid #EBEBEB;
 }
 
-.lang_list li:last-child {
+.edition_list ul li:last-child {
   margin-right: 0;
   padding-right: 0;
   border-right: none;
 }
 
 /* info bubble on startpage */
-.inner.info_bubble {
+.info_bubble {
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
   background: #906;
 }
 
+.asterisk {
+  padding: 0 .25em 0 0;
+  font-size: 2.6em;
+  margin: 0;
+  color: #FFF;
+  float: left;
+}
+
 /* footer */
-footer {
+.footer {
   background: #4A4A4A url(../image/couchg_bg_footer.png) repeat-x 0 0;
   margin: 1.5em 0 0 0;
   padding: 1.5em 0 0 0;
   overflow: hidden;
 }
 
-footer p {
+.footer p {
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
 }
@@ -543,8 +552,8 @@ input[type="submit"]:active {
 
 @media screen and (max-device-width: 680px), screen and (max-width: 680px) {
   .stage {
-    background-position: 100% 5em;
-    padding: 3em 1.5em 1.5em 1.5em;
+    background-position: 100% 0;
+    padding: 24em 1.5em 1.5em 1.5em;
   }
 
   .lead {

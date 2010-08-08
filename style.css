@@ -11,22 +11,23 @@
 /* hide .anchor links from regular links */
 
 a.anchor {
-    color: black;
+  color: black;
 }
 
 a.anchor:hover {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 /* fix up display of figures and captions */
 
-div.figure, p.caption {
-    display: block;
-    padding-top: 1.5em;
+div.figure, 
+p.caption {
+  display: block;
+  padding-top: 1.5em;
 }
 
 p.caption {
-    text-align: center;
+  text-align: center;
 }
 
 /* shrink large images to fit container */
@@ -55,23 +56,34 @@ div.figure img {
     color: #BBB;
 }
 
-/* make links stand out in info_bubble */
+/* make links stand out on dark background, as in info_bubble and footer */
 
-.info_bubble a {
-    color: #BBB;
+.footer a, 
+.footer a:link, 
+.footer a:visited,
+.info_bubble a, 
+.info_bubble a:link, 
+.info_bubble a:visited {
+  color: #BBB;
 }
 
-/* make links stand out in footer */
-
-.footer a {
-    color: #BBB;
+.footer a:hover, 
+.footer a:active, 
+.footer a:focus,
+.info_bubble a:hover, 
+.info_bubble a:active, 
+.info_bubble a:focus {
+  color: #BBB;
 }
 
 /* fix up iframe styles */
 
 iframe {
-    height: 360px;
-    overflow: hidden;
+  width: 100%;
+  min-height: 28em;
+  height:auto !important;
+  height: 28;
+  overflow: hidden;
 }
 
 /* fix up iframe document styles */
@@ -84,13 +96,13 @@ iframe {
 /* fix up pre overflow */
 
 pre {
-    white-space: pre;
-	overflow-x: none; /* needed for FF 2, but not FF 3 */
-	white-space: pre-wrap; /* CSS 3 */
-	white-space: -moz-pre-wrap !important; /* FF */
-	white-space: -pre-wrap; /* Opera 4-6 */
-	white-space: -o-pre-wrap; /* Opera 7 */
-	word-wrap: break-word; /* IE 5.5+ */
+  white-space: pre;
+  overflow-x: none; /* needed for FF 2, but not FF 3 */
+  white-space: pre-wrap; /* CSS 3 */
+  white-space: -moz-pre-wrap !important; /* FF */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* IE 5.5+ */
 }
 
 /* make pre smaller */
