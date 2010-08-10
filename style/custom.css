@@ -1,4 +1,4 @@
-/* reset.css */
+/* reset */
 html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, dialog, figure, footer, header, hgroup, nav, section {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
 article, aside, dialog, figure, footer, header, hgroup, nav, section {display:block;}
 body {line-height:1.5;}
@@ -9,7 +9,7 @@ blockquote:before, blockquote:after, q:before, q:after {content:"";}
 blockquote, q {quotes:"" "";}
 a img {border:none;}
 
-/* typography.css */
+/* typography */
 body,
 input[type="text"],
 input[type="submit"],
@@ -546,6 +546,110 @@ input[type="submit"]:active {
   -moz-box-shadow: 0px 0px 3px #333;
   -webkit-box-shadow: 0px 0px 3px #333;
   box-shadow: 0px 0px 3px #333;
+}
+
+
+/* hide .anchor links from regular links */
+
+a.anchor {
+  color: black;
+}
+
+a.anchor:hover {
+  text-decoration: none;
+}
+
+/* fix up display of figures and captions */
+
+div.figure, 
+p.caption {
+  display: block;
+  padding-top: 1.5em;
+}
+
+p.caption {
+  text-align: center;
+}
+
+/* shrink large images to fit container */
+
+div.figure img {
+    max-width: 100%;
+}
+
+/* remove unneeded em dash from attribution divs */
+
+.attribution::before {
+    content: "";
+}
+
+/* fix up sidebar TOC with shrinking font sizes */
+
+.sidebar ul {
+    font-size: 0.9em;
+    padding-left: 2em;
+    list-style-type: square;
+}
+
+/* add disabled class for inactive navigation links */
+
+.disabled {
+    color: #BBB;
+}
+
+/* make links stand out on dark background, as in info_bubble and footer */
+
+.footer a, 
+.footer a:link, 
+.footer a:visited,
+.info_bubble a, 
+.info_bubble a:link, 
+.info_bubble a:visited {
+  color: #BBB;
+}
+
+.footer a:hover, 
+.footer a:active, 
+.footer a:focus,
+.info_bubble a:hover, 
+.info_bubble a:active, 
+.info_bubble a:focus {
+  color: #BBB;
+}
+
+/* fix up iframe styles */
+
+iframe {
+  width: 100%;
+  min-height: 28em;
+  height:auto !important;
+  height: 28;
+  overflow: hidden;
+}
+
+/* fix up iframe document styles */
+
+.buybuttonswidget {
+    padding-bottom: 100px;
+    background: #FFF;
+}
+
+/* fix up pre overflow */
+
+pre {
+  white-space: pre;
+  overflow-x: none; /* needed for FF 2, but not FF 3 */
+  white-space: pre-wrap; /* CSS 3 */
+  white-space: -moz-pre-wrap !important; /* FF */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* IE 5.5+ */
+}
+
+/* make pre smaller */
+
+pre {
+    font-size: 12px;
 }
 
 
