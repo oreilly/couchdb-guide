@@ -212,7 +212,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .clear {clear:both;}
 
 .container {
-  width: 100%;
   max-width: 940px;
   width: expression(this.width > 940 ? 940: true);
   margin: 0 auto;
