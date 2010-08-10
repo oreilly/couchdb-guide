@@ -212,7 +212,9 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .clear {clear:both;}
 
 .container {
+  width: 100%;
   max-width: 940px;
+  width: expression(this.width > 940 ? 940: true);
   margin: 0 auto;
   padding: 0 8px;
   text-align: left;
@@ -574,7 +576,7 @@ p.caption {
 /* shrink large images to fit container */
 
 div.figure img {
-    max-width: 100%;
+  max-width: 100%;
 }
 
 /* remove unneeded em dash from attribution divs */
@@ -649,7 +651,7 @@ pre {
 /* make pre smaller */
 
 pre {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 
