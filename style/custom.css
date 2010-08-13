@@ -300,7 +300,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* logo */
 .logo {
-  width: 50%;
+  width: 49.5%;
   float: left;
   margin-bottom: 0;
 }
