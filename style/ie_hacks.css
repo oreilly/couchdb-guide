@@ -2,6 +2,7 @@
 
 .container {text-align:left;}
 
+.editions,
 .edition_list li,
 .ie_buggy { 
   zoom: 1; 
