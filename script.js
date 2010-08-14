@@ -84,9 +84,9 @@ function template() {
             ' + get_header() + '\
             <div class="notice"></div>\
             <div class="inner wrap">\
-              <div class="content body">\
-              </div>\
               <div class="sidebar">\
+              </div>\
+              <div class="content body">\
               </div>\
             </div>\
           </div>\

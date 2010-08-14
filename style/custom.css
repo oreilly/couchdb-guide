@@ -39,7 +39,6 @@ sup, sub {line-height:0;}
 abbr, acronym {border-bottom:1px dotted #666;}
 address {margin:0 0 1.5em;font-style:italic;}
 del {color:#666;}
-pre {margin:1.5em 0;white-space:pre;}
 pre, code, tt {font:1em 'andale mono', 'lucida console', monospace;line-height:1.5;}
 li ul, li ol {margin:0;}
 ul, ol {margin:0 1.5em 1.5em 0;padding-left:3.333em;}
@@ -148,9 +147,9 @@ table.box_table {
   -moz-border-radius: 3px;
    -webkit-border-radius: 3px;
    border-radius: 3px;
-  -moz-box-shadow: inset 0px 0px 8px #CCC;
-  -webkit-box-shadow: inset 0px 0px 8px #CCC;
-  box-shadow: inset 0px 0px 8px #CCC;
+  -moz-box-shadow: inset 0px 0px 8px #999;
+  -webkit-box-shadow: inset 0px 0px 8px #999;
+  box-shadow: inset 0px 0px 8px #999;
 }
 
 th {
@@ -163,6 +162,7 @@ thead th {
 th, td, caption {
   padding: 4px 10px 4px 5px;
 }
+.caption,
 caption {
   caption-side: bottom;
   background: none;
@@ -234,12 +234,13 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 65%;
   float: left;
   margin-right: 2.9%;
+  position: relative;
 }
 
 /* sidebar */
 .sidebar {
   width: 32%;
-  float: left;
+  float: right;
   margin-right: 0;
 }
 
@@ -338,6 +339,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* modules */
+pre,
 .stage,
 .info_bubble,
 .edition_list > li,
@@ -347,9 +349,9 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
   border-radius: 3px;
-  -moz-box-shadow: 0px 0px 8px #CCC;
-  -webkit-box-shadow: 0px 0px 8px #CCC;
-  box-shadow: 0px 0px 8px #CCC;
+  -moz-box-shadow: 0px 0px 8px #999;
+  -webkit-box-shadow: 0px 0px 8px #999;
+  box-shadow: 0px 0px 8px #999;
   overflow: hidden;
 }
 
@@ -408,21 +410,35 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   border-right: none;
 }
 
-/* info bubble on startpage */
+/* info bubble */
 .info_bubble {
   padding-bottom: 1em;
-  
   color: #FFF;
   text-shadow: 1px 1px 0 #000;
   background: #906;
-  min-height: 9em;
-  height:auto !important;
-  height: 9em;
   position: relative; 
   overflow: visible;
 }
 
 .info_bubble span {
+  position: absolute;
+  display: block;
+  bottom: 1em;
+  left: -2em;
+  width: 40px;
+  height: 40px;
+  background: transparent url('../image/couchg_bubble_tri.png') no-repeat 50% 50%;
+}
+
+/* info bubble on startpage */
+.info_bubble.startpage {
+  padding-bottom: 1em;
+  min-height: 9em;
+  height:auto !important;
+  height: 9em;
+}
+
+.info_bubble.startpage span {
   position: absolute;
   display: block;
   bottom: 1em;
@@ -562,7 +578,7 @@ input[type="submit"]:active {
 /* hide .anchor links from regular links */
 
 a.anchor {
-  color: black;
+  color: #000;
 }
 
 a.anchor:hover {
@@ -571,19 +587,25 @@ a.anchor:hover {
 
 /* fix up display of figures and captions */
 
-div.figure, 
-p.caption {
-  display: block;
+.figure {
   padding-top: 1.5em;
 }
 
-p.caption {
+.figure, 
+.caption {
+  display: block;
+  margin-bottom: 3em;
+}
+
+.caption {
+  font-size: .75em;
+  line-height: 2;
   text-align: center;
 }
 
 /* shrink large images to fit container */
 
-div.figure img {
+.figure img {
   max-width: 100%;
 }
 
@@ -654,6 +676,11 @@ pre {
   white-space: -pre-wrap; /* Opera 4-6 */
   white-space: -o-pre-wrap; /* Opera 7 */
   word-wrap: break-word; /* IE 5.5+ */
+  background: #EFEFEF;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;  
+  box-shadow: none;
+  margin: -1em 0 1.5em 0;
 }
 
 /* make pre smaller */
@@ -662,6 +689,23 @@ pre {
   font-size: 12px;
 }
 
+
+.aside {
+  font-size: 0.75em;
+  line-height: 2;
+  margin: 1.5em 0;
+  padding: 1.5em 1em 0 5em;
+  border-top: 1px solid #906;
+  border-bottom: 1px solid #906;
+}
+
+.aside.note {
+  background: transparent url('../image/couchg_note.png') no-repeat 1em 1.8em;
+}
+
+.aside.warning {
+  background: transparent url('../image/couchg_warning.png') no-repeat 1em 1.8em;
+}
 
 @media screen and (max-device-width: 680px), screen and (max-width: 680px) {
   
