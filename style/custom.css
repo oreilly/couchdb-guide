@@ -138,18 +138,28 @@ blockquote p {
 
 /* tables */
 table {
-  margin-bottom: 1.4em;
   width: 100%;
 }
 
-table.box_table {
+tbody td {
+  font-size: .75em;
+  border-top: 1px dotted #FFF;
+}
+
+/* table and code blocks */
+
+pre, 
+table {
+  margin: -1em 0 1.5em 0;
   padding: .5em 1em;
+  
   -moz-border-radius: 3px;
-   -webkit-border-radius: 3px;
-   border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px;
   -moz-box-shadow: inset 0px 0px 8px #999;
   -webkit-box-shadow: inset 0px 0px 8px #999;
   box-shadow: inset 0px 0px 8px #999;
+  background: #EBEBEB url(../image/couchg_bg.png) repeat 0 0;
 }
 
 th {
@@ -286,6 +296,10 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   clear: both;
 }
 
+.editions {
+  margin-bottom: 0;
+}
+
 .last {
   margin-right: 0 !important;
 }
@@ -339,7 +353,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* modules */
-pre,
 .stage,
 .info_bubble,
 .edition_list > li,
@@ -418,16 +431,6 @@ pre,
   background: #906;
   position: relative; 
   overflow: visible;
-}
-
-.info_bubble span {
-  position: absolute;
-  display: block;
-  bottom: 1em;
-  left: -2em;
-  width: 40px;
-  height: 40px;
-  background: transparent url('../image/couchg_bubble_tri.png') no-repeat 50% 50%;
 }
 
 /* info bubble on startpage */
@@ -676,11 +679,6 @@ pre {
   white-space: -pre-wrap; /* Opera 4-6 */
   white-space: -o-pre-wrap; /* Opera 7 */
   word-wrap: break-word; /* IE 5.5+ */
-  background: #EFEFEF;
-  -moz-box-shadow: none;
-  -webkit-box-shadow: none;  
-  box-shadow: none;
-  margin: -1em 0 1.5em 0;
 }
 
 /* make pre smaller */
@@ -721,7 +719,7 @@ pre {
     height: 2em;
   }
   
-  .info_bubble span {
+  .info_bubble.startpage span {
     position: absolute;
     display: block;
     top: -2em;
