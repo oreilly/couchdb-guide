@@ -4,14 +4,14 @@ This is the source code repository for a free book about Apache CouchDB.
 
 <h2>Introduction</h2>
 
-<p>The book is called CouchDB: The Definitive Guide and is published by O'Reilly Media under a <a href="http://creativecommons.org/licenses/by/3.0/">free license</a>.
+<p>The book is called <em>CouchDB: The Definitive Guide</em> and is published by O’Reilly Media under a <a href="http://creativecommons.org/licenses/by/3.0/">free license</a>.
 
 <p>We believe that community software needs community documentation. You can
-download and play with CouchDB for free, and similarly you can download and play with this book for free. You can inspect the source code for CouchDB and make improvements to it, and similarly you can inspect the source code for this book and make improvements to it. If you want to contribute, please do so! Fork it, hack on it, and send back improvements! If you want to support the project, you can do so by [buying a copy](http://oreilly.com/catalog/9780596155902) of the book in digital or printed form.
+download and play with CouchDB for free, and similarly you can download and play with this book for free. You can inspect the source code for CouchDB and make improvements to it, and similarly you can inspect the source code for this book and make improvements to it. If you want to contribute, please do so! Fork it, hack on it, and send back improvements! If you want to support the project, you can do so by <a href="http://oreilly.com/catalog/9780596155902">buying a copy</a> of the book in digital or printed form.
 
 <h2>Dependencies</h2>
 
-<p>We edit the book in HTML and accept contributions in HTML. HTML allows us a lot of freedom as authors, and makes editing much easier. Before going to print we hand the HTML to O'Reilly Media, and they convert this into DocBook. DocBook allows a lot of control over the typesetting and publishing of the book. Once that process is complete, O'Reilly Media hand us back the final DocBook, which now includes any modifications from our editors. We then transform this into HTML, and tidy it up. Then the process starts over from the beginning again!
+<p>We edit the book in HTML and accept contributions in HTML. HTML allows us a lot of freedom as authors, and makes editing much easier. Before going to print we hand the HTML to O’Reilly Media, and they convert this into DocBook. DocBook allows a lot of control over the typesetting and publishing of the book. Once that process is complete, O’Reilly Media hand us back the final DocBook, which now includes any modifications from our editors. We then transform this into HTML, and tidy it up. Then the process starts over from the beginning again!
 
 <p>You must install the DocBook XSL stylesheets to generate the HTML:
 
@@ -65,4 +65,4 @@ bin/transform.sh src/EDITION/book.xml
 bin/tidy.sh ch01.html
 </pre>
 
-<p>The HTML we generate with this process is held in the `gh-pages` branch.
+<p>The HTML we generate with this process is held in the <a href="http://github.com/oreilly/couchdb-guide/tree/gh-pages"><code>gh-pages</code></a> branch.
