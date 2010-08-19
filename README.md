@@ -67,3 +67,5 @@ bin/tidy.sh ch01.html
 </pre>
 
 <p>The HTML we generate with this process is held in the <a href="http://github.com/oreilly/couchdb-guide/tree/gh-pages">gh-pages</a> branch.
+
+<p>Relax.
