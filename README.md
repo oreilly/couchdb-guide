@@ -8,7 +8,7 @@
 
 <dt><code>draft/</code></dt>
 
-<dd>This is the always work in progress version of the next edition.</dd>
+<dd><p>This is the always work in progress version of the next edition.</dd>
 
 <dt><code>editions/</code></dt>
 
