@@ -249,6 +249,8 @@ function(doc) {
 
 <p>Say you have a view result that looks like this:
 
+<div>
+
 <table>
 
 <thead>
@@ -268,9 +270,13 @@ function(doc) {
 </tbody>
 
 </table>
+
+</div>
 
 <p>Here are potential query options: <code>?startkey=1&amp;descending=true</code>. What will CouchDB do? See #1 above: it jumps to <code>startkey</code>, which is the row with the key <code>1</code>, and starts reading backward until it hits the end of the view. So the particular result would be:
 
+<div>
+
 <table>
 
 <thead>
@@ -289,7 +295,11 @@ function(doc) {
 
 </table>
 
+</div>
+
 <p>This is very likely not what you want. To get the rows with the indexes <code>1</code> and <code>2</code> in reverse order, you need to switch the <code>startkey</code> to <code>endkey</code>: <code>endkey=1&amp;descending=true</code>:
+
+<div>
 
 <table>
 
@@ -308,6 +318,8 @@ function(doc) {
 </tbody>
 
 </table>
+
+</div>
 
 <p>Now that looks a lot better. CouchDB started reading at the bottom of the view and went backward until it hit <code>endkey</code>.
 

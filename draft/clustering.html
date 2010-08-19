@@ -32,6 +32,8 @@
 
 <p>This idea of splitting a collection of shards based on a keyspace is commonly illustrated as a ring, with the hash wrapped around the outside. Each tic mark designates the boundaries in the keyspace between two partitions. The hash function maps from document IDs to positions on the ring. The ring is continuous so that you can always add more nodes by splitting a single partition into pieces. With four physical servers, you allocate the keyspace into 16 independent partitions by distributing them across the servers like so:
 
+<div>
+
 <table>
 
 <tbody>
@@ -47,6 +49,8 @@
 </tbody>
 
 </table>
+
+</div>
 
 <p>If the hash of your DocID starts with <code>0</code>, it would be dispatched to shard <code>A</code>. Similarly for <code>1</code>, <code>2</code>, or <code>3</code>. Whereas, if the hash started with <code>c</code>, <code>d</code>, <code>e</code>, or <code>f</code>, it would be dispatched to shard <code>D</code>. As a full example, the hash <code>71db329b58378c8fa8876f0ec04c72e5</code> is mapped to the node <code>B</code>, database <code>7</code> in the table just shown. This could map to <code>http://B.couches.local/db-7/</code> on your backend cluster. In this way, the hash table is just a mapping from hashes to backend database URIs. Don’t worry if this all sounds very complex; all you have to do is provide a mapping of shards to nodes and Lounge will build the hash ring appropriately—so no need to get your hands dirty if you don’t want to.
 
