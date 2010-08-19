@@ -56,7 +56,7 @@
 
 </ul>
 
-<p>Here’s an example of how to make a German translation:
+<p>Here’s how you might start a new German translation:
 
 <pre>
 cd editions/1
@@ -65,12 +65,6 @@ git add de
 git commit -m 'Start German translation' de
 </pre>
 
-<h4>Styles</h4>
+<p>All you need to do now is work through the chapters and send pull requests.
 
-<p>If you need custom CSS rules for your tranlsations, please create a new file `style.css` in `editions/1/de/` and add another `<link rel="stylesheet" href="../style.css">` line to your HTML files.
-
-<h3>Publishing a Translation</h3>
-
-<p>You’re free to publish a translation under the aforementioned license. O’Reilly voiced interest in publishing translations as well, but no definite plans have been made. We’re happy to put you in touch with our editor to discuss printed editions of translations further.
-
-<h2>Relax</h2>
+<p>Relax.
