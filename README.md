@@ -50,6 +50,10 @@
 
 <li><p>Do not translate from anything other than the <code>en/</code> directory, as this will introduce errors</li>
 
+<li><p>Do not modify the general markup or structure of the documents</li>
+
+<li><p>Do not include your own styles or scripts</li>
+
 </ul>
 
 <p>Here’s how to make a German translation:
