@@ -56,7 +56,7 @@
 
 </ul>
 
-<p>Here’s how to make a German translation:
+<p>Here’s an example of how to make a German translation:
 
 <pre>
 cd editions/1
