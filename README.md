@@ -42,11 +42,11 @@
 
 <ul>
 
-<li>You must start your translation from the <code>en/</code> directory under <code>editions/NUMBER</code>.</li>
+<li><p>You must start your translation from the <code>en/</code> directory under <code>editions/NUMBER</code>.</li>
 
-<li>Do not try to translate <code>draft/</code> as this is constantly changing.</li>
+<li><p>Do not try to translate <code>draft/</code> as this is constantly changing.</li>
 
-<li>Do not try to translate from any language other than <code>en/</code> is this is unofficial.</li>
+<li><p>Do not try to translate from any language other than <code>en/</code> is this is unofficial.</li>
 
 </ul>
 
