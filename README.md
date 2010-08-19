@@ -36,7 +36,7 @@
 
 <h2>Translations</h2>
 
-<p>We’d like to encourage people to start translating the book into other languages. If you’d like to start a new translation, please first check to see if one exists already. If not, you can get started right away. Only ever start a translation from the <code>en/</code> directory under <code>editions/NUMBER`</code>. Do not try to translate <code>draft/</code> as this is constantly changing. Do not try to translate from any language other than <code>en/</code> is this is unofficial.
+<p>We’d like to encourage people to start translating the book into other languages. If you’d like to start a new translation, please first check to see if one exists in that language. If not, you can get started right away. You must start your translation from the <code>en/</code> directory under <code>editions/NUMBER</code>. Do not try to translate <code>draft/</code> as this is constantly changing. Do not try to translate from any language other than <code>en/</code> is this is unofficial.
 
 <p>Here’s how you would make a german (de) translation.
 
