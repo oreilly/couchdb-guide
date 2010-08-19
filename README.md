@@ -6,17 +6,7 @@ This is the source code repository for a free book about Apache CouchDB.
 Introduction
 ------------
 
-The book is called:
-
-> CouchDB: The Definitive Guide
-
-The book is published by:
-
-> O'Reilly Media
-
-The book is available under a free license:
-
-> [Creative Commons Attribution](http://creativecommons.org/licenses/by/3.0/)
+The book is called CouchDB: The Definitive Guide and is published by O'Reilly Media under a [free license](http://creativecommons.org/licenses/by/3.0/).
 
 We believe that community software needs community documentation. You can
 download and play with CouchDB for free, and similarly you can download and play
