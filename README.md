@@ -4,11 +4,21 @@
 
 <h2>Organisation</h2>
 
-<p><code>draft/</code></dt> is the always work in progress version of the next edition.
+<dl>
 
-<p><code>editions/</code> has a list of all editions of the book. <code>editions/1/</code> is the current edition of the book, when we do a second edition, it will be under <code>editions/2</code> and so on.
+<dt><code>draft/</code></dt>
 
-<p><code>editions/1/en</code> is the main book content. Translations can be found under <code>editions/1/..</code>. Each language can be found under its respective language code (de, fr, jp…; see <http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>)
+<dd>This is the always work in progress version of the next edition.</dd>
+
+<dt><code>editions/</code></dt>
+
+<dd>This has a list of all editions of the book. <code>editions/1/</code> is the current edition of the book, when we do a second edition, it will be under <code>editions/2</code> and so on.</dd>
+
+<dt><code>editions/1/en</code></dt>
+
+<dd>This is the main book content. Translations can be found under <code>editions/1/..</code>. Each language can be found under its respective language code (de, fr, jp…; see <http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>)</dd>
+
+</dl>
 
 <h2>Contributions</h2>
 
