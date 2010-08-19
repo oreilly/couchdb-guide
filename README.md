@@ -14,8 +14,6 @@ This is the source code repository for a free book about Apache CouchDB.
 
 <p>HTML allows us a lot of freedom as authors, and makes editing much easier. Before going to print we hand the HTML to O’Reilly Media, and they convert this into DocBook. DocBook allows a lot of control over the typesetting and publishing of the book. Once that process is complete, O’Reilly Media hand us back the final DocBook, which now includes any modifications from our editors. We then transform this into HTML, and tidy it up.
 
-<p>Then the process starts over from the beginning again!
-
 <p>You must install the DocBook XSL stylesheets to generate the HTML:
 
 <pre>
