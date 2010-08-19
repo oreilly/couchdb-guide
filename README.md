@@ -1,68 +1,68 @@
-CouchDB: The Definitive Guide
-=============================
+<h1>CouchDB: The Definitive Guide</h2>
 
 This is the source code repository for a free book about Apache CouchDB.
 
-Introduction
-------------
+<h2>Introduction</h2>
 
-The book is called CouchDB: The Definitive Guide and is published by O'Reilly Media under a [free license](http://creativecommons.org/licenses/by/3.0/).
+<p>The book is called CouchDB: The Definitive Guide and is published by O'Reilly Media under a <a href="http://creativecommons.org/licenses/by/3.0/">free license</a>.
 
-We believe that community software needs community documentation. You can
-download and play with CouchDB for free, and similarly you can download and play
-with this book for free. You can inspect the source code for CouchDB and make
-improvements to it, and similarly you can inspect the source code for this book
-and make improvements to it. If you want to contribute, please do so! Fork it,
-hack on it, and send back improvements! If you want to support the project, you
-can do so by [buying a copy](http://oreilly.com/catalog/9780596155902) of the
-book in digital or printed form.
+<p>We believe that community software needs community documentation. You can
+download and play with CouchDB for free, and similarly you can download and play with this book for free. You can inspect the source code for CouchDB and make improvements to it, and similarly you can inspect the source code for this book and make improvements to it. If you want to contribute, please do so! Fork it, hack on it, and send back improvements! If you want to support the project, you can do so by [buying a copy](http://oreilly.com/catalog/9780596155902) of the book in digital or printed form.
 
-Dependencies
-------------
+<h2>Dependencies</h2>
 
-We edit the book in HTML and accept contributions in HTML. HTML allows us a lot
-of freedom as authors, and makes editing much easier. Before going to print
-we hand the HTML to O'Reilly Media, and they convert this into DocBook. DocBook
-allows a lot of control over the typesetting and publishing of the book. Once
-that process is complete, O'Reilly Media hand us back the final DocBook, which
-now includes any modifications from our editors. We then transform this into
-HTML, and tidy it up. Then the process starts over from the beginning again!
+<p>We edit the book in HTML and accept contributions in HTML. HTML allows us a lot of freedom as authors, and makes editing much easier. Before going to print we hand the HTML to O'Reilly Media, and they convert this into DocBook. DocBook allows a lot of control over the typesetting and publishing of the book. Once that process is complete, O'Reilly Media hand us back the final DocBook, which now includes any modifications from our editors. We then transform this into HTML, and tidy it up. Then the process starts over from the beginning again!
 
-You must install the DocBook XSL stylesheets to generate the HTML:
+<p>You must install the DocBook XSL stylesheets to generate the HTML:
 
-    sudo port install docbook-xsl
+<pre>
+sudo port install docbook-xsl
+</pre>
 
-You must install Tidy to clean the HTML:
+<p>You must install Tidy to clean the HTML:
 
-    sudo port install tidy
+<pre>
+sudo port install tidy
+</pre>
 
-You can now generate HTML from the DocBook source.
+<p>You can now generate HTML from the DocBook source.
 
-Instructions
-------------
+<h2>Instructions</h2>
 
-The DocBook source for the book is under:
+<p>The DocBook source for the book is under:
 
-    src/EDITION
+<pre>
+src/EDITION
+</pre>
 
-So, the first edition of the book can be found at:
+<p>So, the first edition of the book can be found at:
 
-    src/01/book.xml
+<pre>
+src/01/book.xml
+</pre>
 
-And the images used for the first edition of the book can be found at:
+<p>And the images used for the first edition of the book can be found at:
 
-    src/01/figs
+<pre>
+src/01/figs
+</pre>
 
-The tools we use to convert this into HTML can be found at:
+<p>The tools we use to convert this into HTML can be found at:
 
-    bin/
+<pre>
+bin/
+</pre>
 
-You can transform the DocBook to HTML by running:
+<p>You can transform the DocBook to HTML by running:
 
-    bin/transform.sh src/EDITION/book.xml
+<pre>
+bin/transform.sh src/EDITION/book.xml
+</pre>
 
-You can tidy the HTML files by running:
+<p>You can tidy the HTML files by running:
 
-    bin/tidy.sh ch01.html
+<pre>
+bin/tidy.sh ch01.html
+</pre>
 
-The HTML we generate with this process is held in the `gh-pages` branch.
+<p>The HTML we generate with this process is held in the `gh-pages` branch.
