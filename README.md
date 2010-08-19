@@ -26,7 +26,7 @@
 
 </dl>
 
-<p>The draft of the next edition is a work in progress. Like the trunk of an open source project, we will eventually cut from this and hand it over to our publishers. Once the publishing process is complete, we will take back the XML and convert it into HTML. Like a tag of an open source project, this HTML will be frozen in place as an official edition of the book. Translations are subject to change and may be updated at any time.
+<p>The draft of the next edition is a work in progress. Like the trunk of an open source project, we will eventually cut from this and hand it over to our publishers. Once the publishing process is complete, we will take back the XML and convert it into HTML. Like a tag of an open source project, this will be frozen in place as an official edition of the book. Translations are subject to change and may be updated at any time.
 
 <h2>Contributions</h2>
 
