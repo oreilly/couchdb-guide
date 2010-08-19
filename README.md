@@ -26,13 +26,7 @@
 
 <h2>Contributions</h2>
 
-<p>This book is open source under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).
-
-<p>The authors encourage you to fork, improve and publish our work under the terms of the license. Big thanks to O’Reilly for allowing this!
-
-<p>If you feel like giving back, please use GitHub pull-requests [TODO: link] to notify us of new content. We’re equally happy about issues [TODO: link] you raise to get our attention.
-
-<p>Chris, Jan and Noah retain editorial control over any changes anyone submits.
+<p>The book is made available under the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution</a> license. We encourage you to fork our work and make your own improvements under the terms of the license. If you have any changes you want to send back our way, please make a regular pull request via Github. If the authors like your changes, we may integrate them into the official book and give you a credit in the next edition. If you just have an issue to report, please use the regular Github issue system.
 
 <h2>Publication</h2>
 
