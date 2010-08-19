@@ -4,6 +4,8 @@
 
 <h2>Organisation</h2>
 
+<p>The source is organised into the following directories:
+
 <dl>
 
 <dt><code>draft/</code></dt>
@@ -24,15 +26,13 @@
 
 </dl>
 
+<p>The draft of the next edition is a continual work in progress. Like the trunk of an open source project, we will eventually cut from this and hand over to our publishers. Once the publishing process is complete, we will take back the XML they provide us and convert it into HTML. Like a tag of an open source project, this HTML will be frozen in place as an official edition of the book. Translations of the official English editions are subject to change and may be updated at any time.
+
 <h2>Contributions</h2>
 
 <p>The book is made available under the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution</a> license.
 
 <p>We encourage you to fork our work and make your own improvements under the terms of the license. If you have any changes you want to send back our way, please make a regular pull request via Github. If the authors like your changes, we may integrate them into the official book and give you a credit in the next edition. If you just have an issue to report, please use the regular Github issue system.
-
-<h2>Publication</h2>
-
-<p>Every once in a while, O’Reilly will take the current `en` version and turn it into a printed book. When that’s done, we’ll create a new directory under `editions/` to hold a stable snapshot of that release.
 
 <h2>Translations</h2>
 
