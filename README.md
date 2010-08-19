@@ -1,6 +1,6 @@
 <h1>CouchDB: The Definitive Guide</h1>
 
-<p>This is the source for the “CouchDB: The Definitive Guide” website.
+<p>This is the source for the book’s website.
 
 <h2>Organisation</h2>
 
