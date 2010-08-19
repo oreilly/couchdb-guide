@@ -1,45 +1,40 @@
-# CouchDB: The Definitive Guide
+<h1>CouchDB: The Definitive Guide</h1>
 
-This is the hope of the open source book “CouchDB: The Definitive Guide”
+<p>This is the source for the “CouchDB: The Definitive Guide” website.
 
+<h2>Organisation</h2>
 
-## Organisation
+<p><code>draft/</code></dt> is the always work in progress version of the next edition.
 
-`draft/` is the always work in progress version of the next edition.
+<p><code>editions/</code> has a list of all editions of the book. <code>editions/1/</code> is the current edition of the book, when we do a second edition, it will be under <code>editions/2</code> and so on.
 
-`editions/` has a list of all editions of the book. `editions/1/` is the current edition of the book, when we do a second edition, it will be under `editions/2` and so on.
+<p><code>editions/1/en</code> is the main book content. Translations can be found under <code>editions/1/..</code>. Each language can be found under its respective language code (de, fr, jp…; see <http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>)
 
-`editions/1/en` is the main book content. Translations can be found under `editions/1/..`. Each language can be found under its respective language code (de, fr, jp…; see <http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>)
+<h2>Contributions</h2>
 
+<p>This book is open source under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).
 
-## Contributions
+<p>The authors encourage you to fork, improve and publish our work under the terms of the license. Big thanks to O’Reilly for allowing this!
 
-This book is open source under the Creative Commons Attribution 3.0 Unported license (http://creativecommons.org/licenses/by/3.0/).
+<p>If you feel like giving back, please use GitHub pull-requests [TODO: link] to notify us of new content. We’re equally happy about issues [TODO: link] you raise to get our attention.
 
-The authors encourage you to fork, improve and publish our work under the terms of the license. Big thanks to O’Reilly for allowing this!
+<p>Chris, Jan and Noah retain editorial control over any changes anyone submits.
 
-If you feel like giving back, please use GitHub pull-requests [TODO: link] to notify us of new content. We’re equally happy about issues [TODO: link] you raise to get our attention.
+<h2>Publication</h2>
 
-Chris, Jan and Noah retain editorial control over any changes anyone submits.
+<p>Every once in a while, O’Reilly will take the current `en` version and turn it into a printed book. When that’s done, we’ll create a new directory under `editions/` to hold a stable snapshot of that release.
 
+<h2>Translations</h2>
 
-## Publication
+<p>We’d like to encourage you to start translating the book into your native language (or language of choice, really). We’re continuously publishing our work and all translations, so our readers always get the most up to date information.
 
-Every once in a while, O’Reilly will take the current `en` version and turn it into a printed book. When that’s done, we’ll create a new directory under `editions/` to hold a stable snapshot of that release.
+<p>If you like to see a translation in a particular language, please first check if one exists already. If not, follow the instructions below.
 
+<h3> Starting a Translation</h3>
 
-## Translations
+<p>Only ever start a translation from the `en/` directory under `editions/<number>`. Do not try to translate `draft/` as it is constantly changing. Do not try to translate from any other language as `en/` is most likely the most complete source.
 
-We’d like to encourage you to start translating the book into your native language (or language of choice, really). We’re continuously publishing our work and all translations, so our readers always get the most up to date information.
-
-If you like to see a translation in a particular language, please first check if one exists already. If not, follow the instructions below.
-
-
-### Starting a Translation
-
-Only ever start a translation from the `en/` directory under `editions/<number>`. Do not try to translate `draft/` as it is constantly changing. Do not try to translate from any other language as `en/` is most likely the most complete source.
-
-Here’s how you would make a german (de) translation.
+<p>Here’s how you would make a german (de) translation.
 
     cd editions/1
     cp -r en de
@@ -47,15 +42,12 @@ Here’s how you would make a german (de) translation.
     git commit -m 'Start German translation' de
 
 
-#### Styles
+<h4>Styles</h4>
 
-If you need custom CSS rules for your tranlsations, please create a new file `style.css` in `editions/1/de/` and add another `<link rel="stylesheet" href="../style.css">` line to your HTML files.
+<p>If you need custom CSS rules for your tranlsations, please create a new file `style.css` in `editions/1/de/` and add another `<link rel="stylesheet" href="../style.css">` line to your HTML files.
 
+<h3>Publishing a Translation</h3>
 
-### Publishing a Translation
+<p>You’re free to publish a translation under the aforementioned license. O’Reilly voiced interest in publishing translations as well, but no definite plans have been made. We’re happy to put you in touch with our editor to discuss printed editions of translations further.
 
-You’re free to publish a translation under the aforementioned license. O’Reilly voiced interest in publishing translations as well, but no definite plans have been made. We’re happy to put you in touch with our editor to discuss printed editions of translations further.
-
-## Relax
-
-
+<h2>Relax</h2>
