@@ -1,6 +1,6 @@
 <h1>CouchDB: The Definitive Guide</h1>
 
-<p>This is the source for the book’s website.
+<p>This is the source code repository for a free book about Apache CouchDB.
 
 <h2>Organisation</h2>
 
