@@ -44,6 +44,8 @@
 
 <li><p>Do start your translation from the <code>en/</code> directory</li>
 
+<li><p>Do use the appropriate <a href="http://en.wikipedia.org/wiki/IETF_language_tag">language tag</a> for your new directory</li>
+
 <li><p>Do not translate the <code>draft/</code> directory, as this is will be a work in progress</li>
 
 <li><p>Do not translate from anything other than the <code>en/</code> directory, as this will introduce errors</li>
