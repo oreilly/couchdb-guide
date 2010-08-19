@@ -42,11 +42,11 @@
 
 <ul>
 
-<li><p>You must start your translation from the <code>en/</code> directory</li>
+<li><p>Do start your translation from the <code>en/</code> directory</li>
 
-<li><p>Do not translate <code>draft/</code> as this is will always be a work in progress</li>
+<li><p>Do not translate the <code>draft/</code> directory, as this is will always be a work in progress</li>
 
-<li><p>Do not translate from anything other than the <code>en/</code> directory</li>
+<li><p>Do not translate from anything other than the <code>en/</code> directory, as this will introduce errors</li>
 
 </ul>
 
