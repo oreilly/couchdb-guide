@@ -8,11 +8,11 @@
 
 <dt><code>draft/</code></dt>
 
-<dd><p>The work in progress version of the next edition.</dd>
+<dd><p>The draft of next edition.</dd>
 
 <dt><code>editions/</code></dt>
 
-<dd><p>All previously published editions of the book.</dd>
+<dd><p>Published editions of the book.</dd>
 
 <dt><code>editions/1</code></dt>
 
