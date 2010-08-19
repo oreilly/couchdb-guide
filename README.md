@@ -50,13 +50,14 @@
 
 </ul>
 
-<p>Here’s how you would make a german (de) translation.
+<p>Here’s how to make a German translation:
 
-    cd editions/1
-    cp -r en de
-    git add de
-    git commit -m 'Start German translation' de
-
+<pre>
+cd editions/1
+cp -r en de
+git add de
+git commit -m 'Start German translation' de
+</pre>
 
 <h4>Styles</h4>
 
