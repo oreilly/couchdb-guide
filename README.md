@@ -56,15 +56,13 @@
 
 </ul>
 
-<p>Here’s how you might start a new German translation:
+<p>Here’s an example of how to start a new translation:
 
 <pre>
 cd editions/1
 cp -r en de
 git add de
-git commit -m 'Start German translation' de
+git commit -m 'new German translation' de
 </pre>
-
-<p>All you need to do now is work through the chapters and send pull requests.
 
 <p>Relax.
