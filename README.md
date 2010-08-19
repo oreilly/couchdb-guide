@@ -30,15 +30,13 @@
 
 <h2>Contributions</h2>
 
-<p>The book is made available under the <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution</a> license.
+<p>The book is made available under a <a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution</a> license.
 
 <p>We encourage you to fork our work and make your own improvements under the terms of the license. If you have any changes you want to send back our way, please make a regular pull request via Github. If the authors like your changes, we may integrate them into the official book and give you a credit in the next edition. If you just have an issue to report, please use the regular Github issue system.
 
 <h2>Translations</h2>
 
-<p>We’d like to encourage you to start translating the book into your native language (or language of choice, really). We’re continuously publishing our work and all translations, so our readers always get the most up to date information.
-
-<p>If you like to see a translation in a particular language, please first check if one exists already. If not, follow the instructions below.
+<p>We’d like to encourage people to start translating the book into other languages. If you’d like to start a new translation, please first check to see if one exists already. If not, follow the instructions below.
 
 <h3> Starting a Translation</h3>
 
