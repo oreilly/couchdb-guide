@@ -59,7 +59,7 @@ caption {background:#eee;}
 body {
   font-size: 100%;
   color: #000;
-  background: #EBEBEB url(../image/couchg_bg.png) repeat 0 0;
+  background: #F6f6F6 url(../image/couchg_bg.png) repeat 0 0;
 }
 
 h3 {
@@ -159,7 +159,7 @@ table {
   -moz-box-shadow: inset 0px 0px 8px #999;
   -webkit-box-shadow: inset 0px 0px 8px #999;
   box-shadow: inset 0px 0px 8px #999;
-  background: #EBEBEB url(../image/couchg_bg.png) repeat 0 0;
+  background: #F6f6F6 url(../image/couchg_bg.png) repeat 0 0;
 }
 
 th {
@@ -217,15 +217,15 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* container */
 
-.editions:after, .blocks:after, .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
-.editions, .blocks, .clearfix, .container {display:block;}
+.inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
+.inner, .editions, .blocks, .clearfix, .container {display:block;}
 .clear {clear:both;}
 
 .container {
   max-width: 940px;
   width: expression(this.width > 940 ? 940: true);
   margin: 0 auto;
-  padding: 0 8px;
+  padding: 0 16px;
   text-align: left;
 }
 
@@ -365,7 +365,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   -moz-box-shadow: 0px 0px 8px #999;
   -webkit-box-shadow: 0px 0px 8px #999;
   box-shadow: 0px 0px 8px #999;
-  overflow: hidden;
 }
 
 /* startpage welcome box */
@@ -414,7 +413,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   display: inline;
   margin-right: 1em;
   padding-right: 1em;
-  border-right: 1px solid #EBEBEB;
+  border-right: 1px solid #F6f6F6;
 }
 
 .edition_list ul li:last-child {
@@ -606,10 +605,12 @@ a.anchor:hover {
   text-align: center;
 }
 
-/* shrink large images to fit container */
+/* shrink large images to fit container, center images */
 
 .figure img {
   max-width: 100%;
+  display: block;
+  margin: 0 auto;
 }
 
 /* remove unneeded em dash from attribution divs */
@@ -691,18 +692,19 @@ pre {
 .aside {
   font-size: 0.75em;
   line-height: 2;
-  margin: 1.5em 0;
-  padding: 1.5em 1em 0 5em;
-  border-top: 1px solid #906;
-  border-bottom: 1px solid #906;
+  margin: .5em 0 1.5em -3em;
+  padding: 2.5em 2em 0 6.5em;
+  border-bottom: 1px solid #CCC;
+  background: #F6f6F6 url('../image/couchg_bg_aside.png') no-repeat 0 0;
 }
 
 .aside.note {
-  background: transparent url('../image/couchg_note.png') no-repeat 1em 1.8em;
+  background-image: url('../image/couchg_bg_aside_note.png');
 }
 
 .aside.warning {
-  background: transparent url('../image/couchg_warning.png') no-repeat 1em 1.8em;
+  background-image: url('../image/couchg_bg_aside_warning.png');
+  
 }
 
 @media screen and (max-device-width: 680px), screen and (max-width: 680px) {
