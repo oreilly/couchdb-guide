@@ -218,7 +218,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 /* container */
 
 /* clearfix */
-.inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
+.edition_list li:after, .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
   content:"\0020";
   display:block;
   height:0;
@@ -226,7 +226,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   visibility:hidden;
   overflow:hidden;
 }
-.inner, .editions, .blocks, .clearfix, .container {
+.edition_list li, .inner, .editions, .blocks, .clearfix, .container {
   display:block;
 }
 .clear {
@@ -402,7 +402,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 .edition_list li {
   margin: 0 0 1em 0;
-  overflow: hidden;
   clear: both;
 }
 
