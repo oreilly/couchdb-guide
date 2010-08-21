@@ -270,7 +270,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 */
 
 .span2, .span3, .span4, .span6, .span8, .span10 {
-  margin-right: 2.3%;
+  margin-right: 2.3%; /* this is a bit smaller than it should be due to IE's rounding bug */
   float: left;
 }
 
