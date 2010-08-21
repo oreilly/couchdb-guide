@@ -219,10 +219,23 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* clearfix */
 .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
-  content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;
+  content:"\0020";
+  display:block;
+  height:0;
+  clear:both;
+  visibility:hidden;
+  overflow:hidden;
 }
-.inner, .editions, .blocks, .clearfix, .container {display:block;}
-.clear {clear:both;}
+.inner, .editions, .blocks, .clearfix, .container {
+  display:block;
+}
+.clear {
+  clear:both;
+}
+
+.inner, .editions, .blocks, .container, .content, .sidebar {
+  position: relative;
+}
 
 .container {
   max-width: 940px;
@@ -247,7 +260,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 65%;
   float: left;
   margin-right: 2.6%;
-  position: relative;
 }
 
 /* sidebar */
