@@ -1,16 +1,14 @@
 /* ie.css */
 
-.container {text-align:left;}
+.container {
+  text-align: left;
+}
 
 .page_header,
 .editions,
 .edition_list li,
 .ie_buggy { 
   zoom: 1; 
-}
-
-.edition_list li {
-  display: inline-block;
 }
 
 /* Makes clearfix actually work in IE */
