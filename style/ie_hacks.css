@@ -9,17 +9,19 @@
   zoom: 1; 
 }
 
-.editions_list li {
+.edition_list li {
   display: inline-block;
 }
 
 /* Makes clearfix actually work in IE */
+.edition_list li,
 .inner, 
 .editions, 
 .blocks, 
 .clearfix, 
 .container { display:inline-block; }
 
+* html .edition_list li,
 * html .inner,
 * html .editions,
 * html .blocks,
