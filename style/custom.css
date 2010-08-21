@@ -613,20 +613,26 @@ a.anchor:hover {
 .caption {
   display: block;
   margin-bottom: 3em;
+  text-align: center;
+}
+
+.figure * {
+  text-align: left;
 }
 
 .caption {
   font-size: .75em;
   line-height: 2;
+}
+
+.figure .caption {
   text-align: center;
 }
 
-/* shrink large images to fit container, center images */
+/* shrink large images to fit container */
 
 .figure img {
   max-width: 100%;
-  display: block;
-  margin: 0 auto;
 }
 
 /* remove unneeded em dash from attribution divs */
