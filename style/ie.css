@@ -37,7 +37,3 @@ button, input.button {position:relative;top:0.25em;}
   display: inline; 
   overflow-x: hidden;
 }
-
-body {
-  background: green !important;
-}
