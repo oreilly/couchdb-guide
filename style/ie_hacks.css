@@ -8,3 +8,20 @@
 .ie_buggy { 
   zoom: 1; 
 }
+
+.editions_list li {
+  display: inline-block;
+}
+
+/* Makes clearfix actually work in IE */
+.inner, 
+.editions, 
+.blocks, 
+.clearfix, 
+.container { display:inline-block; }
+
+* html .inner,
+* html .editions,
+* html .blocks,
+* html .clearfix,
+* html .container { height:1%; }
