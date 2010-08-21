@@ -7,11 +7,19 @@ sub {vertical-align:text-bottom;}
 html>body p code {*white-space:normal;}
 hr {margin:-8px auto 11px;}
 img {-ms-interpolation-mode:bicubic;}
-.editions,
-.blocks,
-.clearfix, 
-.container {display:inline-block;}
-* html .clearfix, * html .container {height:1%;}
 fieldset {padding-top:0;}
 textarea {overflow:auto;}
 button, input.button {position:relative;top:0.25em;}
+
+/* Makes clearfix actually work in IE */
+.inner, 
+.editions, 
+.blocks, 
+.clearfix, 
+.container { display:inline-block; }
+
+* html .inner,
+* html .editions,
+* html .blocks,
+* html .clearfix,
+* html .container { height:1%; }

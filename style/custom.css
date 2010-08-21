@@ -217,7 +217,10 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 /* container */
 
-.inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;}
+/* clearfix */
+.inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
+  content:"\0020";display:block;height:0;clear:both;visibility:hidden;overflow:hidden;
+}
 .inner, .editions, .blocks, .clearfix, .container {display:block;}
 .clear {clear:both;}
 
