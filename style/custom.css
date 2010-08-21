@@ -235,6 +235,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 .inner, .editions, .blocks, .container, .content, .sidebar {
   position: relative;
+  line-height: 1.5;
 }
 
 .container {
