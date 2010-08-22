@@ -270,6 +270,11 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   margin-right: 0;
 }
 
+/* content footer with prev/next links */
+.content_footer {
+  clear: both;
+}
+
 
 /* layout */
 
