@@ -221,12 +221,10 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .edition_list:after, .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
   content:"\0020";
   display:block;
-  height:1em;
+  height:0;
   clear:both;
-/*  visibility:hidden; */
+  visibility:hidden;
   overflow:hidden;
-  
-  background: red;
 }
 .edition_list, .inner, .editions, .blocks, .clearfix, .container {
   display:block;
@@ -459,7 +457,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 40px;
   height: 40px;
   background: transparent url(../image/couchg_bubble_tri.png) no-repeat 50% 50%;
-  border: 1px solid blue;
   z-index: 100;
 }
 
