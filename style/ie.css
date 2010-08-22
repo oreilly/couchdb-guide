@@ -31,6 +31,7 @@ button, input.button {position:relative;top:0.25em;}
 }
 
 /* removes double margin bug */
+* html .aside,
 * html .logo,
 * html .search_box,
 * html .gttr,
