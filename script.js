@@ -13,6 +13,16 @@ for(i = 0; i < scripts.length; i++) {
     document.write("<script src='" + scripts[i] + "'></script>");
 }
 
+var condcoms = [
+    '<link rel="stylesheet" href="../style/ie_hacks.css" type="text/css" media="screen, projection">',
+    '<!--[if IE]><link rel="stylesheet" href="../style/ie_hacks.css" type="text/css" media="screen, projection"><![endif]-->',
+    '<!--[if lt IE 8]><link rel="stylesheet" href="../style/ie.css" type="text/css" media="screen, projection"><![endif]-->'
+];
+
+for(i = 0; i < condcoms.length; i++) {
+    document.write(condcoms[i]);
+}
+
 var urls = [
     ["/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
     ["/draft/([a-z]+).html", "build_draft"],
