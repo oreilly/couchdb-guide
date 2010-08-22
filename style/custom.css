@@ -707,8 +707,8 @@ pre {
   font-size: 12px;
 }
 
-
 .aside {
+  position: relative;
   font-size: 0.75em;
   line-height: 2;
   margin: .5em 0 1.5em -3em;
