@@ -261,6 +261,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 65%;
   float: left;
   margin-right: 2.6%;
+  background: red;
 }
 
 /* sidebar */
@@ -268,6 +269,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 32%;
   float: right;
   margin-right: 0;
+  background: blue;
 }
 
 
