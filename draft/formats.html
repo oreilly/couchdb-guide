@@ -12,12 +12,6 @@
 
 <h2 id="formats">Showing Documents in Custom Formats</h2>
 
-<div class="aside note">
-
-<p>test aside Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
-
-</div>
-
 <p>CouchDB’s show functions are a RESTful API inspired by a similar feature in Lotus Notes. In a nutshell, they allow you to serve documents to clients, in any format you choose.
 
 <p>A show function builds an HTTP response with any Content-Type, based on a stored JSON document. For Sofa, we’ll use them to show the blog post permalink pages. This will ensure that these pages are indexable by search engines, as well as make the pages more accessible. Sofa’s show function displays each blog post as an HTML page, with links to stylesheets and other assets, which are stored as attachments to Sofa’s design document.
