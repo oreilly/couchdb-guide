@@ -397,7 +397,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .edition_list {
   margin: 0 0 1em 0;
   clear: both;
-  border: 1px solid blue;
   overflow: hidden;
 }
 

@@ -17,11 +17,15 @@
 .editions, 
 .blocks, 
 .clearfix, 
-.container { display:inline-block; }
+.container { 
+  display: inline-block; 
+}
 
 * html .edition_list,
 * html .inner,
 * html .editions,
 * html .blocks,
 * html .clearfix,
-* html .container { height:1%; }
+* html .container { 
+  height: 1%; 
+}
