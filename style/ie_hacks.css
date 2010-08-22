@@ -4,10 +4,8 @@
   text-align: left;
 }
 
-.aside,
 .page_header,
 .editions,
-.edition_list li,
 .ie_buggy { 
   zoom: 1; 
 }
@@ -29,4 +27,9 @@
 * html .clearfix,
 * html .container { 
   height: 1%; 
+}
+
+/* fixes max-width for images in IE8 */
+.figure img {
+  width: 100%;
 }

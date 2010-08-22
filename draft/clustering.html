@@ -12,21 +12,6 @@
 
 <h2 id="clustering">Clustering</h2>
 
-<div class="aside note">
-
-<p>test aside Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
-
-</div>
-
-
-<div class="figure" id="figure/1">
-
-<img src="managing/01.png">
-
-<p class="caption">Figure 1. A happy bird to ease any install-induced frustration
-
-</div>
-
 <p>OK, you’ve made it this far. I’m assuming you more or less understand what CouchDB is and how the application API works. Maybe you’ve deployed an application or two, and now you’re dealing with enough traffic that you need to think about scaling. “Scaling” is an imprecise word, but in this chapter we’ll be dealing with the aspect of putting together a partitioned or sharded cluster that will have to grow at an increasing rate over time from day one.
 
 <p>We’ll look at request and response dispatch in a CouchDB cluster with stable nodes. Then we’ll cover how to add redundant hot-failover twin nodes, so you don’t have to worry about losing machines. In a large cluster, you should plan for 5–10% of your machines to experience some sort of failure or reduced performance, so cluster design must prevent node failures from affecting reliability. Finally, we’ll look at adjusting cluster layout dynamically by splitting or merging nodes using replication.

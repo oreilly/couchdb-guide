@@ -631,28 +631,27 @@ a.anchor:hover {
 
 .figure img {
   margin-bottom: .5em;
-  width: 100%;
   max-width: 100%;
 }
 
 /* remove unneeded em dash from attribution divs */
 
 .attribution::before {
-    content: "";
+  content: "";
 }
 
 /* fix up sidebar TOC with shrinking font sizes */
 
 .sidebar ul {
-    font-size: 0.9em;
-    padding-left: 2em;
-    list-style-type: square;
+  font-size: 0.9em;
+  padding-left: 2em;
+  list-style-type: square;
 }
 
 /* add disabled class for inactive navigation links */
 
 .disabled {
-    color: #BBB;
+  color: #BBB;
 }
 
 /* make links stand out on dark background, as in info_bubble and footer */
