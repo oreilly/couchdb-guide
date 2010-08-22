@@ -218,7 +218,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 /* container */
 
 /* clearfix */
-.edition_list li:after, .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
+.edition_list:after, .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
   content:"\0020";
   display:block;
   height:1em;
@@ -228,7 +228,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   
   background: red;
 }
-.edition_list li, .inner, .editions, .blocks, .clearfix, .container {
+.edition_list, .inner, .editions, .blocks, .clearfix, .container {
   display:block;
 }
 .clear {
@@ -373,7 +373,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 /* modules */
 .stage,
 .info_bubble,
-.edition_list > li,
+.edition_list,
 .inner {
   padding: 1em 1.5em 1em 1.5em;
   background: #FFF;
@@ -393,23 +393,15 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 /* bold list of editions on startpage */
-.edition_list div {
-  /* span4 last */
-}
 
 .edition_list {
-  margin: 0 0 1.5em 0;
-  padding: 0;
-  list-style: none;
-}
-
-.edition_list li {
   margin: 0 0 1em 0;
   clear: both;
-  border: 1px solid green;
+  border: 1px solid blue;
+  overflow: hidden;
 }
 
-.edition_list li p {
+.edition_list p {
   margin-bottom: 0;
   font-style: italic;
 }
@@ -421,7 +413,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   font-weight: bold;
 }
 
-.edition_list ul  {
+.edition_list ul {
   margin: 0;
   padding: 0;
   list-style: none;

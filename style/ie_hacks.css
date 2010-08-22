@@ -12,14 +12,14 @@
 }
 
 /* Makes clearfix actually work in IE */
-.edition_list li,
+.edition_list,
 .inner, 
 .editions, 
 .blocks, 
 .clearfix, 
 .container { display:inline-block; }
 
-* html .edition_list li,
+* html .edition_list,
 * html .inner,
 * html .editions,
 * html .blocks,
