@@ -14,12 +14,6 @@
 
 <p><em>Documents</em> are CouchDB’s central data structure. To best understand and use CouchDB, you need to <em>think in documents</em>. This chapter walks you though the lifecycle of designing and saving a document. We’ll follow up by reading documents and aggregating and querying them with views. In the next section, you’ll see how CouchDB can also transform documents into other formats.
 
-<div class="aside note">
-
-<p>test aside Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam
-
-</div>
-
 <p>Documents are self-contained units of data. You might have heard the term <em>record</em> to describe something similar. Your data is usually made up of small native types such as integers and strings. Documents are the first level of abstraction over these native types. They provide some structure and logically group the primitive data. The height of a person might be encoded as an integer (<code>176</code>), but this integer is usually part of a larger structure that contains a label (<code>"height": 176</code>) and related data (<code>{"name":"Chris", "height": 176}</code>).
 
 <p>How many data items you put into your documents depends on your application and a bit on how you want to use views (later), but generally, a document roughly corresponds to an object instance in your programming language. Are you running an online shop? You will have <em>items</em> and <em>sales</em> and <em>comments</em> for your items. They all make good candidates for objects and, subsequently, documents.

@@ -626,6 +626,7 @@ a.anchor:hover {
 /* shrink large images to fit container */
 
 .figure img {
+  width: 100%;
   max-width: 100%;
 }
 
