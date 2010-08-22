@@ -711,10 +711,9 @@ pre {
 
 .aside {
   position: relative;
-  left: -3em;
   font-size: 0.75em;
   line-height: 2;
-  margin: .5em -3em 1.5em 0;
+  margin: .5em 0 1.5em -3em;
   padding: 2.5em 2em 0 6.5em;
   border-bottom: 1px solid #CCC;
   background: #FFF url(../image/couchg_bg_aside.png) no-repeat 0 0;
