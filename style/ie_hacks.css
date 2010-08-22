@@ -10,6 +10,15 @@
   zoom: 1; 
 }
 
+.aside {
+  position: relative;
+  height: 0;
+}
+
+* html .aside {
+  zoom: 1;
+}
+
 /* Makes clearfix actually work in IE */
 .edition_list,
 .inner, 
@@ -32,4 +41,8 @@
 /* fixes max-width for images in IE8 */
 .figure img {
   width: 100%;
+}
+
+body {
+  background: red !important;
 }
