@@ -261,7 +261,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 65%;
   float: left;
   margin-right: 2.6%;
-  background: red;
 }
 
 /* sidebar */
@@ -269,7 +268,6 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 32%;
   float: right;
   margin-right: 0;
-  background: blue;
 }
 
 
@@ -608,7 +606,7 @@ a.anchor:hover {
 .figure, 
 .caption {
   display: block;
-  margin-bottom: 3em;
+  margin-bottom: 1.5em;
   text-align: center;
 }
 
@@ -617,8 +615,7 @@ a.anchor:hover {
 }
 
 .caption {
-  font-size: .75em;
-  line-height: 2;
+  font-size: .875em;
 }
 
 .figure .caption {
@@ -628,6 +625,7 @@ a.anchor:hover {
 /* shrink large images to fit container */
 
 .figure img {
+  margin-bottom: .5em;
   width: 100%;
   max-width: 100%;
 }
