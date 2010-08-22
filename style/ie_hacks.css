@@ -29,3 +29,7 @@
 * html .container { 
   height: 1%; 
 }
+
+body {
+  background: red !important;
+}
