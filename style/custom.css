@@ -448,6 +448,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   min-height: 9em;
   height: auto !important;
   height: 9em;
+  z-index: 0;
 }
 
 .info_bubble.startpage span {
@@ -458,7 +459,8 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   width: 40px;
   height: 40px;
   background: transparent url(../image/couchg_bubble_tri.png) no-repeat 50% 50%;
-  border: 1px solid green;
+  border: 1px solid blue;
+  z-index: 100;
 }
 
 /* footer */
