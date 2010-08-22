@@ -389,7 +389,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .stage {
   margin-bottom: 1.5em;
   padding: 3em 50% 1.5em 3em;
-  background: #FFF url('../image/couchdb_book.png') no-repeat 120% 50%;
+  background: #FFF url(../image/couchdb_book.png) no-repeat 120% 50%;
 }
 
 /* bold list of editions on startpage */
@@ -446,7 +446,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .info_bubble.startpage {
   padding-bottom: 1em;
   min-height: 9em;
-  height:auto !important;
+  height: auto !important;
   height: 9em;
 }
 
@@ -457,12 +457,13 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   left: -2em;
   width: 40px;
   height: 40px;
-  background: transparent url('../image/couchg_bubble_tri.png') no-repeat 50% 50%;
+  background: transparent url(../image/couchg_bubble_tri.png) no-repeat 50% 50%;
+  border: 1px solid green;
 }
 
 /* footer */
 .footer {
-  background: #4A4A4A url('../image/couchg_bg_footer.png') repeat-x 0 0;
+  background: #4A4A4A url(../image/couchg_bg_footer.png) repeat-x 0 0;
   margin: 1.5em 0 0 0;
   padding: 1.5em 0 0 0;
   overflow: hidden;
@@ -682,8 +683,8 @@ iframe {
 /* fix up iframe document styles */
 
 .buybuttonswidget {
-    padding-bottom: 100px;
-    background: #FFF;
+  padding-bottom: 100px;
+  background: #FFF;
 }
 
 /* fix up pre overflow */
@@ -711,15 +712,15 @@ pre {
   margin: .5em 0 1.5em -3em;
   padding: 2.5em 2em 0 6.5em;
   border-bottom: 1px solid #CCC;
-  background: #F6f6F6 url('../image/couchg_bg_aside.png') no-repeat 0 0;
+  background: #F6f6F6 url(../image/couchg_bg_aside.png) no-repeat 0 0;
 }
 
 .aside.note {
-  background-image: url('../image/couchg_bg_aside_note.png');
+  background-image: url(../image/couchg_bg_aside_note.png);
 }
 
 .aside.warning {
-  background-image: url('../image/couchg_bg_aside_warning.png');
+  background-image: url(../image/couchg_bg_aside_warning.png);
   
 }
 
@@ -744,7 +745,7 @@ pre {
     left: 2em;
     width: 40px;
     height: 40px;
-    background: transparent url('../image/couchg_bubble_tri_up.png') no-repeat 50% 50%;
+    background: transparent url(../image/couchg_bubble_tri_up.png) no-repeat 50% 50%;
   }
   
   
