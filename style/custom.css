@@ -221,10 +221,12 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .edition_list li:after, .inner:after, .editions:after, .blocks:after, .clearfix:after, .container:after {
   content:"\0020";
   display:block;
-  height:0;
+  height:1em;
   clear:both;
-  visibility:hidden;
+/*  visibility:hidden; */
   overflow:hidden;
+  
+  background: red;
 }
 .edition_list li, .inner, .editions, .blocks, .clearfix, .container {
   display:block;
@@ -404,6 +406,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 .edition_list li {
   margin: 0 0 1em 0;
   clear: both;
+  border: 1px solid green;
 }
 
 .edition_list li p {
@@ -776,3 +779,4 @@ pre {
   input[type="text"] {
     width: 100px;
   }
+  
