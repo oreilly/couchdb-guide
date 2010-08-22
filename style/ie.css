@@ -30,7 +30,7 @@ button, input.button {position:relative;top:0.25em;}
   height: 1%; 
 }
 
-/* remove double margin bug */
+/* removes double margin bug */
 * html .logo,
 * html .search_box,
 * html .gttr,
