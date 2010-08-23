@@ -446,6 +446,10 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   overflow: visible;
 }
 
+.info_bubble p {
+  margin-bottom: 0;
+}
+
 /* info bubble on startpage */
 .info_bubble.startpage {
   padding-bottom: 1em;
@@ -464,6 +468,11 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   height: 40px;
   background: transparent url(../../image/bubble/left.png) no-repeat 50% 50%;
   z-index: 100;
+}
+
+/* blocks */
+.blocks > div {
+  margin-bottom: 1.5em;
 }
 
 /* footer */
@@ -737,10 +746,11 @@ pre {
     float: none;
   }
 
-  .info_bubble {
-    min-height: 2em;
-    height:auto !important;
-    height: 2em;
+  .info_bubble.startpage {
+    min-height: 1em;
+    height: auto !important;
+    height: 1em;
+    margin-bottom: 1.5em;
   }
 
   .info_bubble.startpage span {
