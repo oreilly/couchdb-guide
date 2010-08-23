@@ -1,15 +1,3 @@
-@import url("style/custom.css");
+@import url("style/all/base.css") all;
 
-/* @@ only import this if any version of IE */
-
-/* @import url("style/ie_hacks.css"); */
-
-
-/* @@ only import this if less than IE 8 */
-
-/* @import url("style/ie.css"); */
-
-
-/* @@ only import this if print */
-
-/* @import url("style/print.css") print; */
+@import url("style/print/base.css") print;

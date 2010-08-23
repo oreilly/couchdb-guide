@@ -1,0 +1,44 @@
+/* ie.css */
+
+.container {
+  text-align: left;
+}
+
+.page_header,
+.editions,
+.ie_buggy { 
+  zoom: 1; 
+}
+
+.aside {
+  position: relative;
+  height: 0;
+}
+
+* html .aside {
+  zoom: 1;
+}
+
+/* Makes clearfix actually work in IE */
+.edition_list,
+.inner, 
+.editions, 
+.blocks, 
+.clearfix, 
+.container { 
+  display: inline-block; 
+}
+
+* html .edition_list,
+* html .inner,
+* html .editions,
+* html .blocks,
+* html .clearfix,
+* html .container { 
+  height: 1%; 
+}
+
+/* fixes max-width for images in IE8 */
+.figure img {
+  width: 100%;
+}

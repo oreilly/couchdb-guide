@@ -14,8 +14,8 @@ for(i = 0; i < scripts.length; i++) {
 }
 
 var condcoms = [
-    '<!--[if lte IE 8]><link rel="stylesheet" href="../style/ie_hacks.css" type="text/css" media="screen, projection"><![endif]-->',
-    '<!--[if lt IE 8]><link rel="stylesheet" href="../style/ie.css" type="text/css" media="screen, projection"><![endif]-->'
+    "<!--[if lte IE 8]><link rel='stylesheet' href='../style/all/lteie8.css'><![endif]-->",
+    "<!--[if lt IE 8]><link rel='stylesheet' href='../style/all/ltie8.css'><![endif]-->"
 ];
 
 for(i = 0; i < condcoms.length; i++) {

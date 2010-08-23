@@ -1,0 +1,47 @@
+/* ie.css */
+body {text-align:center;}
+.container {text-align:left;}
+* html legend {margin:0px -8px 16px 0;padding:0;}
+sup {vertical-align:text-top;}
+sub {vertical-align:text-bottom;}
+html>body p code {*white-space:normal;}
+hr {margin:-8px auto 11px;}
+img {-ms-interpolation-mode:bicubic;}
+fieldset {padding-top:0;}
+textarea {overflow:auto;}
+button, input.button {position:relative;top:0.25em;}
+
+/* Makes clearfix actually work in IE */
+.edition_list,
+.inner, 
+.editions, 
+.blocks, 
+.clearfix, 
+.container { 
+  display: inline-block; 
+}
+
+* html .edition_list,
+* html .inner,
+* html .editions,
+* html .blocks,
+* html .clearfix,
+* html .container { 
+  height: 1%; 
+}
+
+/* removes double margin bug */
+* html .logo,
+* html .search_box,
+* html .gttr,
+* html .content,
+* html .sidebar,
+* html .span2, 
+* html .span3, 
+* html .span4, 
+* html .span6, 
+* html .span8, 
+* html .span10 {
+  display: inline; 
+  overflow-x: hidden;
+}
