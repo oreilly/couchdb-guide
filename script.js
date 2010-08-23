@@ -146,7 +146,8 @@ function add_notice_edition(edition) {
 function add_prev_link() {
     prev_url = $("link/[rel='prev']").attr("href");
     if (prev_url) {
-        $(".sidebar, .content_footer").append(
+        // .sidebar, .content_footer
+        $(".sidebar").append(
             "<h3><a href='" + prev_url + "'>Previous Page</a></h3>"
         );
     } else {
@@ -159,7 +160,8 @@ function add_prev_link() {
 function add_next_link() {
     next_url = $("link/[rel='next']").attr("href");
     if (next_url) {
-        $(".sidebar, .content_footer").append(
+        // .sidebar, .content_footer
+        $(".sidebar").append(
             "<h3><a href='" + next_url + "'>Next Page</a></h3>"
         );
     } else {
