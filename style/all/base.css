@@ -679,16 +679,14 @@ a.anchor:hover {
 
 iframe {
   width: 100%;
-  min-height: 28em;
-  height:auto !important;
-  height: 28;
+  height: 360px;
   overflow: hidden;
 }
 
 /* fix up iframe document styles */
 
 .buybuttonswidget {
-  padding-bottom: 100px;
+  padding-bottom: 10px;
   background: #FFF;
 }
 
