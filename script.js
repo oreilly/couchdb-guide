@@ -106,8 +106,12 @@ function template() {
     }
     $("div.body").html(contents);
     $("div.buy").html(
-        '<iframe src="buy.html" scrolling="no"></iframe>'
+        '<iframe id="buy" scrolling="no"></iframe>'
     );
+    $("#buy").load(function() {
+        $("iframe").contents().find("a").attr("target", "_blank");
+    });
+    $("#buy").attr("src", "buy.html");
 }
 
 function link_logo(url) {
