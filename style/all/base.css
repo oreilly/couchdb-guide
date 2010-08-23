@@ -240,7 +240,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 
 .container {
   max-width: 940px;
-  width: expression(this.width > 940 ? 940: true);
+  width:expression(document.body.clientWidth > 940? "940px": "auto" );
   margin: 0 auto;
   padding: 0 16px;
   text-align: left;
