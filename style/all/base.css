@@ -495,6 +495,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   margin-top: .5em;
   padding: .5em 1px 0 1px;
   overflow: hidden;
+  clear: both;
 }
 
 .shopping_cart_button_line:first-child {
