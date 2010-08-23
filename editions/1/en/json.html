@@ -1,0 +1,113 @@
+<title>JSON Primer</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="source.html">
+
+<link rel="next" href="btree.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="json">JSON Primer</h2>
+
+<p>CouchDB uses <em>JavaScript Object Notation</em> (JSON) for data storage, a lightweight format based on a subset of JavaScipt syntax. One of the best bits about JSON is that it’s easy to read and write by hand, much more so than something like XML. We can parse it naturally with JavaScript because it shares part of the same syntax. This really comes in handy when we’re building dynamic web applications and we want to fetch some data from the server.
+
+<p>Here’s a sample JSON document:
+
+<pre>
+{
+    "Subject": "I like Plankton",
+    "Author": "Rusty",
+    "PostedDate": "2006-08-15T17:30:12-04:00",
+    "Tags": [
+        "plankton",
+        "baseball",
+        "decisions"
+    ],
+    "Body": "I decided today that I don't like baseball. I like plankton."
+}
+</pre>
+
+<p>You can see that the general structure is based around key/value pairs and lists of things.
+
+<h3 id="types">Data Types</h3>
+
+<p>JSON has a number of basic data types you can use. We’ll cover them all here.
+
+<h4 id="numbers">Numbers</h4>
+
+<p>You can have positive integers: <code>"Count": 253</code>
+
+<p>Or negative integers: <code>"Score": -19</code>
+
+<p>Or floating-point numbers: <code>"Area": 456.31</code>
+
+<div class="aside warning">
+
+<p>There is a subtle but important difference between floating-point numbers and decimals. When you use a number like <code>15.7</code>, this will be interpreted as <code>15.699999999999999</code> by most clients, which may be problematic for your application. For this reason, currency values are usually better represented as strings in JSON. A string like <code>"15.7"</code> will be interpreted as <code>"15.7"</code> by every JSON client.
+
+</div>
+
+<p>Or scientific notation: <code>"Density": 5.6e+24</code>
+
+<h4 id="strings">Strings</h4>
+
+<p>You can use strings for values:
+
+<pre>
+"Author": "Rusty"
+</pre>
+
+<p>You have to escape some special characters, like tabs or newlines:
+
+<pre>
+"poem": "May I compare thee to some\n\tsalty plankton."
+</pre>
+
+<p>The <a href="http://www.json.org">JSON site</a> has details on what needs to be escaped.
+
+<h4 id="booleans">Booleans</h4>
+
+<p>You can have boolean true values:
+
+<pre>
+"Draft": true
+</pre>
+
+<p>Or boolean false values:
+
+<pre>
+"Draft": false
+</pre>
+
+<h4 id="arrays">Arrays</h4>
+
+<p>An array is a list of values:
+
+<pre>
+"Tags": ["plankton", "baseball", "decisions"]
+</pre>
+
+<p>An array can contain any other data type, including arrays:
+
+<pre>
+"Context": ["dog", [1, true], {"Location": "puddle"}]
+</pre>
+
+<h4 id="objects">Objects</h4>
+
+<p>An object is a list of key/value pairs:
+
+<pre>
+{"Subject": "I like Plankton", "Author": "Rusty"}
+</pre>
+
+<h4 id="nulls">Nulls</h4>
+
+<p>You can have null values:
+
+<pre>
+"Surname": null
+</pre>
