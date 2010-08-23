@@ -14,8 +14,8 @@ for(i = 0; i < scripts.length; i++) {
 }
 
 var condcoms = [
-    "<!--[if lte IE 8]><link rel='stylesheet' href='../style/all/lteie8.css'><![endif]-->",
-    "<!--[if lt IE 8]><link rel='stylesheet' href='../style/all/ltie8.css'><![endif]-->"
+    "<!--[if lte IE 8]><link rel='stylesheet' href='../style/all/lte/ie8.css'><![endif]-->",
+    "<!--[if lt IE 8]><link rel='stylesheet' href='../style/all/lt/ie8.css'><![endif]-->"
 ];
 
 for(i = 0; i < condcoms.length; i++) {
@@ -267,7 +267,7 @@ document.onready = function() {
         template();
         build();
         autolink();
-        // track();
+        track();
     } catch (error) {
         // uh oh
     }
