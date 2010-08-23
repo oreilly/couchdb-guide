@@ -331,6 +331,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 /* header */
 .page_header {
   overflow: hidden;
+  padding: 0 0 .2em 0;
   margin: 1.5em 0;
 }
 
