@@ -265,7 +265,7 @@ function autolink() {
 }
 
 function track() {
-    _gat._getTracker("UA-17867702-1")._trackPageview();
+    _gat._getTracker("UA-2812942-3")._trackPageview();
 }
 
 document.onready = function() {
