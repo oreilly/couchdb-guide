@@ -1,4 +1,4 @@
-<title>Why CouchDB?</title>
+<title>Warum CouchDB?</title>
 
 <meta charset="utf-8">
 
@@ -10,69 +10,69 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="why">Why CouchDB?</h2>
+<h2 id="why">Warum CouchDB?</h2>
 
-<p>Apache CouchDB is one of a new breed of database management systems. This chapter explains why there’s a need for new systems as well as the motivations behind building CouchDB.
+<p>Apache CouchDB ist eine neue Art von Datenbank System. Dieses Kapitel soll erläutern, warum es einen Bedarf für solche Systeme gibt als auch die Motivation erklären, die hinter der Entwicklung von CouchDB steckt.
 
-<p>As CouchDB developers, we’re naturally very excited to be using CouchDB. In this chapter we’ll share with you the reasons for our enthusiasm. We’ll show you how CouchDB’s schema-free document model is a better fit for common applications, how the built-in query engine is a powerful way to use and process your data, and how CouchDB’s design lends itself to modularization and scalability.
+<p>Als CouchDB Entwickler haben wir natürlich ein starkes Interesse daran, CouchDB zu benutzen. In diesem Kapitel wollen wir erklären, worin unser Enthusiasmus liegt. Wir werden zeigen, warum das schemafreie Dokumenten Modell von CouchDB besser für Web Anwendungen ist. Warum die eingebaute Query-Engine ein guter Weg ist, die gespeicherten Daten zu lesen und zu verarbeiten und wie das Design von CouchDB Modularisierung und Skalierbarkeit fördert.
+ 
+<h3 id="relax">Entspann Dich</h3>
 
-<h3 id="relax">Relax</h3>
-
-<p>If there’s one word to describe CouchDB, it is <em>relax</em>. It is in the title of this book, it is the byline to CouchDB’s official logo, and when you start CouchDB, you see:
+<p>Falls man CouchDB mit einem Begriff beschreiben sollte, so ist es <em>Entspann Dich</em>. Es ist der Titel dieses Buches, die Byline von CouchDBs offiziellem Logo und wenn man CouchDB startet, steht dort:
 
 <pre>
 Apache CouchDB has started. Time to relax.
 </pre>
 
-<p>Why is relaxation important? Developer productivity roughly doubled in the last five years. The chief reason for the boost is more powerful tools that are easier to use. Take Ruby on Rails as an example. It is an infinitely complex framework, but it’s easy to get started with. Rails is a success story because of the core design focus on ease of use. This is one reason why CouchDB is relaxing: learning CouchDB and understanding its core concepts should feel natural to most everybody who has been doing any work on the Web. And it is still pretty easy to explain to non-technical people.
+<p>Warum ist Entspannung wichtig? Die Produktivität von Entwicklern hat sich in den letzten fünf Jahren verdoppelt. Für diesen Schub sind hauptsächlich bessere Tools, die gleichzeitig einfacher zu bedienen sind, verantwortlich. Wenn man &quot;Ruby on Rails&quot; als Beispiel nimmt, so sieht man ein unendlich komplexes Framework mit dem der Einstieg jedoch sehr leicht ist. Rails ist eine Erfolgsgeschichte weil das Hauptziel der Entwicklung auf der einfachen Bedienung lag. Das ist einer der Gründe, warum CouchDB entspannend ist. Das Verstehen der Grundkonzepte von CouchDB fühlt sich für jeden natürlich an, der in irgendeiner Form mit dem Web arbeitet. Selbst nicht-technischen Leuten ist es relativ einfach zu vermitteln.
 
-<p>Getting out of the way when creative people try to build specialized solutions is in itself a core feature and one thing that CouchDB aims to get right. We found existing tools too cumbersome to work with during development or in production, and decided to focus on making CouchDB easy, even a pleasure, to use. Chapters <a href="tour.html">3</a> and <a href="api.html">4</a> will demonstrate the intuitive HTTP-based REST API.
+<p>Nicht im Weg zu stehen, wenn kreative Menschen versuchen ein Problem zu lösen ist eine der wichtigsten Eigenschaften - eine, die CouchDB versucht gut erfüllen. Für uns waren die bestehenden Tools zu schwerfällig - sowohl während der Entwicklung als auch während des Betriebs. Deshalb haben wir uns darauf konzentriert, CouchDB so einfach wie möglich zu halten und es spielend leicht bedienen zu können. Die Kapitel <a href="tour.html">3</a> und <a href="api.html">4</a> zeigen das intuitive HTTP basierte REST API.
 
-<p>Another area of relaxation for CouchDB users is the production setting. If you have a live running application, CouchDB again goes out of its way to avoid troubling you. Its internal architecture is fault-tolerant, and failures occur in a controlled environment and are dealt with gracefully. Single problems do not cascade through an entire server system but stay isolated in single requests.
+<p>Ein weiterer Bereich der Entspannung ist der Produktivbetrieb. Im Betrieb mit einer Anwendung, die von echten Benutzern benutzt wird, versucht CouchDB sein möglichstes, um den Administrator in Ruhe zu lassen. Die interne Architektur ist fehlertolerant und Ausnahmen finden in einer kontrollierten Umgebung statt und werden ordentlich bearbeitet. Einzelne Fehler rauschen nicht durch das ganze System nach oben sondern bleiben auf den einen Request beschränkt.
 
-<p>CouchDB’s core concepts are simple (yet powerful) and well understood. Operations teams (if you have a team; otherwise, that’s you) do not have to fear random behavior and untraceable errors. If anything should go wrong, you can easily find out what the problem is—but these situations are rare.
+<p>Die Konzepte von CouchDB sind einfach, dennoch mächtig und gut dokumentiert. Das Produktionsteam (falls es ein Team gibt, andernfalls sind das sie) brauchen keine Sorgen vor unvorhersagbarem Verhalten und schwer nachvollziehbaren Fehlern zu haben. Falls etwas schief gehen sollte, kann man einfach herausfinden, wo das Problem liegt - doch diese Fälle sind selten.
 
-<p>CouchDB is also designed to handle varying traffic gracefully. For instance, if a website is experiencing a sudden spike in traffic, CouchDB will generally absorb a lot of concurrent requests without falling over. It may take a little more time for each request, but they all get answered. When the spike is over, CouchDB will work with regular speed again.
+<p>CouchDB ist von Anfang an darauf ausgelegt, mit wechselnder Last vernünftig umzugehen. Sollte eine Webseite auf einmal viele Requests bekommen, wird sie CouchDB einfach weiter beantworten ohne einen zu vergessen. Es mag unter Last etwas länger dauern, aber alle bekommen eine Antwort. Sobald der Ansturm vorüber ist, antwortet CouchDB wieder mit gewohnter Geschwindigkeit.
 
-<p>The third area of relaxation is growing and shrinking the underlying hardware of your application. This is commonly referred to as <em>scaling</em>. CouchDB enforces a set of limits on the programmer. On first look, CouchDB might seem inflexible, but some features are left out by design for the simple reason that if CouchDB supported them, it would allow a programmer to create applications that couldn’t deal with scaling up or down. We’ll explore the whole matter of scaling CouchDB in <a href="index.html#part/iv">Part IV, “Deploying CouchDB”</a>.
+<p>Der dritte Bereich der Entspannung sind die wechselnden Hardware Anforderungen ihrer Anwendung. Das wird üblicherweise mit <em>Skalierung</em> beschrieben. CouchDB setzt dem Programmierer Grenzen. Das mag auf den ersten Blick unflexibel erscheinen, doch manche Funktionen wurden ganz bewusst weggelassen. Sie wurden weggelassen, weil der Programmierer mit diesen Funktionen in der Lage gewesen wäre, Anwendungen zu schreiben, die nicht skalieren. Das Thema Skalierung von CouchDB wird in <a href="index.html#part/iv">Teil IV, “Deploying CouchDB”</a> ausführlich behandelt.
 
-<p>In a nutshell: CouchDB doesn’t let you do things that would get you in trouble later on. This sometimes means you’ll have to unlearn best practices you might have picked up in your current or past work. <a href="recipes.html">Chapter 24, Recipes</a> contains a list of common tasks and how to solve them in CouchDB.
+<p>Kurz gesagt: CouchDB erlaubt keine Dinge, die nachher Ärger machen. Das kann bedeuten, dass man alte Gewohnheiten über Bord werfen muß. In <a href="recipes.html">Kapitel 24, Rezepte</a> finden sich eine Liste von üblichen Aufgaben und wie man sie mit CouchDB löst.
 
-<h3 id="different">A Different Way to Model Your Data</h3>
+<h3 id="different">Ein anderer Weg Daten zu modellieren</h3>
 
-<p>We believe that CouchDB will drastically change the way you build document-based applications. CouchDB combines an intuitive document storage model with a powerful query engine in a way that’s so simple you’ll probably be tempted to ask, “Why has no one built something like this before?”
+<p>Wir glauben das CouchDB die Art, wie dokumentenbasierte Anwendungen gebaut werden, verändern wird. CouchDB verbindet ein intuitives Modell zum Speichern von Dokumenten kombiniert mit einer mächtigen Query-Engine, die so einfach ist, dass man sich fragt, warum das erst jetzt entwickelt wurde.
 
 <blockquote>
 
-<p>Django may be built <em>for</em> the Web, but CouchDB is built <em>of</em> the Web. I’ve never seen software that so completely embraces the philosophies behind HTTP. CouchDB makes Django look old-school in the same way that Django makes ASP look outdated.
+<p>Django mag <em>für</em> das Web gebaut worden sein, doch CouchDB ist <em>auf</em> dem Web gebaut. Ich habe bisher noch keine Software gesehen, welche die Philosophien von HTTP so vollständig umgesetzt hat. CouchDB lässt Django alt aussehen - genauso wie Django ASP hat alt aussehen lassen.
 
-<p class="attribution">&mdash;Jacob Kaplan-Moss, Django developer
+<p class="attribution">&mdash;Jacob Kaplan-Moss, Django Entwickler
 
 </blockquote>
 
-<p>CouchDB’s design borrows heavily from web architecture and the concepts of resources, methods, and representations. It augments this with powerful ways to query, map, combine, and filter your data. Add fault tolerance, extreme scalability, and incremental replication, and CouchDB defines a sweet spot for document databases.
+<p>Das Design von CouchDB bedient sich stark bei bestehenden Web Architekturen und den Konzepten von Resourcen, Methoden und Darstellungen. Es kombiniert diese Dinge in mächtiger Weise um Daten zu suchen, abzubilden, zu kombinieren und zu filtern. Hinzu kommen Fehlertoleranz, extreme Skalierbarkeit und inkrementelle Replikation. Damit definiert CouchDB genau den Sweet Spot für dokumentenbasierte Datenbanken.
 
-<h3 id="better">A Better Fit for Common Applications</h3>
+<h3 id="better">Ein besserer Ansatz für Standard Anwendungen</h3>
 
-<p>We write software to improve our lives and the lives of others. Usually this involves taking some mundane information—such as contacts, invoices, or receipts—and manipulating it using a computer application. CouchDB is a great fit for common applications like this because it embraces the natural idea of evolving, self-contained documents as the very core of its data model.
+<p>Wir schreiben Software, um unser Leben und das Leben anderer zu erleichtern. Dazu verwenden wir meistens einfache Informationen wie Kontakte, Rechnungen oder Quittungen und verarbeiten sie mithilfe von Computer Software. CouchDB ist ein guter Partner für solche Anwendungen, denn es arbeitet mit der natürlichen Idee von in sich abgeschlossenen Dokumenten, die alle notwendigen Informationen enthalten und mit der Zeit fortgeschrieben werden.
 
-<h4 id="containment">Self-Contained Data</h4>
+<h4 id="containment">In sich abgeschlossene Daten</h4>
 
-<p>An invoice contains all the pertinent information about a single transaction—the seller, the buyer, the date, and a list of the items or services sold. As shown in <a href="#figure/1">Figure 1, “Self-contained documents”</a>, there’s no abstract reference on this piece of paper that points to some other piece of paper with the seller’s name and address. Accountants appreciate the simplicity of having everything in one place. And given the choice, programmers appreciate that, too.
+<p>Eine Rechnung enthält alle notwendigen Informationen über einen einzelnen Vorgang. Den Verkäufer, den Käufer, das Datum und eine Auflistung der Dinge oder Dienste, die verkauft wurden. Wie in <a href="#figure/1">Abbildung 1, “In sich abgeschlossene Dokumente”</a> zu sehen ist, gibt es keine abstrakten Referenzen auf dem Stück Papier, die zu einem anderen Stück Papier verweisen, zum Beispiel mit dem Namen und der Adresse des Verkäufers. Buchhalter wissen es zu schätzen, alle Informationen auf einen Blick zu haben. Falls sie die Möglichkeit haben, bevorzugen Programmierer das auch. 
 
 <div class="figure" id="figure/1">
 
 <img src="why/01.png">
 
-<p class="caption">Figure 1. Self-contained documents
+<p class="caption">Abbildung 1: In sich abgeschlossene Dokumente
 
 </div>
 
-<p>Yet using references is exactly how we model our data in a relational database! Each invoice is stored in a table as a row that refers to other rows in other tables—one row for seller information, one for the buyer, one row for each item billed, and more rows still to describe the item details, manufacturer details, and so on and so forth.
+<p>Doch genau mit solchen Referenzen werden Daten in relationalen Datenbanken modelliert. Jede Rechnung wird als Zeile in einer Tabelle gespeichert. Diese Zeile verweist auf andere Zeilen in anderen Tabellen - eine für den Käufer, eine für den Verkäufer, eine für jedes Teil was verkauft wurde und noch mehr Zeilen, die wiederum die verkauften Teile genauer beschreiben. 
 
-<p>This isn’t meant as a detraction of the relational model, which is widely applicable and extremely useful for a number of reasons. Hopefully, though, it illustrates the point that sometimes your model may not “fit” your data in the way it occurs in the real world.
+<p>Damit soll der Wert von relationalen Modellen nicht geschmälert werden. Sie sind in vielen Anwendungen im Einsatz und haben sich aus verschiedenen Gründen als sehr nützlich erwiesen. Das vorangegange Beispiel sollte zeigen, dass manche Modelle sich nicht so gut für die Daten der realen Welt eignen.
 
-<p>Let’s take a look at the humble contact database to illustrate a different way of modeling data, one that more closely “fits” its real-world counterpart—a pile of business cards. Much like our invoice example, a business card contains all the important information, right there on the cardstock. We call this “self-contained” data, and it’s an important concept in understanding document databases like CouchDB.
+<p>Schauen wir auf eine einfache Adressdatenbank um einen anderen Ansatz zur Modellierung von Daten zu illustrieren. Ein Ansatz, der näher an der Realität ist, wie zum Beispiel ein Stapel Visitenkarten. Genau wie das Beispiel mit der Rechnung enthält eine Visitenkarte alle wichtigen Informationen auf einen Blick. Wir nennen das "in sich abgeschlossene Daten" und es ist ein wichtiges Konzept beim Verständnis von dokumentenbasierten Datenbanken wie CouchDB.
 
 <h4 id="information">Syntax and Semantics</h4>
 

@@ -1,7 +1,7 @@
 var lastest_edition = "1";
 
 var languages = {
-    "de": "Deutsch"
+    "en": "English"
 };
 
 var scripts = [
@@ -43,14 +43,14 @@ function get_header() {
       <div class="page_header">\
         <h1 class="logo">\
           <a href="#" title="home">\
-            CouchDB <span>Die Definitive Referenz</span>\
+            CouchDB <span>The Definitive Guide</span>\
           </a>\
         </h1>\
         <div class="search_box">\
           <form class="search" action="http://www.google.com/search">\
-            <input type="hidden" name="as_sitesearch" value="go-left.com/couchdb-guide">\
+            <input type="hidden" name="as_sitesearch" value="guide.couchdb.org">\
             <input type="text" name="as_q" value="" class="search_field">\
-            <input type="submit" value="Suchen" class="search_btn" />\
+            <input type="submit" value="Search" class="search_btn" />\
           </form>\
         </div>\
       </div>\
@@ -61,18 +61,16 @@ function get_footer() {
     return '\
       <div class="footer">\
         <div class="container">\
-          <p>Ein\
+          <p>An\
           <a href="http://oreilly.com/">O&rsquo;Reilly</a>\
-          Buch über\
+          book about\
           <a href="http://couchdb.apache.org/">CouchDB</a>\
-          von\
+          by\
           <a href="http://jchrisa.net/">J. Chris Anderson</a>\
           ,\
           <a href="http://jan.prima.de/">Jan Lehnardt</a>\
-          und\
-          <a href="http://nslater.org/">Noah Slater</a>.\
-          Deutsche Übersetzung von\
-          <a href="http://go-left.com/">Frank Schröder</a>\
+          &\
+          <a href="http://nslater.org/">Noah Slater</a>\
         </div>\
       </div>\
     ';
@@ -127,9 +125,9 @@ function add_notice(text) {
 function add_notice_draft() {
     add_notice('\
         <p class="inner info_bubble">\
-            Diese Ausgabe des Buchs ist noch in Arbeit. Bitte\
-            <a href="http://github.com/oreilly/couchdb-guide/issues">sagen\
-            sie uns</a> wo Fehler sind und was wir besser machen können.\
+            This edition of the book is a work in progress. Please\
+            <a href="http://github.com/oreilly/couchdb-guide/issues">create\
+            a ticket</a> for any corrections or suggestions you may have.\
         </p>\
     ');
 }
@@ -141,9 +139,9 @@ function add_notice_edition(edition) {
     if (edition != lastest_edition) {
         add_notice('\
             <p class="inner info_bubble">\
-                Dies ist eine alte Ausgabe des Buchs.\
-                Bitte benutzen sie die <a href="' + href + '">aktuelle Ausgabe</a> für\
-                aktuellere Informationen.\
+                This is an outdated edition of the book.\
+                Please use the <a href="' + href + '">latest edition</a> for\
+                more up-to-date information.\
             </p>\
         ');
     }
@@ -154,11 +152,11 @@ function add_prev_link() {
     if (prev_url) {
         // .sidebar, .content_footer
         $(".sidebar").append(
-            "<h3><a href='" + prev_url + "'>Vorherige Seite</a></h3>"
+            "<h3><a href='" + prev_url + "'>Previous Page</a></h3>"
         );
     } else {
         $(".sidebar").append(
-            "<h3 class='disabled'>Vorherige Seite</h3>"
+            "<h3 class='disabled'>Previous Page</h3>"
         );
     }
 }
@@ -168,11 +166,11 @@ function add_next_link() {
     if (next_url) {
         // .sidebar, .content_footer
         $(".sidebar").append(
-            "<h3><a href='" + next_url + "'>Nächste Seite</a></h3>"
+            "<h3><a href='" + next_url + "'>Next Page</a></h3>"
         );
     } else {
         $(".sidebar").append(
-            "<h3 class='disabled'>Nächste Seite</h3>"
+            "<h3 class='disabled'>Next Page</h3>"
         );
     }
 }
@@ -199,7 +197,7 @@ function add_toc() {
         old_depth = new_depth;
     });
     html += "</li></ul>";
-    $(".sidebar").append("<h3>Aktuelle Seite</h3>");
+    $(".sidebar").append("<h3>Current Page</h3>");
     $(".sidebar").append(html);
 }
 
@@ -217,10 +215,10 @@ function build_edition(matches) {
     var edition = matches[1];
     var language = languages[matches[2]];
     var page = matches[3];
-    var edition_text = "Ausgabe " + edition + " (" + language + ")";
+    var edition_text = "Edition " + edition + " (" + language + ")";
     link_logo("../../../index.html");
     add_notice_edition(edition);
-    $(".sidebar").append("<h3><a href='../../../index.html'>Anfang</a></h3>");
+    $(".sidebar").append("<h3><a href='../../../index.html'>Home</a></h3>");
     if (page == "index") {
         $(".sidebar").append(
             "<h3>" + edition_text + "</h3>"
@@ -239,7 +237,7 @@ function build_draft(matches) {
     var page = matches[1];
     link_logo("../index.html");
     add_notice_draft();
-    $(".sidebar").append("<h3><a href='../index.html'>Anfang</a></h3>");
+    $(".sidebar").append("<h3><a href='../index.html'>Home</a></h3>");
     if (page == "index") {
         $(".sidebar").append(
             "<h3>Draft Edition</h3>"
