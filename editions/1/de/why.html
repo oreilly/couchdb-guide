@@ -74,15 +74,15 @@ Apache CouchDB has started. Time to relax.
 
 <p>Schauen wir auf eine einfache Adressdatenbank um einen anderen Ansatz zur Modellierung von Daten zu illustrieren. Ein Ansatz, der näher an der Realität ist, wie zum Beispiel ein Stapel Visitenkarten. Genau wie das Beispiel mit der Rechnung enthält eine Visitenkarte alle wichtigen Informationen auf einen Blick. Wir nennen das "in sich abgeschlossene Daten" und es ist ein wichtiges Konzept beim Verständnis von dokumentenbasierten Datenbanken wie CouchDB.
 
-<h4 id="information">Syntax and Semantics</h4>
+<h4 id="information">Syntax und Semantik</h4>
 
-<p>Most business cards contain roughly the same information—someone’s identity, an affiliation, and some contact information. While the exact form of this information can vary between business cards, the general information being conveyed remains the same, and we’re easily able to recognize it as a business card. In this sense, we can describe a business card as a <em>real-world document</em>.
+<p>Die meisten Visitenkarten enthalten ungefähr die gleichen Informationen: den Namen, vielleicht ein Firmenname und Kontaktinformationen. Obwohl die  Daten zwischen den einzelnen Karten differieren kann, ist doch das allgemeine Schema immer gleich und Personen haben keine Schwierigkeiten damit Visitenkarten als solche zu erkennen. So gesehen kann man eine Visitenkarte als ein <em>reales Dokument</em> beschreiben.
 
-<p>Jan’s business card might contain a phone number but no fax number, whereas J. Chris’s business card contains both a phone and a fax number. Jan does not have to make his lack of a fax machine explicit by writing something as ridiculous as “Fax: None” on the business card. Instead, simply omitting a fax number implies that he doesn’t have one.
+<p>Jan's hat vielleicht eine Telefonnummer aber keine FAX Nummer auf seiner Visitenkarte. Dagegen enthält die Karte von J. Chris beide Nummern. Jan muss das Fehlen einer FAX Nummer nicht umständlich und explizit durch "Fax: Nicht vorhanden" kennzeichnen. Durch einfaches weglassen der FAX Nummer gibt er zu verstehen, dass er keins hat.
 
-<p>We can see that real-world documents of the same type, such as business cards, tend to be very similar in <em>semantics</em>—the sort of information they carry—but can vary hugely in <em>syntax</em>, or how that information is structured. As human beings, we’re naturally comfortable dealing with this kind of variation.
+<p>Reale Dokumente des gleichen Typs, so wie Visitenkarten, neigen dazu in ihrer <em>Semantik</em> - die Art der Information - sehr ähnlich zu sein. Ihre <em>Syntax</em> oder wie die Information tatsächlich aufgebaut ist, kann jedoch zwischen den einzelnen Karten sehr unterschiedlich sein. Als Personen haben damit kein Problem. Für uns sind diese Variationen normal. 
 
-<p>While a traditional relational database requires you to model your data <em>up front</em>, CouchDB’s schema-free design unburdens you with a powerful way to aggregate your data <em>after the fact</em>, just like we do with real-world documents. We’ll look in depth at how to design applications with this underlying storage paradigm.
+<p>Während ein traditionelles relationales Datenbank System erfordert, dass man die Daten <em>im voraus</em> durch ein Schema strukturiert, erlaubt das Schema-freie Design von CouchDB die Daten erst <em>nach dem Eintrag</em> in die Datenbank zu strukturieren. Genauso wie man das auch mit realen Dokumenten macht. Wie man Anwendungen mit diesem Ansatz zur Speicherung von Daten entwickelt, wird genau erläutert.
 
 <h3 id="blocks">Building Blocks for Larger Systems</h3>
 
