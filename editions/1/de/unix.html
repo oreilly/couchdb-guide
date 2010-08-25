@@ -1,0 +1,61 @@
+<title>Installing on Unix-like Systems</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="recipes.html">
+
+<link rel="next" href="mac.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="unix">Installing on Unix-like Systems</h2>
+
+<h3 id="debian">Debian GNU/Linux</h3>
+
+<p>You can install the CouchDB package by running:
+
+<pre>
+sudo aptitude install couchdb
+</pre>
+
+<p>When this completes, you should have a copy of CouchDB running on your machine. Be sure to read through the Debian-specific system documentation that can be found under <code>/usr/share/couchdb</code>.
+
+<p>Starting with Ubuntu 9.10 (“Karmic”), CouchDB comes preinstalled with every desktop system.
+
+<h3 id="ubuntu">Ubuntu</h3>
+
+<p>You can install the CouchDB package by running:
+
+<pre>
+sudo aptitude install couchdb
+</pre>
+
+<p>When this completes, you should have a copy of CouchDB running on your machine. Be sure to read through the Ubuntu-specific system documentation that can be found under <code>/usr/share/couchdb</code>.
+
+<h3 id="gentoo">Gentoo Linux</h3>
+
+<p>Enable the development ebuild of CouchDB by running:
+
+<pre>
+sudo echo dev-db/couchdb &gt;&gt; /etc/portage/package.keywords
+</pre>
+
+<p>Check the CouchDB ebuild by running:
+
+<pre>
+emerge -pv couchdb
+</pre>
+
+<p>Build and install the CouchDB ebuild by running:
+
+<pre>
+sudo emerge couchdb
+</pre>
+
+<p>When this completes, you should have a copy of CouchDB running on your machine.
+
+<h3 id="problems">Problems</h3>
+
+<p>See <a href="source.html">Appendix D, Installing from Source</a> if your distribution doesn’t have a CouchDB package.
