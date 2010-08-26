@@ -433,7 +433,11 @@ function(keys, values, rereduce) {
 
 <p>You can see that CouchDB stores both keys and values inside each leaf node. In our case, it is simply always <code>1</code>, but you might have a value where you count other results and then all rows have a different value. What’s important is that CouchDB runs all elements that are within a node into the reduce function (setting the <code>rereduce</code> parameter to <code>false</code>) and stores the result inside the parent node along with the edge to the subnode. In our case, each edge has a <code>3</code> representing the reduce value for the node it points to.
 
+<div class="aside note">
+
 <p>In reality, nodes have more than 1,600 elements in them. CouchDB computes the result for all the elements in multiple iterations over the elements in a single node, not all at once (which would be disastrous for memory consumption).
+
+</div>
 
 <p>Now let’s see what happens when we run a query. We want to know how many <code>"chinese"</code> entries we have. The query option is simple: <code>?key="chinese"</code>. See <a href="#figure/3">Figure 3, “The B-tree index reduce result”</a>.
 
