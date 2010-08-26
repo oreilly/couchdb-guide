@@ -18,7 +18,7 @@
 
 <h3 id="modeling">Document Modeling</h3>
 
-<p>In our experience, there are two main kinds of documents. The first kind is like something a word processor would save, or a user profile. With that sort of data, you want to denormalize as much as you possibly can. Basically, you want to be able to load the document in one request and get something that makes sense enough to display.
+<p>In our experience, there are two main kinds of documents. The first kind is like something a word processor would save or a user profile. With that sort of data, you want to denormalize as much as you possibly can. Basically, you want to be able to load the document in one request and get something that makes sense enough to display.
 
 <p>A technique exists for creating “virtual” documents by using views to collate data together. You could use this to store each attribute of your user profiles in a different document, but I wouldn’t recommend it. Virtual documents are useful in cases where the presented view will be created by merging the work of different authors; for instance, the reference example, a blog post, and its comments in one query. A blog post titled “<a href="http://www.cmlenz.net/archives/2007/10/couchdb-joins">CouchDB Joins</a>,” by Christopher Lenz, covers this in more detail.
 
