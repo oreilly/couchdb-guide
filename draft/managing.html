@@ -335,4 +335,4 @@ couchapp push . http://jchris:secretpass@localhost:5984/sofa
     }
 </pre>
 
-<p>With this file set up, you can push your CouchApp with the command <code>couchapp push</code>, which will push the application to the “default” database. CouchApp also supports alternate environments. To push your application to a development database, you could use <code>couchapp push dev</code>. In our experience, taking the time to set up a good <code>.couchapprc</code> is always worth it. Another benefit is that it keeps your passwords off the screen when you are working.
+<p>With this file set up, you can push your CouchApp with the command <code>couchapp push</code>, which will push the application to the “default” database. CouchApp also supports alternate environments. To push your application to a development database, you could use <code>couchapp push dev</code>. In our experience, taking the time to set up a good <code>.couchapprc</code> is always worth it. Another benefit is that it keeps your passwords off the screen when you are working. Note that JSON syntax uses commas as separators only. Trailing commas will cause your push to fail!
