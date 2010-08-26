@@ -71,8 +71,4 @@ git add de
 git commit -m 'new German translation' de
 </pre>
 
-<h2>Building an epub</h2>
-
-<p>jrk made a modest fork of the original repository which builds cleanly into epub with off-the-shelf <code>docbook-xsl dbtoepub src/01/book.xml</code>. (The script lives in the <code>DOCBOOK_XSL_ROOT/epub/dbtoepub</code> at least as of docbook-xsl version 1.75.2.)
-
 <p>Relax.
