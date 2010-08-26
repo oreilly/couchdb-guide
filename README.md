@@ -68,4 +68,8 @@ bin/tidy.sh ch01.html
 
 <p>The HTML we generate with this process is held in the <a href="http://github.com/oreilly/couchdb-guide/tree/gh-pages">gh-pages</a> branch.
 
+<h3>Building an epub</h3>
+
+<p>Build an epub with off-the-shelf docbook-xsl <code>dbtoepub src/01/book.xml</code>. (The script lives in the <code>DOCBOOK_XSL_ROOT/epub/dbtoepub</code> at least as of docbook-xsl version 1.75.2.)
+
 <p>Relax.
