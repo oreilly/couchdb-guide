@@ -130,7 +130,7 @@
 
 <h4 id="incremental">Incremental Replication</h4>
 
-<p>Because CouchDB operations take place within the context of a single document, if you want to use two database nodes, you no longer have to worry about them staying in constant communication. CouchDB achieves <em>eventual consistency</em> between databases by using incremental replication, a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
+<p>CouchDB's operations take place within the context of a single document. As CouchDB achieves eventual consistency between multiple databases by using incremental replication you no longer have to worry about your database servers being able to stay in constant communication. Incremental replication is a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
 
 <p>Need to scale out your CouchDB database cluster? Just throw in another server.
 
