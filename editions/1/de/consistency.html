@@ -68,146 +68,148 @@
 
 </blockquote>
 
-<p>If availability is a priority, we can let clients write data to one node of the database without waiting for other nodes to come into agreement. If the database knows how to take care of reconciling these operations between nodes, we achieve a sort of “eventual consistency” in exchange for high availability. This is a surprisingly applicable trade-off for many applications.
+<p>Wenn Verfügbarkeit Priorität hat, können wir Clients die Daten zunächst auf einen Knoten schreiben lassen, ohne darauf zu warten, dass die anderen Knoten synchronisiert werden. Wenn die Datenbank weiß, wie sie mit dieser Situation umzugehen hat, sind die Daten irgendwann "letztendlich konsistent" - allerdings unter Aufgabe der Hochverfügbarkeit der Daten. Für viele Anwendungen ist das ein erstaunlich guter Kompromiß.  
 
-<p>Unlike traditional relational databases, where each action performed is necessarily subject to database-wide consistency checks, CouchDB makes it really simple to build applications that sacrifice immediate consistency for the huge performance improvements that come with simple distribution.
+<p>Im Gegensatz zu traditionellen relationalen Datenbanken, bei denen jede Aktion notwendigerweise Konsistenzprüfungen über die ganze Datenbank nach sich ziehen, macht es CouchDB sehr einfach Anwendungen zu bauen, die sofortige Konsistenz gegen eine große Steigerung der Performanz eintauschen, die durch einfache Verteilung zustande kommt. 
 
-<h3 id="local">Local Consistency</h3>
+<h3 id="local">Lokale Konsistenz</h3>
 
-<p>Before we attempt to understand how CouchDB operates in a cluster, it’s important that we understand the inner workings of a single CouchDB node. The CouchDB API is designed to provide a convenient but thin wrapper around the database core. By taking a closer look at the structure of the database core, we’ll have a better understanding of the API that surrounds it.
+<p>Bevor wir versuchen, zu erklären, wie CouchDB in einem Cluster funktioniert, 
+ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das CouchDB API wurde so entworfen, dass es nur eine dünne Schicht über dem eigentlichen Datenbankkern darstellt. Indem man genauer auf die Struktur dieses Kerns schaut, versteht man das API, das ihn umgibt, besser.
 
-<h4 id="key">The Key to Your Data</h4>
+<h4 id="key">Der Schlüssel zu ihren Daten</h4>
 
-<p>At the heart of CouchDB is a powerful <em>B-tree</em> storage engine. A B-tree is a sorted data structure that allows for searches, insertions, and deletions in logarithmic time. As <a href="#figure/2">Figure 2, “Anatomy of a view request”</a> illustrates, CouchDB uses this B-tree storage engine for all internal data, documents, and views. If we understand one, we will understand them all.
+<p>Das Herz von CouchDB ist eine mächtige <em>B-Tree</em> Storage Engine. Ein B-Tree ist eine sortierte Datenstruktur, welche Suchen, Einfügen und Löschen von Knoten in logarithmischer Zeit erlaubt. Wie <a href="#figure/2">Abbildung 2: Anatomie eines Lesezugriffs</a> zeigt, benutzt CouchDB die B-Tree Storage Engine für sämtliche internen Daten, Dokumente und Views. Versteht man einen, versteht man alle.
 
 <div class="figure" id="figure/2">
 
 <img src="consistency/02.png">
 
-<p class="caption">Figure 2. Anatomy of a view request
+<p class="caption">Abbildung 2: Anatomie eines Lesezugriffs
 
 </div>
 
-<p>CouchDB uses MapReduce to compute the results of a view. MapReduce makes use of two functions, “map” and “reduce,” which are applied to each document in isolation. Being able to isolate these operations means that view computation lends itself to parallel and incremental computation. More important, because these functions produce key/value pairs, CouchDB is able to insert them into the B-tree storage engine, sorted by key. Lookups by key, or key range, are extremely efficient operations with a B-tree, described in <em>big O notation</em> as <em>O(log N)</em> and <em>O(log N + K)</em>, respectively.
+<p>CouchDB verwendet MapReduce um die Ergebnisse einer View zu berechnen. MapReduce benutzt dazu zwei Funktionen "map" und "reduce", welche auf jedes Dokument separat angewendet werden. Die Möglichkeit diese Operationen zu isolieren führt dazu, dass man sie parallel und inkrementell ausführen kann. Wichtiger noch, weil diese Funktionen Key/Value Paare erzeugen, kann CouchDB sie nach Schlüssel sortiert in die B-Tree Storage Engine einfügen.  In <em>O Notation</em> in <em>O(log N)</em> beziehungsweise <em>O(log N + K)</em>.
 
-<p>In CouchDB, we access documents and view results by key or key range. This is a direct mapping to the underlying operations performed on CouchDB’s B-tree storage engine. Along with document inserts and updates, this direct mapping is the reason we describe CouchDB’s API as being a thin wrapper around the database core.
+<p>In CouchDB greifen wir auf Dokumente und Views über Schlüssel oder Schlüsselbereiche zu. Das ist eine direkte Abbildung der Operationen, die von CouchDBs B-Tree Storage Engine ausgeführt werden. Zusammen mit den Operationen für das Einfügen und Aktualisieren von Dokumenten sind es diese Funktionen, die uns das CouchDB API als eine dünne Schicht um den Datenbankkern beschreiben lassen.
 
-<p>Being able to access results by key alone is a very important restriction because it allows us to make huge performance gains. As well as the massive speed improvements, we can partition our data over multiple nodes, without affecting our ability to query each node in isolation. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, and <em>memcached</em> restrict object lookups by key for exactly these reasons.
+<p>Alleine schon die Beschränkung, dass auf Ergebnisse ausschließlich per Schlüssel zugegriffen werden kann, führt zu massiven Steigerungen der Zugriffsgeschwindigkeit. Neben diesen Geschwindigkeitsvorteilen können die Daten noch über verschiedene verschiedene Knoten partitioniert werden, ohne die Möglichkeit zu verlieren, jeden Knoten isoliert zu verwenden. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em> und <em>memcached</em> erlauben ausschließlich eine Suche nach Schlüssel aus genau diesen Gründen.
 
-<h4 id="locking">No Locking</h4>
+<h4 id="locking">Kein Locking</h4>
 
-<p>A table in a relational database is a single data structure. If you want to modify a table—say, update a row—the database system must ensure that nobody else is trying to update that row and that nobody can read from that row while it is being updated. The common way to handle this uses what’s known as a <em>lock</em>. If multiple clients want to access a table, the first client gets the lock, making everybody else wait. When the first client’s request is processed, the next client is given access while everybody else waits, and so on. This serial execution of requests, even when they arrived in parallel, wastes a significant amount of your server’s processing power. Under high load, a relational database can spend more time figuring out who is allowed to do what, and in which order, than it does doing any actual work.
+<p>Eine Tabelle in einer relationalen Datenbank ist eine große Datenstruktur. Wenn man eine Tabelle ändern möchte, um beispielsweise eine Zeile zu aktualisieren, muss sichergestellt sein, dass niemand versucht, die selbe Zeile zur gleichen Zeit zu aktualisieren. Des weiteren müssen Lesezugriffe für diese Zeile auch unterbunden werden. Üblicherweise wird das durch ein <em>Lock</em> erreicht. Wenn mehrere Clients auf die Tabelle zugreifen, erhält der erste Client das Lock und sorgt so dafür, dass alle anderen warten müssen. Wenn der erste Client seine Anfrage beendet hat, erhält der nächste Client das Lock usw. Diese Serialisierung der Anfragen, selbst wenn sie gleichzeitig ankommen, benötigt eine erhebliche Menge an Rechenzeit. Unter großer Last kann es vorkommen, dass eine relationale Datenbank mehr damit beschäftigt ist herauszufinden, was in welcher Reihenfolge zu tun ist, als die Anfragen zu beantworten.
 
-<p>Instead of locks, CouchDB uses <em>Multi-Version Concurrency Control (MVCC)</em> to manage concurrent access to the database. <a href="#figure/3">Figure 3, “MVCC means no locking”</a> illustrates the differences between MVCC and traditional locking mechanisms. MVCC means that CouchDB can run at full speed, all the time, even under high load. Requests are run in parallel, making excellent use of every last drop of processing power your server has to offer.
+<p>Anstelle von Locks verwendet CouchDB <em>Multi-Version Concurrency Control (MVCC)</em> um den konkurrierenden Zugriff auf die Datenbank zu verwalten. <a href="#figure/3">Abbildung 3: MVCC bedeutet kein Locking</a> veranschaulicht die Unterschiede zwischen MVCC und traditionellen Locking Mechanismen. MVCC bedeutet, dass CouchDB mit voller Geschwindigkeit arbeiten kann - selbst unter hoher Last. Anfragen werden parallel beantwortet und nutzen so jeden Quäntchen Rechenleistung aus, das Server zu bieten hat.
+
 
 <div class="figure" id="figure/3">
 
 <img src="consistency/03.png">
 
-<p class="caption">Figure 3. MVCC means no locking
+<p class="caption">Abbildung 3: MVCC bedeutet kein Locking
 
 </div>
 
-<p>Documents in CouchDB are versioned, much like they would be in a regular version control system such as Subversion. If you want to change a value in a document, you create an entire new version of that document and save it over the old one. After doing this, you end up with two versions of the same document, one old and one new.
+<p>Dokumente in CouchDB werden versioniert, vergleichbar wie sie in üblichen Versionskontrollsystemen wie Subversion versioniert werden. Wenn man einen Wert in einem Dokument ändern möchte, erzeugt man eine vollständig neue Version des Dokuments und speichert es neben dem alten. Anschließend hat man zwei Versionen des Dokuments - eine alte und eine neue.
 
-<p>How does this offer an improvement over locks? Consider a set of requests wanting to access a document. The first request reads the document. While this is being processed, a second request changes the document. Since the second request includes a completely new version of the document, CouchDB can simply append it to the database without having to wait for the read request to finish.
+<p>Warum sollte das besser sein als Locking? Nehmen wir eine Gruppe von Anfragen für ein bestimmtes Dokument. Die erste Anfrage liest das Dokument. Während diese Anfrage bearbeitet wird, ändert die zweite Anfrage das Dokument. Da die zweite Anfrage eine komplett neue Version des Dokuments anlegt, CouchDB kann diese Version einfach an die Datenbank anhängen, ohne darauf zu warten, dass die erste Anfrage beendet wurde.
 
-<p>When a third request wants to read the same document, CouchDB will point it to the new version that has just been written. During this whole process, the first request could still be reading the original version.
+<p>Wenn eine dritte Anfrage das gleiche Dokument lesen möchte, wird CouchDB es auf die neue Version verweisen, die gerade eben erzeugt wurde. Während der ganzen Zeit könnte die erste Anfrage immer noch damit beschäftigt sein, die ursprüngliche Version zu lesen. 
 
-<p>A read request will always see the most recent snapshot of your database.
+<p>Während eines Lesezugriffs wird immer der zu dem Zeitpunkt aktuellste Zustand der Datenbank verwendet.
 
-<h4 id="validation">Validation</h4>
+<h4 id="validation">Validierung</h4>
 
-<p>As application developers, we have to think about what sort of input we should accept and what we should reject. The expressive power to do this type of validation over complex data <em>within</em> a traditional relational database leaves a lot to be desired. Fortunately, CouchDB provides a powerful way to perform per-document validation from within the database.
+<p>Anwendungsentwickler müssen berücksichtigen, welche Eingaben akzeptabel sind und welche nicht. Die Möglichkeiten, komplexe Daten <em>innerhalb</em> einer relationalen Datenbank zu überprüfen, sind nicht sehr ausgeprägt. CouchDB dagegen bietet mächtige Funktionen um komplette Dokumente direkt innerhalb der Datenbank zu validieren.
 
-<p>CouchDB can validate documents using JavaScript functions similar to those used for MapReduce. Each time you try to modify a document, CouchDB will pass the validation function a copy of the existing document, a copy of the new document, and a collection of additional information, such as user authentication details. The validation function now has the opportunity to approve or deny the update.
+<p>CouchDB kann Dokumente mithilfe von JavaScript validieren. Diese Funktionen sind ganz ähnlich zu den Funktionen für MapReduce. Jedesmal wenn ein Dokument verändert werden soll, wird CouchDB eine Kopie des aktuellen und eine Kopie des neuen Dokuments zusammen mit einigen zusätzlichen Informationen wie Benutzer und Authentifizierungsdetails an die Validierungsfunktion übergeben. Diese hat nun die Möglichkeit, die Änderung zu genehmigen oder abzulehnen.
 
-<p>By working with the grain and letting CouchDB do this for us, we save ourselves a tremendous amount of CPU cycles that would otherwise have been spent serializing object graphs from SQL, converting them into domain objects, and using those objects to do application-level validation.
+<p>In dem man CouchDB für sich arbeiten und diese Überprüfungen durchführen lässt, spart man unglaublich viel Aufwand und Rechenzeit, die sonst für die Serialisierung von Objektgraphen via SQL und die Umwandlung in Domainobjekte benutzt würde, um die Validierung schließlich in der Anwendung durchzuführen.
 
-<h3 id="distributed">Distributed Consistency</h3>
+<h3 id="distributed">Verteilte Konsistenz</h3>
 
-<p>Maintaining consistency within a single database node is relatively easy for most databases. The real problems start to surface when you try to maintain consistency between multiple database servers. If a client makes a write operation on server <em>A</em>, how do we make sure that this is consistent with server <em>B</em>, or <em>C</em>, or <em>D</em>? For relational databases, this is a very complex problem with entire books devoted to its solution. You could use multi-master, master/slave, partitioning, sharding, write-through caches, and all sorts of other complex techniques.
+<p>Daten innerhalb eines einzelnen Datenbankknotens konsistent zu halten, ist für die meisten Datenbanken relativ einfach. Die Schwierigkeiten beginnen, wenn Konsistenz über mehrere Datenbankserver sichergestellt werden soll. Wenn ein Client einen Schreibzugriff auf Server <em>A</em> macht, wie stellt man sicher, dass das konsistent ist mit Server <em>B</em>, <em>C</em> oder <em>D</em>? Das ist ein ziemlich komplexes Problem für relationale Datenbanken, dessen Lösung ganze Bücher füllt. Man kann zwischen Multi-Master, Master/Slave, Partitionierung, Sharding, Write-Through Caches und vielen anderen Ansätzen wählen.
 
-<h4 id="incremental">Incremental Replication</h4>
+<h4 id="incremental">Inkrementelle Replikation</h4>
 
-<p>Because CouchDB operations take place within the context of a single document, if you want to use two database nodes, you no longer have to worry about them staying in constant communication. CouchDB achieves <em>eventual consistency</em> between databases by using incremental replication, a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
+<p>CouchDB führt Operationen immer im Kontext eines einzelnen Dokuments aus. Da CouchDB letztendlich die Konsistenz zwischen verschiedenen Datenbanken mittels inkrementeller Replikation wieder herstellt, muss man sich keine Gedanken mehr darüber machen, ob die Verbindung zwischen den verschiedenen Servern auch permanent besteht. Inkrementelle Replikation ist ein Prozess in dem Änderungen an Dokumenten periodisch zwischen den Servern kopiert werden. Damit ist es möglich einen sogenannten <em>Shared Nothing</em> Cluster von Datenbanken einzurichten, in dem jeder Knoten unabhängig ist und keinen Single Point of Failure darstellt. 
 
-<p>Need to scale out your CouchDB database cluster? Just throw in another server.
+<p>Muss der CouchDB Datenbank Cluster nach oben skaliert werden? Einfach einen Server dazustellen.
 
-<p>As illustrated in <a href="#figure/4">Figure 4, “Incremental replication between CouchDB nodes”</a>, with CouchDB’s incremental replication, you can synchronize your data between any two databases however you like and whenever you like. After replication, each database is able to work independently.
+<p>Wie in <a href="#figure/4">Abbildung 4: Inkrementelle Replikation zwischen CouchDB Knoten</a> dargestellt wird, synchronisiert die inkrementelle Replikation von CouchDB die Daten zwischen zwei beliebigen Datenbanken wann und wie auch immer man möchte. Nach der Replikation kann jede Datenbank unabhängig von der anderen arbeiten.
 
-<p>You could use this feature to synchronize database servers within a cluster or between data centers using a job scheduler such as <em>cron</em>, or you could use it to synchronize data with your laptop for offline work as you travel. Each database can be used in the usual fashion, and changes between databases can be synchronized later in both directions.
+<p>Man kann dieses Feature beispielsweise dazu nutzen, Datenbanken innerhalb eines Clusters oder zwischen Rechenzentren mit einem <em>Cron Job</em> zu synchronisieren. Oder man synchronisiert die Daten mit dem eigenen Laptop um später offline weiter arbeiten zu können. Jede Datenbank kann ganz normal benutzt werden und Änderungen an den Daten können später in beide Richtungen synchronisiert werden.
 
 <div class="figure" id="figure/4">
 
 <img src="consistency/04.png">
 
-<p class="caption">Figure 4. Incremental replication between CouchDB nodes
+<p class="caption">Abbildung 4: Inkrementelle Replikation zwischen CouchDB Knoten
 
 </div>
 
-<p>What happens when you change the same document in two different databases and want to synchronize these with each other? CouchDB’s replication system comes with automatic conflict detection <em>and</em> resolution. When CouchDB detects that a document has been changed in both databases, it flags this document as being in conflict, much like they would be in a regular version control system.
+<p>Was passiert, wenn man das gleiche Dokument in zwei verschiedenen Datenbanken ändert und anschließend die Datenbanken synchronisieren möchte? CouchDBs Replikationssystem hat eine automatische Konflikterkennung <em>und</em> Konfliktauflösung. Wenn CouchDB erkennt, dass ein Dokument in beiden Datenbanken geändert wurde, markiert es dieses Dokument als konfliktbehaftet - genau wie in einem normalen Versionskontrollsystem.
 
-<p>This isn’t as troublesome as it might first sound. When two versions of a document conflict during replication, the <em>winning</em> version is saved as the most recent version in the document’s history. Instead of throwing the <em>losing</em> version away, as you might expect, CouchDB saves this as a previous version in the document’s history, so that you can access it if you need to. This happens automatically and consistently, so both databases will make exactly the same choice.
+<p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, die Version, die <em>gewinnt</em> wird als das aktuelle Dokument gespeichert. Anstatt die Version, die <em>verloren</em> hat, zu entfernen, speichert CouchDB sie als vorherige Version, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent und beide Datenbanken treffen genau die gleiche Entscheidung. 
 
-<p>It is up to you to handle conflicts in a way that makes sense for your application. You can leave the chosen document versions in place, revert to the older version, or try to merge the two versions and save the result.
+<p>Es liegt in der Verantwortung des Entwicklers zu entscheiden, wie ein Konflikt im Kontext der Anwendung am besten zu lösen ist. Beide Versionen können so in der Datenbank bleiben, es kann die vorherige Version verwendet werden oder die Anwendung versucht den Konflikt zusammenzuführen und eine neue Version zu speichern. 
 
-<h4 id="study">Case Study</h4>
+<h4 id="study">Ein Fallbeispiel</h4>
 
-<p>Greg Borenstein, a friend and coworker, built a small library for converting Songbird playlists to JSON objects and decided to store these in CouchDB as part of a backup application. The completed software uses CouchDB’s MVCC and document revisions to ensure that Songbird playlists are backed up robustly between nodes.
+<p>Ein Freund und Kollege, Greg Borenstein, hat eine kleine Bibliothek entwickelt, die Songbird Wiedergabelisten in JSON Objekte wandelt. Um die Objekte in einer Backup-Anwendung zu speichern verwendet er CouchDB. Die fertige Anwendung verwendet CouchDBs MVCC und Dokumentenversionen um sicherzustellen, dass die Songbird Wiedergabelisten korrekt zwischen Knoten gesichert werden.
 
 <div class="aside note">
 
-<p>Songbird is a free software media player with an integrated web browser, based on the Mozilla XULRunner platform. Songbird is available for Microsoft Windows, Apple Mac OS X, Solaris, and Linux.
+<p>Songbird ist ein freier Software Media Player mit einem integrierten Webbrowser, der auf der Mozilla XULRunner Plattform basiert. Songbird gibt es für Microsoft Windows, Apple Mac OS X, Solaris und Linux.
 
 </div>
 
-<p>Let’s examine the workflow of the Songbird backup application, first as a user backing up from a single computer, and then using Songbird to synchronize playlists between multiple computers. We’ll see how document revisions turn what could have been a hairy problem into something that <em>just works</em>.
+<p>Wenn man den Ablauf der Songbird Backup Anwendung genauer untersucht, stellt man fest, dass der Benutzer zunächst ein Backup von den Wiedergabelisten auf einem Computer erstellt. Anschließend benutzt er Songbird, um diese Wiedergabelisten zwischen verschiedenen Computern zu synchronisieren. Wir werden sehen, wie etwas, was ein kniffliges Problem hätte sein können <em>einfach so funktioniert</em>. 
 
-<p>The first time we use this backup application, we feed our playlists to the application and initiate a backup. Each playlist is converted to a JSON object and handed to a CouchDB database. As illustrated in <a href="#figure/5">Figure 5, “Backing up to a single database”</a>, CouchDB hands back the document ID and revision of each playlist as it’s saved to the database.
+<p>Beim ersten Mal werden die Wiedergabelisten der Anwendung übergeben und ein Backup wird gestartet. Jede Wiedergabeliste wird in ein JSON Objekt umgewandelt und an eine CouchDB Datenbank übergeben. Wie in <a href="#figure/5">Abbildung 5: Backup in eine einzelne Datenbank</a> gezeigt wird, liefert CouchDB die ID des Dokuments und die Versionsnummer jeder Wiedergabeliste zurück, während die JSON Objekte in der Datenbank gespeichert werden.
 
 <div class="figure" id="figure/5">
 
 <img src="consistency/05.png">
 
-<p class="caption">Figure 5. Backing up to a single database
+<p class="caption">Abbildung 5: Backup in eine einzelne Datenbank
 
 </div>
 
-<p>After a few days, we find that our playlists have been updated and we want to back up our changes. After we have fed our playlists to the backup application, it fetches the latest versions from CouchDB, along with the corresponding document revisions. When the application hands back the new playlist document, CouchDB requires that the document revision is included in the request.
+<p>Nach ein paar Tagen haben sich die Wiedergabelisten geändert und sollen wieder gesichert werden. Nachdem wir die Wiedergabelisten der Backup Anwendung übergeben haben, holt sie sich die letzte Version von CouchDB zusammen mit der aktuellen Version des Dokuments. Wenn die Anwendung ein neues Wiedergabelistendokument an CouchDB zurückgibt, muss die Versionsnummer mit übergeben werden. 
 
-<p>CouchDB then makes sure that the document revision handed to it in the request matches the current revision held in the database. Because CouchDB updates the revision with every modification, if these two are out of synchronization it suggests that someone else has made changes to the document between the time we requested it from the database and the time we sent our updates. Making changes to a document after someone else has modified it without first inspecting those changes is usually a bad idea.
+<p>CouchDB stellt dann sicher, dass die Version des Dokuments tatsächlich die aktuellste Version des Dokuments ist. Weil CouchDB die Versionsnummer mit jeder Änderung ebenfalls anpasst, bedeutet ein Unterschied zwischen den beiden Versionsnummern, dass jemand anders in der Zwischenzeit das Dokument geändert hat. In den allermeisten Fällen ist es keine gute Idee, ein Dokument zu ändern nachdem jemand anders es geändert hat, ohne sich die Änderungen anzusehen. 
 
-<p>Forcing clients to hand back the correct document revision is the heart of CouchDB’s optimistic concurrency.
+<p>Der Zwang, beim Speichern die korrekte Versionsnummer des Dokuments zu übergeben, ist der Kern von CouchDBs Optimistic Concurrency.
 
-<p>We have a laptop we want to keep synchronized with our desktop computer. With all our playlists on our desktop, the first step is to “restore from backup” onto our laptop. This is the first time we’ve done this, so afterward our laptop should hold an exact replica of our desktop playlist collection.
+<p>Wenn wir einen Laptop haben und mit dem Deskop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluß daran eine exakte Kopie der Wiedergabelisten haben.
 
-<p>After editing our Argentine Tango playlist on our laptop to add a few new songs we’ve purchased, we want to save our changes. The backup application replaces the playlist document in our laptop CouchDB database and a new document revision is generated. A few days later, we remember our new songs and want to copy the playlist across to our desktop computer. As illustrated in <a href="#figure/6">Figure 6, “Synchronizing between two databases”</a>, the backup application copies the new document and the new revision to the desktop CouchDB database. Both CouchDB databases now have the same document revision.
+<p>Nachdem die Wiedergabeliste für Argentinische Tangos auf dem Laptop geändert wurde, nachdem wir ein paar neue Songs gekauft haben, sollen die Änderungen gespeichert werden. Die Backup Anwendung speichert die Änderungen in der CouchDB auf dem Laptop und erzeugt eine neue Version des Dokuments. Ein paar Tage später erinnern wir uns und möchten die Wiedergabelisten mit dem Desktop Computer synchronisieren. Wie in <a href="#figure/6">Abbildung 6: Synchronisation zwischen zwei Datenbanken</a> gezeigt wird, kopiert die Backup Anwendung das neue Dokument und die neue Version in die CouchDB auf dem Desktop Computer. Beide Computer haben nun die gleiche Version des Dokuments. 
 
 <div class="figure" id="figure/6">
 
 <img src="consistency/06.png">
 
-<p class="caption">Figure 6. Synchronizing between two databases
+<p class="caption">Abbildung 6: Synchronisation zwischen zwei Datenbanken
 
 </div>
 
-<p>Because CouchDB tracks document revisions, it ensures that updates like these will work only if they are based on current information. If we had made modifications to the playlist backups between synchronization, things wouldn’t go as smoothly.
+<p>Weil CouchDB die Versionen von Dokumenten mitverfolgt, stellt es sicher, dass Änderungen wie diese einfach funktionieren. Wären die Wiedergabeliste auf beiden Seiten zwischen den Backups geändert worden, sähe die Sache anders aus.
 
-<p>We back up some changes on our laptop and forget to synchronize. A few days later, we’re editing playlists on our desktop computer, make a backup, and want to synchronize this to our laptop. As illustrated in <a href="#figure/7">Figure 7, “Synchronization conflicts between two databases”</a>, when our backup application tries to replicate between the two databases, CouchDB sees that the changes being sent from our desktop computer are modifications of out-of-date documents and helpfully informs us that there has been a conflict.
+<p>Wir sichern einige Änderung auf dem Laptop und vergessen zu synchronisieren. Ein paar Tage später, als wir gerade Wiedergabelisten auf dem Desktop Rechner ändern, machen wir ein Backup und wollen dies mit dem Laptop synchronisieren. Wie <a href="#figure/7">Abbildung 7: Synchronisierungskonflikte zwischen zwei Datenbanken</a> zeigt, erkennt CouchDB den Konflikt und ist so nett und informiert uns. 
 
-<p>Recovering from this error is easy to accomplish from an application perspective. Just download CouchDB’s version of the playlist and provide an opportunity to merge the changes or save local modifications into a new playlist.
+<p>Dieser Konflikt ist sehr einfach in der Anwendung zu lösen. Diese lädt die Version aus der CouchDB und bietet dem Nutzer die Möglichkeit die Änderungen entweder zusammenzuführen oder die lokalen Änderungen in einer neuen Wiedergabeliste zu speichern.
 
 <div class="figure" id="figure/7">
 
 <img src="consistency/07.png">
 
-<p class="caption">Figure 7. Synchronization conflicts between two databases
+<p class="caption">Abbildung 7: Synchronisierungskonflikte zwischen Datenbanken
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Fassen wir zusammen</h3>
 
-<p>CouchDB’s design borrows heavily from web architecture and the lessons learned deploying massively distributed systems on that architecture. By understanding why this architecture works the way it does, and by learning to spot which parts of your application can be easily distributed and which parts cannot, you’ll enhance your ability to design distributed and scalable applications, with CouchDB or without it.
+<p>Das Design von CouchDB ist sehr stark an die Architektur des Webs angelehnt und von den Erkenntnissen beim Bau von massiv verteilten Systemen inspiriert. Indem man versteht, warum diese Architektur so arbeitet wie sie es tut und durch Erkennen welche Teile einer Anwendung leicht verteilt werden können und welche nicht, schafft man die Möglichkeit, verteilte und skalierbare Anwendungen zu entwickeln. Entweder mit CouchDB oder ohne.
 
-<p>We’ve covered the main issues surrounding CouchDB’s consistency model and hinted at some of the benefits to be had when you work <em>with</em> CouchDB and not against it. But enough theory—let’s get up and running and see what all the fuss is about!
+<p>Die Kernpunkte von CouchDBs Konsistenzmodell wurden besprochen und auf einige Vorteile hingewiesen, die man damit erreichen kann, wenn man <em>mit</em> CouchDB arbeitet anstatt dagegen. Doch genug der Theorie - fangen wir endlich an!
