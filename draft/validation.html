@@ -124,7 +124,7 @@ function(newDoc, oldDoc, userCtx) {
 
 <p>The most fundamental validation is ensuring that particular fields are available on a document. The proper use of required fields can make writing MapReduce views much simpler, as you don’t have to test for all the properties before using them—you know all documents will be well-formed.
 
-<p>Required fields also make display logic much simpler. Nothing says amateur like the word <code>undefined</code> showing up throughout your application. If you know for certain that all documents will have a field, you can avoid lengthy conditional statements to render the display differently depending on document structure.
+<p>Required fields also make display logic much simpler. Nothing says <em>amateur</em> like the word <code>undefined</code> showing up throughout your application. If you know for certain that all documents will have a field, you can avoid lengthy conditional statements to render the display differently depending on document structure.
 
 <p>Sofa requires a different set of fields on posts and comments. Here’s a subset of the Sofa validation function:
 
