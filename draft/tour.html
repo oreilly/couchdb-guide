@@ -16,7 +16,7 @@
 
 <h3 id="go">All Systems Are Go!</h3>
 
-<p>We’ll have a very quick look at CouchDB’s bare-bones <em>Application Programming Interface (API)</em> by using the command-line utility <code>curl</code>. Please note that this is only one way of talking to CouchDB. We will show you plenty more throughout the rest of the book. What’s interesting about <code>curl</code> is that it gives you control over raw HTTP requests, and you can see exactly what is going on “underneath the hood” of your database.
+<p>We’ll have a very quick look at CouchDB’s bare-bones <em>Application Programming Interface (API)</em> by using the command-line utility <code>curl</code>. Please note that this is not the only way of talking to CouchDB. We will show you plenty more throughout the rest of the book. What’s interesting about <code>curl</code> is that it gives you control over raw HTTP requests, and you can see exactly what is going on “underneath the hood” of your database.
 
 <p>Make sure CouchDB is still running, and then do:
 
@@ -202,7 +202,7 @@ http://127.0.0.1:5984/_utils/
 
 <p>Creating a database in Futon is simple. From the overview page, click “Create Database.” When asked for a name, enter <code>hello-world</code> and click the Create button.
 
-<p>After your database has been created, Futon will display a list of all its documents. This list will start out empty (<a href="#figure/3">Figure 3, “An empty database in Futon”</a>), so let’s create our first document. Click the “Create Document” link and then the Create button in the pop up. Make sure to leave the document ID blank, and CouchDB will generate a UUID for you.
+<p>After your database has been created, Futon will display a list of all its documents. This list will start out empty (<a href="#figure/3">Figure 3, “An empty database in Futon”</a>), so let’s create our first document. Click the “New Document” link and then the Create button in the pop up. Make sure to leave the document ID blank, and CouchDB will generate a UUID for you.
 
 <div class="aside warning">
 
@@ -256,7 +256,7 @@ http://127.0.0.1:5984/_utils/
 
 <p>CouchDB views are stored as rows that are kept sorted by key. This makes retrieving data from a range of keys efficient even when there are thousands or millions of rows. When writing CouchDB map functions, your primary goal is to build an index that stores related data under nearby keys.
 
-<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different stores. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
+<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different shops. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
 
 <pre>
 {
@@ -325,11 +325,11 @@ http://127.0.0.1:5984/_utils/
 
 <pre>
 function(doc) {
-    var store, price, value;
+    var shop, price, value;
     if (doc.item &amp;&amp; doc.prices) {
-        for (store in doc.prices) {
-            price = doc.prices[store];
-            value = [doc.item, store];
+        for (shop in doc.prices) {
+            price = doc.prices[shop];
+            value = [doc.item, shop];
             emit(price, value);
         }
     }
@@ -352,12 +352,12 @@ function(doc) {
 
 <pre>
 function(doc) {
-    var store, price, key;
+    var shop, price, key;
     if (doc.item &amp;&amp; doc.prices) {
-        for (store in doc.prices) {
-            price = doc.prices[store];
+        for (shop in doc.prices) {
+            price = doc.prices[shop];
             key = [doc.item, price];
-            emit(key, store);
+            emit(key, shop);
         }
     }
 }
@@ -373,7 +373,7 @@ function(doc) {
 
 </div>
 
-<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the store where the item can be found for the listed price.
+<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the shop where the item can be found for the listed price.
 
 <p>View rows are sorted by their keys—in this example, first by item, then by price. This method of complex sorting is at the heart of creating useful indexes with CouchDB.
 
@@ -407,4 +407,4 @@ function(doc) {
 
 <p>Now that you’ve seen most of Futon’s features, you’ll be prepared to dive in and inspect your data as we build our example application in the next few chapters. Futon’s pure JavaScript approach to managing CouchDB shows how it’s possible to build a fully featured web application using only CouchDB’s HTTP API and integrated web server.
 
-<p>But before we get there, we’ll have another look at CouchDB’s HTTP API—now with a magnifying glass. Let’s <em>curl</em> on the couch and relax.
+<p>But before we get there, we’ll have another look at CouchDB’s HTTP API—now with a magnifying glass. Let’s <em>curl</em> up on the couch and relax.

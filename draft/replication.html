@@ -12,7 +12,7 @@
 
 <h2 id="replication">Replication</h2>
 
-<p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
+<p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access to data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
 
 <p>Replication is a one-off operation: you send an HTTP request to CouchDB that includes a <em>source</em> and a <em>target</em> database, and CouchDB will send the changes from the source to the target. That is all. Granted, calling something world-class and then only needing one sentence to explain it does seem odd. But part of the reason why CouchDB’s replication is so powerful lies in its simplicity.
 
@@ -42,7 +42,7 @@ POST /_replicate HTTP/1.1
 
 <div class="aside note">
 
-<p>CouchDB views use the same mechanism when determining when a view needs updating and which documents to replication. You can use this to build your own solutions as well.
+<p>CouchDB views use the same mechanism when determining when a view needs updating and which documents to replicate. You can use this to build your own solutions as well.
 
 </div>
 

@@ -120,7 +120,7 @@ bulk_doc_10000
 
 <p>To avoid the indexing and disk sync overhead associated with individual document writes, there is an option that allows CouchDB to build up batches of documents in memory, flushing them to disk when a certain threshold has been reached or when triggered by the user. The batch option does not give the same data integrity guarantees that normal updates provide, so it should only be used when the potential loss of recent updates is acceptable.
 
-<p>Because batch mode only stores updates in memory until a flush occurs, updates that are saved to CouchDB directly proceeding a crash can be lost. By default, CouchDB flushes the in-memory updates once per second, so in the worst case, data loss is still minimal. To reflect the reduced integrity guarantees when <code>batch=ok</code> is used, the HTTP response code is 202 Accepted, as opposed to 201 Created.
+<p>Because batch mode only stores updates in memory until a flush occurs, updates that are saved to CouchDB directly preceding a crash can be lost. By default, CouchDB flushes the in-memory updates once per second, so in the worst case, data loss is still minimal. To reflect the reduced integrity guarantees when <code>batch=ok</code> is used, the HTTP response code is 202 Accepted, as opposed to 201 Created.
 
 <p>The ideal use for batch mode is for logging type applications, where you have many distributed writers each storing discrete events to CouchDB. In a normal logging scenario, losing a few updates on rare occasions is worth the trade-off for increased storage throughput.
 

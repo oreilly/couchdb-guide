@@ -125,16 +125,17 @@ function(doc) {
     },
 
     {
-      "key": "2009/02/17 21:13:39",
-      "id": "bought-a-cat",
-      "value": "Bought a Cat"
-    },
-
-    {
       "key": "2009/01/30 18:04:11",
       "id": "biking",
       "value": "Biking"
+    },
+
+    {
+      "key": "2009/02/17 21:13:39",
+      "id": "bought-a-cat",
+      "value": "Bought a Cat"
     }
+
   ]
 }
 </pre>
@@ -201,7 +202,7 @@ function(doc) {
 
 </div>
 
-<p>And our queries change to <code>/blog/_design/docs/_view/by_date?key=[2009, 1, 1, 0, 0, 0]</code> and <code>/blog/_design/docs/_view/by_date?key=[2009, 01, 31, 0, 0, 0]</code>. For all you care, this is just a change in syntax, not meaning. But it shows you the power of views. Not only can you construct an index with scalar values like strings and integers, you can also use JSON structures as keys for your views. Say we tag our documents with a list of tags and want to see all tags, but we don’t care for documents that have not been tagged.
+<p>And our queries change to <code>/blog/_design/docs/_view/by_date?startkey=[2010, 1, 1, 0, 0, 0]&amp;endkey=[2010, 2, 1, 0, 0, 0]</code>. For all you care, this is just a change in syntax, not meaning. But it shows you the power of views. Not only can you construct an index with scalar values like strings and integers, you can also use JSON structures as keys for your views. Say we tag our documents with a list of tags and want to see all tags, but we don’t care for documents that have not been tagged.
 
 <pre>
 {
@@ -433,7 +434,11 @@ function(keys, values, rereduce) {
 
 <p>You can see that CouchDB stores both keys and values inside each leaf node. In our case, it is simply always <code>1</code>, but you might have a value where you count other results and then all rows have a different value. What’s important is that CouchDB runs all elements that are within a node into the reduce function (setting the <code>rereduce</code> parameter to <code>false</code>) and stores the result inside the parent node along with the edge to the subnode. In our case, each edge has a <code>3</code> representing the reduce value for the node it points to.
 
+<div class="aside note">
+
 <p>In reality, nodes have more than 1,600 elements in them. CouchDB computes the result for all the elements in multiple iterations over the elements in a single node, not all at once (which would be disastrous for memory consumption).
+
+</div>
 
 <p>Now let’s see what happens when we run a query. We want to know how many <code>"chinese"</code> entries we have. The query option is simple: <code>?key="chinese"</code>. See <a href="#figure/3">Figure 3, “The B-tree index reduce result”</a>.
 
