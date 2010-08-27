@@ -1,0 +1,33 @@
+Notes
+-----
+
+consistency.html
+----------------
+
+* The CAP Theorem
+
+Regardless of which approach we take, the one problem we’ll keep bumping into is that of keeping all these database servers in synchronization.
+
+I would change "in synchronization" either to "in sync" or to "synchronized"
+
+
+* The Key to Your Data
+
+<p>Being able to access results by key alone is a very important restriction because it allows us to make huge performance gains. As well as the massive speed improvements, we can partition our data over multiple nodes, without affecting our ability to query each node in isolation. BigTable, Hadoop, SimpleDB, and memcached restrict object lookups by key for exactly these reasons.
+
+The first and the last part of the second sentence ("As well as ...") confuse me. Is the first part supposed to mean "In addition to the massive speed improvements from restricting lookups to keys only, we can ..."
+
+The last part confuses me because nothing stops me from accessing each of my servers in isolation. I don't understand how this relates to partitioning the data.
+
+
+
+* Incremental Replication 
+
+<p>Because CouchDB operations take place within the context of a single document, if you want to use two database nodes, you no longer have to worry about them staying in constant communication. CouchDB achieves <em>eventual consistency</em> between databases by using incremental replication, a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
+
+I think the first two sentences should be changed as I may still worry about my data being out of sync. However, the point is that my app is aware of that and that incremental replication achieves eventual consistency. This is the reason I don't have to worry about my servers not being able to talk to each other all the time. Not because of the fact that the operation is performed in the context of a single document. This is merely a helpful feature of CouchDB to implement incremental replication. Other databases do that, too. MySQL for example also replicates from the master to the slave incrementally by replaying the binary logs.
+
+
+I would rephrase this paragraph as follows:
+
+<p>CouchDB's operations take place within the context of a single document. As CouchDB achieves eventual consistency between multiple databases by using incremental replication you no longer have to worry about your database servers being able to stay in constant communication. Incremental replication is a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
