@@ -256,7 +256,7 @@ http://127.0.0.1:5984/_utils/
 
 <p>CouchDB views are stored as rows that are kept sorted by key. This makes retrieving data from a range of keys efficient even when there are thousands or millions of rows. When writing CouchDB map functions, your primary goal is to build an index that stores related data under nearby keys.
 
-<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different stores. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
+<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different shops. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
 
 <pre>
 {
@@ -325,11 +325,11 @@ http://127.0.0.1:5984/_utils/
 
 <pre>
 function(doc) {
-    var store, price, value;
+    var shop, price, value;
     if (doc.item &amp;&amp; doc.prices) {
-        for (store in doc.prices) {
-            price = doc.prices[store];
-            value = [doc.item, store];
+        for (shop in doc.prices) {
+            price = doc.prices[shop];
+            value = [doc.item, shop];
             emit(price, value);
         }
     }
@@ -352,12 +352,12 @@ function(doc) {
 
 <pre>
 function(doc) {
-    var store, price, key;
+    var shop, price, key;
     if (doc.item &amp;&amp; doc.prices) {
-        for (store in doc.prices) {
-            price = doc.prices[store];
+        for (shop in doc.prices) {
+            price = doc.prices[shop];
             key = [doc.item, price];
-            emit(key, store);
+            emit(key, shop);
         }
     }
 }
@@ -373,7 +373,7 @@ function(doc) {
 
 </div>
 
-<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the store where the item can be found for the listed price.
+<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the shop where the item can be found for the listed price.
 
 <p>View rows are sorted by their keys—in this example, first by item, then by price. This method of complex sorting is at the heart of creating useful indexes with CouchDB.
 
