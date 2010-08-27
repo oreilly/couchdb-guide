@@ -1,7 +1,40 @@
 var lastest_edition = "1";
 
+var lang = "en";
+
 var languages = {
+    "en": "English",
     "de": "Deutsch"
+};
+
+var l10n = {
+    "en": {
+        "draftEdition": "Draft edition",
+        "draftNotice": "This edition of the book is a work in progress. Please <a href='http://github.com/oreilly/couchdb-guide/issues'>create a ticket</a> for any corrections or suggestions you may have.",
+        "edition": "Edition",
+        "editionNotice": "This is an outdated edition of the book. Please use the <a href='%s'>latest edition</a> for more up-to-date information.",
+        "googleTrackingCode": "",
+        "footer": "A <a href='http://oreilly.com/'>O&rsquo;Reilly</a> book about <a href='http://couchdb.apache.org/'>CouchDB</a> by <a href='http://jchrisa.net/'>J. Chris Anderson</a>, <a href='http://jan.prima.de/'>Jan Lehnardt</a> and <a href='http://nslater.org/'>Noah Slater</a>.",
+        "home": "Home",
+        "nextPage": "Next Page",
+        "prevPage": "Previous Page",
+        "search": "Search",
+        "title": "CouchDB <span>The Definitive Guide</span>",
+    },
+    
+    "de": {
+        "draftEdition": "Entwurf",
+        "draftNotice": "Diese Ausgabe des Buchs ist noch in Arbeit. Bitte <a href='http://github.com/oreilly/couchdb-guide/issues'>sagen sie uns</a> wo Fehler sind und was wir besser machen können.",
+        "edition": "Ausgabe",
+        "editionNotice": "Dies ist eine alte Ausgabe des Buchs. Bitte benutzen sie die <a href='%s'>aktuelle Ausgabe</a> für aktuellere Informationen.",
+        "footer": "Ein <a href='http://oreilly.com/'>O&rsquo;Reilly</a> Buch über <a href='http://couchdb.apache.org/'>CouchDB</a> von <a href='http://jchrisa.net/'>J. Chris Anderson</a> , <a href='http://jan.prima.de/'>Jan Lehnardt</a> und <a href='http://nslater.org/'>Noah Slater</a>. Deutsche Übersetzung von <a href='http://go-left.com/'>Frank Schröder</a>",
+        "home": "Anfang",
+        "googleTrackingCode": "",
+        "nextPage": "Nächste Seite",
+        "prevPage": "Vorherige Seite",
+        "search": "Suchen",
+        "title": "CouchDB <span>Die Definitive Referenz</span>",
+    }
 };
 
 var scripts = [
@@ -23,9 +56,9 @@ for(i = 0; i < condcoms.length; i++) {
 }
 
 var urls = [
-    ["/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
-    ["/draft/([a-z]+).html", "build_draft"],
-    ["/index.html", "build_index"]
+    [".*/editions/([0-9]+)/([a-z]{2})/([a-z]+).html", "build_edition"],
+    [".*/draft/([a-z]+).html", "build_draft"],
+    [".*/index.html", "build_index"]
 ];
 
 function check_flag() {
@@ -42,15 +75,13 @@ function get_header() {
     return '\
       <div class="page_header">\
         <h1 class="logo">\
-          <a href="#" title="home">\
-            CouchDB <span>Die Definitive Referenz</span>\
-          </a>\
+          <a href="#" title="home">'+l10n[lang].title+'</a>\
         </h1>\
         <div class="search_box">\
           <form class="search" action="http://www.google.com/search">\
             <input type="hidden" name="as_sitesearch" value="go-left.com/couchdb-guide">\
             <input type="text" name="as_q" value="" class="search_field">\
-            <input type="submit" value="Suchen" class="search_btn" />\
+            <input type="submit" value="'+l10n[lang].search+'" class="search_btn" />\
           </form>\
         </div>\
       </div>\
@@ -60,20 +91,9 @@ function get_header() {
 function get_footer() {
     return '\
       <div class="footer">\
-        <div class="container">\
-          <p>Ein\
-          <a href="http://oreilly.com/">O&rsquo;Reilly</a>\
-          Buch über\
-          <a href="http://couchdb.apache.org/">CouchDB</a>\
-          von\
-          <a href="http://jchrisa.net/">J. Chris Anderson</a>\
-          ,\
-          <a href="http://jan.prima.de/">Jan Lehnardt</a>\
-          und\
-          <a href="http://nslater.org/">Noah Slater</a>.\
-          Deutsche Übersetzung von\
-          <a href="http://go-left.com/">Frank Schröder</a>\
-        </div>\
+        <div class="container"><p>'
+          +l10n[lang].footer+
+        '</p></div>\
       </div>\
     ';
 }
@@ -125,27 +145,16 @@ function add_notice(text) {
 }
 
 function add_notice_draft() {
-    add_notice('\
-        <p class="inner info_bubble">\
-            Diese Ausgabe des Buchs ist noch in Arbeit. Bitte\
-            <a href="http://github.com/oreilly/couchdb-guide/issues">sagen\
-            sie uns</a> wo Fehler sind und was wir besser machen können.\
-        </p>\
-    ');
+    add_notice('<p class="inner info_bubble">'+l10n[lang].draftNotice+'</p>');
 }
 
 function add_notice_edition(edition) {
     href = document.location.href.replace(
         "/editions/" + edition + "/", "/editions/" + lastest_edition + "/"
     );
+    notice = l10n[lang].editionNotice.replace("%s",href);
     if (edition != lastest_edition) {
-        add_notice('\
-            <p class="inner info_bubble">\
-                Dies ist eine alte Ausgabe des Buchs.\
-                Bitte benutzen sie die <a href="' + href + '">aktuelle Ausgabe</a> für\
-                aktuellere Informationen.\
-            </p>\
-        ');
+        add_notice('<p class="inner info_bubble">'+l10n[lang].editionNotice+'</p>');
     }
 }
 
@@ -154,11 +163,11 @@ function add_prev_link() {
     if (prev_url) {
         // .sidebar, .content_footer
         $(".sidebar").append(
-            "<h3><a href='" + prev_url + "'>Vorherige Seite</a></h3>"
+            "<h3><a href='" + prev_url + "'>"+l10n[lang].prevPage+"</a></h3>"
         );
     } else {
         $(".sidebar").append(
-            "<h3 class='disabled'>Vorherige Seite</h3>"
+            "<h3 class='disabled'>"+l10n[lang].prevPage+"</h3>"
         );
     }
 }
@@ -168,11 +177,11 @@ function add_next_link() {
     if (next_url) {
         // .sidebar, .content_footer
         $(".sidebar").append(
-            "<h3><a href='" + next_url + "'>Nächste Seite</a></h3>"
+            "<h3><a href='" + next_url + "'>"+l10n[lang].nextPage+"</a></h3>"
         );
     } else {
         $(".sidebar").append(
-            "<h3 class='disabled'>Nächste Seite</h3>"
+            "<h3 class='disabled'>"+l10n[lang].nextPage+"</h3>"
         );
     }
 }
@@ -199,7 +208,7 @@ function add_toc() {
         old_depth = new_depth;
     });
     html += "</li></ul>";
-    $(".sidebar").append("<h3>Aktuelle Seite</h3>");
+    $(".sidebar").append("<h3>"+l10n[lang].home+"</h3>");
     $(".sidebar").append(html);
 }
 
@@ -217,10 +226,10 @@ function build_edition(matches) {
     var edition = matches[1];
     var language = languages[matches[2]];
     var page = matches[3];
-    var edition_text = "Ausgabe " + edition + " (" + language + ")";
+    var edition_text = l10n[lang].edition + " " + edition + " (" + language + ")";
     link_logo("../../../index.html");
     add_notice_edition(edition);
-    $(".sidebar").append("<h3><a href='../../../index.html'>Anfang</a></h3>");
+    $(".sidebar").append("<h3><a href='../../../index.html'>"+l10n[lang].home+"</a></h3>");
     if (page == "index") {
         $(".sidebar").append(
             "<h3>" + edition_text + "</h3>"
@@ -239,14 +248,14 @@ function build_draft(matches) {
     var page = matches[1];
     link_logo("../index.html");
     add_notice_draft();
-    $(".sidebar").append("<h3><a href='../index.html'>Anfang</a></h3>");
+    $(".sidebar").append("<h3><a href='../index.html'>"+l10n[lang].home+"</a></h3>");
     if (page == "index") {
         $(".sidebar").append(
-            "<h3>Draft Edition</h3>"
+            "<h3>"+l10n[lang].draftEdition+"</h3>"
         );
     } else {
         $(".sidebar").append(
-            "<h3><a href='index.html'>Draft Edition</a></h3>"
+            "<h3><a href='index.html'>"+l10n[lang].draftEdition+"</a></h3>"
         );
     }
     add_prev_link();
@@ -264,6 +273,15 @@ function autolink() {
     });
 }
 
+function get_lang() {
+    var matches = document.location.href.match(urls[0][0]);
+    if (matches && matches.length > 2) {
+        lang = matches[2];
+    } else {
+        lang = "en";
+    }
+}
+
 function track() {
     _gat._getTracker("UA-2812942-3")._trackPageview();
 }
@@ -272,6 +290,7 @@ document.onready = function() {
     try {
         check_flag();
         raise_flag();
+        get_lang();
         template();
         build();
         autolink();
