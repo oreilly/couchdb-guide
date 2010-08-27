@@ -16,7 +16,7 @@
 
 <h3 id="using">Using Views</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 CREATE TABLE
@@ -118,7 +118,7 @@ function(doc) {
 
 <h3 id="key">Look Up by Key</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE value="<em>searchterm</em>"
@@ -174,7 +174,7 @@ function(doc) {
 
 <h3 id="prefix">Look Up by Prefix</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searchterm</em>%"
@@ -216,7 +216,7 @@ function(doc) {
 
 <h3 id="aggregate">Aggregate Functions</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 SELECT COUNT(<em>field</em>) FROM <em>table</em>
@@ -288,7 +288,7 @@ function(keys, values) {
 
 <h3 id="unique">Get Unique Values</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 SELECT DISTINCT <em>field</em> FROM <em>table</em>
@@ -409,7 +409,7 @@ function(keys, values) {
 
 <h3 id="uniqueness">Enforcing Uniqueness</h3>
 
-<p>How you would do this in SQL:
+<p>How you would do this in CouchDB:
 
 <pre>
 UNIQUE KEY(<em>column</em>)
