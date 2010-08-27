@@ -13,7 +13,6 @@ var l10n = {
         "draftNotice": "This edition of the book is a work in progress. Please <a href='http://github.com/oreilly/couchdb-guide/issues'>create a ticket</a> for any corrections or suggestions you may have.",
         "edition": "Edition",
         "editionNotice": "This is an outdated edition of the book. Please use the <a href='%s'>latest edition</a> for more up-to-date information.",
-        "googleTrackingCode": "",
         "footer": "A <a href='http://oreilly.com/'>O&rsquo;Reilly</a> book about <a href='http://couchdb.apache.org/'>CouchDB</a> by <a href='http://jchrisa.net/'>J. Chris Anderson</a>, <a href='http://jan.prima.de/'>Jan Lehnardt</a> and <a href='http://nslater.org/'>Noah Slater</a>.",
         "home": "Home",
         "nextPage": "Next Page",
@@ -29,7 +28,6 @@ var l10n = {
         "editionNotice": "Dies ist eine alte Ausgabe des Buchs. Bitte benutzen sie die <a href='%s'>aktuelle Ausgabe</a> für aktuellere Informationen.",
         "footer": "Ein <a href='http://oreilly.com/'>O&rsquo;Reilly</a> Buch über <a href='http://couchdb.apache.org/'>CouchDB</a> von <a href='http://jchrisa.net/'>J. Chris Anderson</a> , <a href='http://jan.prima.de/'>Jan Lehnardt</a> und <a href='http://nslater.org/'>Noah Slater</a>. Deutsche Übersetzung von <a href='http://go-left.com/'>Frank Schröder</a>",
         "home": "Anfang",
-        "googleTrackingCode": "",
         "nextPage": "Nächste Seite",
         "prevPage": "Vorherige Seite",
         "search": "Suchen",
@@ -283,7 +281,11 @@ function get_lang() {
 }
 
 function track() {
-    _gat._getTracker("UA-2812942-3")._trackPageview();
+    if (document.location.href.indexOf('http://couchdb.go-left.com/') === 0) {
+        _gat._getTracker("UA-2812942-4")._trackPageview();
+    } else {
+        _gat._getTracker("UA-17867702-1")._trackPageview();
+    }
 }
 
 document.onready = function() {
