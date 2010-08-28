@@ -2,13 +2,13 @@
 
 <meta charset="utf-8">
 
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../../../style.css">
 
 <link rel="prev" href="notifications.html">
 
 <link rel="next" href="security.html">
 
-<script src="../script.js"></script>
+<script src="../../../script.js"></script>
 
 <h2 id="cookbook">View Cookbook for SQL Jockeys</h2>
 
@@ -16,7 +16,7 @@
 
 <h3 id="using">Using Views</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 CREATE TABLE
@@ -118,7 +118,7 @@ function(doc) {
 
 <h3 id="key">Look Up by Key</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE value="<em>searchterm</em>"
@@ -174,7 +174,7 @@ function(doc) {
 
 <h3 id="prefix">Look Up by Prefix</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searchterm</em>%"
@@ -216,7 +216,7 @@ function(doc) {
 
 <h3 id="aggregate">Aggregate Functions</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 SELECT COUNT(<em>field</em>) FROM <em>table</em>
@@ -288,7 +288,7 @@ function(keys, values) {
 
 <h3 id="unique">Get Unique Values</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 SELECT DISTINCT <em>field</em> FROM <em>table</em>
@@ -409,7 +409,7 @@ function(keys, values) {
 
 <h3 id="uniqueness">Enforcing Uniqueness</h3>
 
-<p>How would you do this in CouchDB?
+<p>How you would do this in SQL:
 
 <pre>
 UNIQUE KEY(<em>column</em>)
