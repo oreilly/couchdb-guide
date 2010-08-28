@@ -281,11 +281,7 @@ function get_lang() {
 }
 
 function track() {
-    if (document.location.href.indexOf('http://couchdb.go-left.com/') === 0) {
-        _gat._getTracker("UA-2812942-4")._trackPageview();
-    } else {
-        _gat._getTracker("UA-17867702-1")._trackPageview();
-    }
+    _gat._getTracker("UA-17867702-1")._trackPageview();
 }
 
 document.onready = function() {
