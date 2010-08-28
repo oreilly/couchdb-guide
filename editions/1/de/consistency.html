@@ -12,13 +12,13 @@
 
 <h2 id="consistency">Eventual Consistency</h2>
 
-<p>Im letzten Kapitel haben wurde gezeigt, dass die Flexibilität von CouchDB es  erlaubt, die Daten weiter zu entwickeln, während die Anwendungen wachsen und sich ändern. In diesem Kapitel wird untersucht, wie das Arbeiten mit CouchDB (anstatt gegen CouchDB) Einfachheit in den Anwendungen fördert und natürlich zu skalierbaren, verteilten Systemen führt.
+<p>Im letzten Kapitel haben wir gezeigt, dass die Flexibilität von CouchDB es  erlaubt, die Daten weiter zu entwickeln, während Anwendungen wachsen und sich ändern. In diesem Kapitel werden wir untersuchen, wie das Arbeiten mit CouchDB (anstatt gegen CouchDB) Einfachheit in den Anwendungen fördert und natürlich zu skalierbaren, verteilten Systemen führt.
 
 <h3 id="grain">Arbeiten mit CouchDB</h3>
 
-<p>Ein <em>verteiltes System</em> ist ein System, welches zuverlässig über ein großes Netzwerk funktioniert. Eine spezielle Eigenschaft von Netzwerken ist, das Verbindungen jederzeit abbrechen können und es gibt viele Strategien wie man mit dieser Situation umgehen kann. CouchDB unterscheidet sich von anderen Systemen dadurch, dass es Eventual Consistency (die Daten sind letztendlich irgendwann konsistent) akzeptiert — im Gegensatz zu RDBMS und Paxos, die absolute Konsistenz über schlichte Verfügbarkeit stellen. All diesen Systeme ist gemeinsam, dass sich Daten anders verhalten, wenn viele Leute versuchen, gleichzeitig auf sie zuzugreifen. Ihre Ansätze unterscheiden sich, wenn es um die Gewichtung von <em>Konsistenz</em>, <em>Verfügbarkeit</em> oder <em>Partitionstoleranz</em> geht.
+<p>Ein <em>verteiltes System</em> ist ein System, welches zuverlässig über ein großes Netzwerk funktioniert. Eine spezielle Eigenschaft von Netzwerken ist, das Verbindungen jederzeit abbrechen können und es gibt viele Strategien wie man mit dieser Situation umgehen kann. CouchDB unterscheidet sich von anderen Systemen dadurch, dass es Eventual Consistency (die Daten sind letztendlich irgendwann konsistent) akzeptiert — im Gegensatz zu RDBMS und Paxos, die absolute Konsistenz über schlichte Verfügbarkeit stellen. All diesen Systeme ist gemein, dass sich Daten anders verhalten, wenn viele Leute gleichzeitig versuchen darauf zuzugreifen. Ihre Ansätze unterscheiden sich, wenn es um die Gewichtung von <em>Konsistenz</em>, <em>Verfügbarkeit</em> oder <em>Partitionstoleranz</em> geht.
 
-<p>Verteilte Systeme zu entwerfen ist nicht einfach. Viele der Stolperfallen, die über die Zeit auftauchen, sind zu Beginn offensichtlich. CouchDB kennt nicht alle Antworten und es ist auch keine Allheilmittel. Wenn man jedoch mit CouchDB anstatt dagegen arbeitet, führen die so entwickelten Anwendungen automatisch zu skalierbaren Systemen. 
+<p>Verteilte Systeme zu entwerfen ist nicht einfach. Viele der Stolperfallen, die mit der Zeit auftauchen, sind am Anfang nicht offensichtlich. CouchDB kennt nicht alle Antworten und es ist auch keine Allheilmittel. Wenn man jedoch mit CouchDB anstatt dagegen arbeitet, führen die so entwickelten Anwendungen automatisch zu skalierbaren Systemen. 
 
 <p>Sicher ist die Entwicklung eines verteilten Systems nur der Anfang. Eine Webseite mit einer Datenbank ist nahezu nutzlos, wenn sie nur die Hälfte der Zeit erreichbar ist. Leider macht es der traditionelle Ansatz, Konsistenz mit Hilfe eines RDBMS sicherzustellen, den Entwicklern sehr leicht, sich auf einen globalen Zustand, synchronisierte Uhren und andere Dinge zu verlassen, die in hochverfügbaren Systemen nicht sichergestellt werden können. Meist tun sie das ohne sich dessen bewusst zu sein. Bevor wir untersuchen, wie CouchDB Skalierbarkeit fördert, schauen wir auf die Rahmenbedingungen von verteilten Systemen. Nachdem die Probleme offensichtlich werden, wenn Teile einer Anwendung sich nicht mehr darauf verlassen können, auf andere Teile ständig zugreifen zu können, wird deutlich, wie CouchDB einen intuitiven und sinnvollen Weg weist, um hochverfügbare Anwendungen zu entwickeln. 
 
@@ -58,7 +58,7 @@
 
 <p>Egal welchen Ansatz man wählt, das eigentliche Problem, wie all diese Server synchronisiert werden, bleibt bestehen. Wie stellt man sicher, dass wenn man etwas in einen Knoten schreibt, der andere Knoten beim Lesen die neusten Daten liefert? Die Zugriffe können nur Millisekunden auseinander liegen. Selbst mit einer kleinen Anzahl von Datenkbank Servern kann dieses Problem sehr komplex werden.
 
-<p>Wenn es erforderlich ist, dass alle Nutzer eine konsistente Sicht auf die Datenbank haben, dann müssen die Nutzer des einen Knotens darauf warten, bis alle anderen Knoten sich synchronisiert haben, bevor sie wieder lesen oder schreiben können. In diesem Fall muss die <em>Verfügbarkeit</em> hinter die <em>Konsistenz</em> zurücktreten. Es gibt aber auch Fälle, in denen Verfügbarkeit wichtiger ist als Konsistenz:
+<p>Wenn es erforderlich ist, dass alle Nutzer eine konsistente Sicht auf die Datenbank haben, dann müssen die Nutzer des einen Knotens darauf warten, bis alle anderen Knoten sich synchronisiert haben, bevor sie wieder lesen oder schreiben können. In diesem Fall muss die <em>Verfügbarkeit</em> hinter die <em>Konsistenz</em> zurücktreten. Es gibt aber auch Fälle in denen Verfügbarkeit wichtiger ist als Konsistenz:
 
 <blockquote>
 
@@ -68,18 +68,18 @@
 
 </blockquote>
 
-<p>Wenn Verfügbarkeit Priorität hat, können wir Clients die Daten zunächst auf einen Knoten schreiben lassen, ohne darauf zu warten, dass die anderen Knoten synchronisiert werden. Wenn die Datenbank weiß, wie sie mit dieser Situation umzugehen hat, sind die Daten irgendwann "letztendlich konsistent" — allerdings unter Aufgabe der Hochverfügbarkeit der Daten. Für viele Anwendungen ist das ein erstaunlich guter Kompromiß.  
+<p>Wenn Verfügbarkeit Priorität hat, können wir Clients die Daten zunächst auf einen Knoten schreiben lassen, ohne darauf zu warten, dass die anderen Knoten synchronisiert werden. Wenn die Datenbank weiß, wie sie mit dieser Situation umzugehen hat, sind die Daten irgendwann „letztendlich konsistent“ — allerdings unter Aufgabe der Hochverfügbarkeit der Daten. Für viele Anwendungen ist das ein erstaunlich guter Kompromiß.  
 
-<p>Im Gegensatz zu traditionellen relationalen Datenbanken, bei denen jede Aktion notwendigerweise Konsistenzprüfungen über die ganze Datenbank nach sich ziehen, macht es CouchDB sehr einfach Anwendungen zu bauen, die sofortige Konsistenz gegen eine große Steigerung der Performanz eintauschen, die durch einfache Verteilung zustande kommt. 
+<p>Im Gegensatz zu traditionellen relationalen Datenbanken, bei denen jede Aktion notwendigerweise Konsistenzprüfungen über die ganze Datenbank nach sich ziehen, macht es CouchDB sehr einfach Anwendungen zu bauen, die sofortige Konsistenz gegen eine große Steigerung der Performanz eintauschen, welche durch einfache Verteilung zustande kommt. 
 
 <h3 id="local">Lokale Konsistenz</h3>
 
-<p>Bevor wir versuchen, zu erklären, wie CouchDB in einem Cluster funktioniert, 
-ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das CouchDB API wurde so entworfen, dass es nur eine dünne Schicht über dem eigentlichen Datenbankkern darstellt. Indem man genauer auf die Struktur dieses Kerns schaut, versteht man das API, das ihn umgibt, besser.
+<p>Bevor wir versuchen zu erklären, wie CouchDB in einem Cluster funktioniert, 
+ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das CouchDB API wurde so entworfen, dass es nur eine dünne Schicht über dem eigentlichen Datenbankkern ist. Indem man genauer auf die Struktur dieses Kerns schaut, versteht man das API, das ihn umgibt, besser.
 
 <h4 id="key">Der Schlüssel zu ihren Daten</h4>
 
-<p>Das Herz von CouchDB ist eine mächtige <em>B-Tree</em> Storage Engine. Ein B-Tree ist eine sortierte Datenstruktur, welche Suchen, Einfügen und Löschen von Knoten in logarithmischer Zeit erlaubt. Wie <a href="#figure/2">Abbildung 2: Anatomie eines Lesezugriffs</a> zeigt, benutzt CouchDB die B-Tree Storage Engine für sämtliche internen Daten, Dokumente und Views. Versteht man einen, versteht man alle.
+<p>Das Herz von CouchDB ist eine mächtige <em>B-Tree</em> Storage Engine. Ein B-Tree ist eine sortierte Datenstruktur, welche Suchen, Einfügen und Löschen von Knoten in logarithmischer Zeit erlaubt. Wie <a href="#figure/2">Abbildung 2: Anatomie eines Lesezugriffs</a> zeigt, benutzt CouchDB die B-Tree Storage Engine für sämtliche internen Daten, Dokumente und Views. Hat man einen verstanden, versteht man alle.
 
 <div class="figure" id="figure/2">
 
@@ -89,7 +89,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 </div>
 
-<p>CouchDB verwendet MapReduce um die Ergebnisse einer View zu berechnen. MapReduce benutzt dazu zwei Funktionen "map" und "reduce", welche auf jedes Dokument separat angewendet werden. Die Möglichkeit diese Operationen zu isolieren führt dazu, dass man sie parallel und inkrementell ausführen kann. Wichtiger noch, weil diese Funktionen Key/Value Paare erzeugen, kann CouchDB sie nach Schlüssel sortiert in die B-Tree Storage Engine einfügen.  In <em>O Notation</em> in <em>O(log N)</em> beziehungsweise <em>O(log N + K)</em>.
+<p>CouchDB verwendet MapReduce um die Ergebnisse einer View zu berechnen. MapReduce benutzt dazu zwei Funktionen „map“ und „reduce“, welche auf jedes Dokument separat angewendet werden. Die Möglichkeit diese Operationen zu isolieren führt dazu, dass man sie parallel und inkrementell ausführen kann. Wichtiger noch, weil diese Funktionen Key/Value Paare erzeugen, kann CouchDB sie nach Schlüssel sortiert in die B-Tree Storage Engine einfügen.  In <em>O Notation</em> in <em>O(log N)</em> beziehungsweise <em>O(log N + K)</em>.
 
 <p>In CouchDB greift man auf Dokumente und Views über Schlüssel oder Schlüsselbereiche zu. Das ist eine direkte Abbildung der Operationen, die von CouchDBs B-Tree Storage Engine ausgeführt werden. Zusammen mit den Operationen für das Einfügen und Aktualisieren von Dokumenten sind es diese Funktionen, die uns das CouchDB API als eine dünne Schicht um den Datenbankkern beschreiben lassen.
 
@@ -97,7 +97,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <h4 id="locking">Kein Locking</h4>
 
-<p>Eine Tabelle in einer relationalen Datenbank ist eine große einzelne Datenstruktur. Wenn man eine Tabelle ändern möchte, um beispielsweise eine Zeile zu aktualisieren, muss sichergestellt sein, dass niemand versucht, die selbe Zeile zur gleichen Zeit zu ändern. Des weiteren müssen Lesezugriffe für diese Zeile unterbunden werden. Üblicherweise wird das durch ein <em>Lock</em> erreicht. Wenn mehrere Clients auf die Tabelle zugreifen, erhält der erste Client das Lock und sorgt so dafür, dass alle anderen warten müssen. Wenn der erste Client seine Anfrage beendet hat, erhält der nächste Client das Lock usw. Diese Serialisierung der Anfragen, selbst wenn sie gleichzeitig ankommen, benötigt eine erhebliche Menge an Rechenzeit. Unter großer Last kann es vorkommen, dass eine relationale Datenbank mehr damit beschäftigt ist herauszufinden, was in welcher Reihenfolge zu tun ist, als die Anfragen zu beantworten.
+<p>Eine Tabelle in einer relationalen Datenbank ist eine große einzelne Datenstruktur. Wenn man eine Tabelle ändern möchte, um beispielsweise eine Zeile zu aktualisieren, muss sichergestellt sein, dass niemand versucht, die selbe Zeile zur gleichen Zeit zu ändern. Des weiteren müssen Lesezugriffe für diese Zeile unterbunden werden. Üblicherweise wird das durch ein <em>Lock</em> erreicht. Wenn mehrere Clients gleichzeitig auf die Tabelle zugreifen, erhält der erste Client das Lock und sorgt so dafür, dass alle anderen warten müssen. Wenn der erste Client seine Anfrage beendet hat, erhält der nächste Client das Lock usw. Diese Serialisierung der Anfragen, selbst wenn sie gleichzeitig ankommen, benötigt eine erhebliche Menge an Rechenzeit. Unter großer Last kann es vorkommen, dass eine relationale Datenbank mehr damit beschäftigt ist herauszufinden, was in welcher Reihenfolge zu tun ist, als die Anfragen zu beantworten.
 
 <p>Anstelle von Locks verwendet CouchDB <em>Multi-Version Concurrency Control (MVCC)</em> um den konkurrierenden Zugriff auf die Datenbank zu verwalten. <a href="#figure/3">Abbildung 3: MVCC bedeutet kein Locking</a> veranschaulicht die Unterschiede zwischen MVCC und traditionellen Locking Mechanismen. MVCC bedeutet, dass CouchDB mit voller Geschwindigkeit arbeiten kann — selbst unter hoher Last. Anfragen werden parallel beantwortet und nutzen so jedes Quäntchen Rechenleistung aus, das Server zu bieten hat.
 
@@ -122,19 +122,19 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Anwendungsentwickler müssen berücksichtigen, welche Eingaben akzeptabel sind und welche nicht. Die Möglichkeiten von relationalen Datenbanken, komplexe Daten <em>innerhalb</em> der Datenbank zu überprüfen, sind beschränkt. CouchDB bietet dagegen mächtige Funktionen um Dokumente innerhalb der Datenbank zu validieren.
 
-<p>CouchDB kann Dokumente mithilfe von JavaScript validieren. Diese Funktionen sind ganz ähnlich zu den MapReduce Funktionen. Jedesmal wenn ein Dokument verändert werden soll, wird CouchDB eine Kopie des aktuellen und eine Kopie des neuen Dokuments zusammen mit einigen zusätzlichen Informationen wie Benutzer und Authentifizierungsdetails an die Validierungsfunktion übergeben. Diese hat nun die Möglichkeit, die Änderung zu erlauben oder abzulehnen.
+<p>CouchDB kann Dokumente mithilfe von JavaScript validieren. Diese Funktionen sind ganz ähnlich zu den MapReduce Funktionen. Jedesmal wenn ein Dokument verändert werden soll, wird CouchDB eine Kopie des aktuellen und eine Kopie des neuen Dokuments zusammen mit einigen zusätzlichen Informationen wie Benutzer und Authentifizierungsdetails an die Validierungsfunktion übergeben. Diese hat nun die Möglichkeit die Änderung zu erlauben oder abzulehnen.
 
 <p>In dem man CouchDB für sich arbeiten und diese Überprüfungen durchführen lässt, spart man unglaublich viel Aufwand und Rechenzeit, die sonst für die Serialisierung von Objektgraphen via SQL und die Umwandlung in Domainobjekte benutzt würde, um die Validierung schließlich in der Anwendung durchzuführen.
 
 <h3 id="distributed">Verteilte Konsistenz</h3>
 
-<p>Daten innerhalb eines einzelnen Datenbankknotens konsistent zu halten, ist für die meisten Datenbanken relativ einfach. Die Schwierigkeiten beginnen, wenn Konsistenz über mehrere Datenbankserver sichergestellt werden soll. Wenn ein Client einen Schreibzugriff auf Server <em>A</em> macht, wie stellt man sicher, dass das konsistent ist mit Server <em>B</em>, <em>C</em> oder <em>D</em>? Das ist ein ziemlich komplexes Problem für relationale Datenbanken, dessen Lösung ganze Bücher füllt. Man kann zwischen Multi-Master, Master/Slave, Partitionierung, Sharding, Write-Through Caches und vielen anderen Ansätzen wählen.
+<p>Daten innerhalb eines einzelnen Datenbankknotens konsistent zu halten, ist für die meisten Datenbanken relativ einfach. Die Schwierigkeiten beginnen, wenn Konsistenz über mehrere Datenbankserver sichergestellt werden soll. Wenn ein Client einen Schreibzugriff auf Server <em>A</em> macht, wie stellt man sicher, dass Server <em>B</em>, <em>C</em> oder <em>D</em> konsistent sind? Das ist für relationale Datenbanken ein ziemlich komplexes Problem, dessen Lösung ganze Bücher füllt. Man kann zwischen Multi-Master, Master/Slave, Partitionierung, Sharding, Write-Through Caches und vielen anderen Ansätzen wählen.
 
 <h4 id="incremental">Inkrementelle Replikation</h4>
 
 <p>CouchDB führt Operationen immer im Kontext eines einzelnen Dokuments aus. Da CouchDB letztendlich die Konsistenz zwischen verschiedenen Datenbanken mittels inkrementeller Replikation wieder herstellt, muss man sich keine Gedanken mehr darüber machen, ob die Verbindung zwischen den verschiedenen Servern auch permanent besteht. Inkrementelle Replikation ist ein Prozess bei dem Änderungen an Dokumenten periodisch zwischen den Servern kopiert werden. Damit ist es möglich einen sogenannten <em>Shared Nothing</em> Cluster von Datenbanken einzurichten, in dem jeder Knoten unabhängig ist und keinen Single Point of Failure darstellt. 
 
-<p>Muss der CouchDB Datenbank Cluster nach oben skaliert werden? Einfach einen Server dazustellen.
+<p>Muss der CouchDB Datenbank Cluster nach oben skaliert werden? Dann stellt man einfach einen Server dazu.
 
 <p>Wie in <a href="#figure/4">Abbildung 4: Inkrementelle Replikation zwischen CouchDB Knoten</a> dargestellt wird, synchronisiert die inkrementelle Replikation von CouchDB die Daten zwischen zwei beliebigen Datenbanken wann und wie auch immer man möchte. Nach der Replikation kann jede Datenbank unabhängig von der anderen arbeiten.
 
@@ -184,7 +184,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Wenn wir einen Laptop haben und mit dem Deskop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluß daran eine exakte Kopie der Wiedergabelisten haben.
 
-<p>Nachdem die Wiedergabeliste für Argentinische Tangos auf dem Laptop geändert wurde und nachdem wir ein paar neue Songs gekauft haben, sollen die Änderungen gespeichert werden. Die Backup Anwendung speichert die Änderungen in der CouchDB auf dem Laptop und erzeugt eine neue Version des Dokuments. Ein paar Tage später erinnern wir uns und möchten die Wiedergabelisten mit dem Desktop Computer synchronisieren. Wie in <a href="#figure/6">Abbildung 6: Synchronisation zwischen zwei Datenbanken</a> gezeigt wird, kopiert die Backup Anwendung das neue Dokument und die neue Version in die CouchDB auf dem Desktop Computer. Beide Computer haben nun die gleiche Version des Dokuments. 
+<p>Nachdem die Wiedergabeliste für Argentinische Tangos auf dem Laptop geändert wurde und wir ein paar neue Songs gekauft haben, sollen die Änderungen gespeichert werden. Die Backup Anwendung speichert die Änderungen in der CouchDB auf dem Laptop und erzeugt eine neue Version des Dokuments. Ein paar Tage später erinnern wir uns und möchten die Wiedergabelisten mit dem Desktop Computer synchronisieren. Wie in <a href="#figure/6">Abbildung 6: Synchronisation zwischen zwei Datenbanken</a> gezeigt wird, kopiert die Backup Anwendung das neue Dokument und die neue Version in die CouchDB auf dem Desktop Computer. Beide Computer haben nun die gleiche Version des Dokuments. 
 
 <div class="figure" id="figure/6">
 
