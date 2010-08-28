@@ -16,7 +16,7 @@
 
 <h3 id="grain">Arbeiten mit CouchDB</h3>
 
-<p>Ein <em>verteiltes System</em> ist ein System, welches zuverlässig über ein großes Netzwerk funktioniert. Eine spezielle Eigenschaft von Netzwerken ist, das Verbindungen jederzeit abbrechen können und es gibt viele Strategien wie man mit dieser Situation umgehen kann. CouchDB unterscheidet sich von anderen Systemen dadurch, dass es Eventual Consistency (die Daten sind letztendlich irgendwann konsistent) akzeptiert - im Gegensatz zu RDBMS und Paxos, die absolute Konsistenz über schlichte Verfügbarkeit stellen. All diesen Systeme ist gemeinsam, dass sich Daten anders verhalten, wenn viele Leute versuchen, gleichzeitig auf sie zuzugreifen. Ihre Ansätze unterscheiden sich, wenn es um die Gewichtung von <em>Konsistenz</em>, <em>Verfügbarkeit</em> oder <em>Partitionstoleranz</em> geht.
+<p>Ein <em>verteiltes System</em> ist ein System, welches zuverlässig über ein großes Netzwerk funktioniert. Eine spezielle Eigenschaft von Netzwerken ist, das Verbindungen jederzeit abbrechen können und es gibt viele Strategien wie man mit dieser Situation umgehen kann. CouchDB unterscheidet sich von anderen Systemen dadurch, dass es Eventual Consistency (die Daten sind letztendlich irgendwann konsistent) akzeptiert — im Gegensatz zu RDBMS und Paxos, die absolute Konsistenz über schlichte Verfügbarkeit stellen. All diesen Systeme ist gemeinsam, dass sich Daten anders verhalten, wenn viele Leute versuchen, gleichzeitig auf sie zuzugreifen. Ihre Ansätze unterscheiden sich, wenn es um die Gewichtung von <em>Konsistenz</em>, <em>Verfügbarkeit</em> oder <em>Partitionstoleranz</em> geht.
 
 <p>Verteilte Systeme zu entwerfen ist nicht einfach. Viele der Stolperfallen, die über die Zeit auftauchen, sind zu Beginn offensichtlich. CouchDB kennt nicht alle Antworten und es ist auch keine Allheilmittel. Wenn man jedoch mit CouchDB anstatt dagegen arbeitet, führen die so entwickelten Anwendungen automatisch zu skalierbaren Systemen. 
 
@@ -32,7 +32,7 @@
 
 <dt>Konsistenz</dt>
 
-<dd>Alle Datenbank Nutzer sehen die gleichen Daten - selbst bei konkurrierenden Updates.</dd>
+<dd>Alle Datenbank Nutzer sehen die gleichen Daten — selbst bei konkurrierenden Updates.</dd>
 
 <dt>Verfügbarkeit</dt>
 
@@ -68,7 +68,7 @@
 
 </blockquote>
 
-<p>Wenn Verfügbarkeit Priorität hat, können wir Clients die Daten zunächst auf einen Knoten schreiben lassen, ohne darauf zu warten, dass die anderen Knoten synchronisiert werden. Wenn die Datenbank weiß, wie sie mit dieser Situation umzugehen hat, sind die Daten irgendwann "letztendlich konsistent" - allerdings unter Aufgabe der Hochverfügbarkeit der Daten. Für viele Anwendungen ist das ein erstaunlich guter Kompromiß.  
+<p>Wenn Verfügbarkeit Priorität hat, können wir Clients die Daten zunächst auf einen Knoten schreiben lassen, ohne darauf zu warten, dass die anderen Knoten synchronisiert werden. Wenn die Datenbank weiß, wie sie mit dieser Situation umzugehen hat, sind die Daten irgendwann "letztendlich konsistent" — allerdings unter Aufgabe der Hochverfügbarkeit der Daten. Für viele Anwendungen ist das ein erstaunlich guter Kompromiß.  
 
 <p>Im Gegensatz zu traditionellen relationalen Datenbanken, bei denen jede Aktion notwendigerweise Konsistenzprüfungen über die ganze Datenbank nach sich ziehen, macht es CouchDB sehr einfach Anwendungen zu bauen, die sofortige Konsistenz gegen eine große Steigerung der Performanz eintauschen, die durch einfache Verteilung zustande kommt. 
 
@@ -99,7 +99,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Eine Tabelle in einer relationalen Datenbank ist eine große einzelne Datenstruktur. Wenn man eine Tabelle ändern möchte, um beispielsweise eine Zeile zu aktualisieren, muss sichergestellt sein, dass niemand versucht, die selbe Zeile zur gleichen Zeit zu ändern. Des weiteren müssen Lesezugriffe für diese Zeile unterbunden werden. Üblicherweise wird das durch ein <em>Lock</em> erreicht. Wenn mehrere Clients auf die Tabelle zugreifen, erhält der erste Client das Lock und sorgt so dafür, dass alle anderen warten müssen. Wenn der erste Client seine Anfrage beendet hat, erhält der nächste Client das Lock usw. Diese Serialisierung der Anfragen, selbst wenn sie gleichzeitig ankommen, benötigt eine erhebliche Menge an Rechenzeit. Unter großer Last kann es vorkommen, dass eine relationale Datenbank mehr damit beschäftigt ist herauszufinden, was in welcher Reihenfolge zu tun ist, als die Anfragen zu beantworten.
 
-<p>Anstelle von Locks verwendet CouchDB <em>Multi-Version Concurrency Control (MVCC)</em> um den konkurrierenden Zugriff auf die Datenbank zu verwalten. <a href="#figure/3">Abbildung 3: MVCC bedeutet kein Locking</a> veranschaulicht die Unterschiede zwischen MVCC und traditionellen Locking Mechanismen. MVCC bedeutet, dass CouchDB mit voller Geschwindigkeit arbeiten kann - selbst unter hoher Last. Anfragen werden parallel beantwortet und nutzen so jedes Quäntchen Rechenleistung aus, das Server zu bieten hat.
+<p>Anstelle von Locks verwendet CouchDB <em>Multi-Version Concurrency Control (MVCC)</em> um den konkurrierenden Zugriff auf die Datenbank zu verwalten. <a href="#figure/3">Abbildung 3: MVCC bedeutet kein Locking</a> veranschaulicht die Unterschiede zwischen MVCC und traditionellen Locking Mechanismen. MVCC bedeutet, dass CouchDB mit voller Geschwindigkeit arbeiten kann — selbst unter hoher Last. Anfragen werden parallel beantwortet und nutzen so jedes Quäntchen Rechenleistung aus, das Server zu bieten hat.
 
 
 <div class="figure" id="figure/3">
@@ -110,7 +110,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 </div>
 
-<p>Dokumente in CouchDB werden versioniert, ähnlich zu Versionskontrollsystemen wie Subversion. Wenn man einen Wert in einem Dokument ändern möchte, erzeugt man eine neue Version des Dokuments und speichert es neben dem alten. Anschließend hat man zwei Versionen des Dokuments - eine alte und eine neue.
+<p>Dokumente in CouchDB werden versioniert, ähnlich zu Versionskontrollsystemen wie Subversion. Wenn man einen Wert in einem Dokument ändern möchte, erzeugt man eine neue Version des Dokuments und speichert es neben dem alten. Anschließend hat man zwei Versionen des Dokuments — eine alte und eine neue.
 
 <p>Warum sollte das besser sein als Locking? Nehmen wir eine Gruppe von Anfragen für ein bestimmtes Dokument. Die erste Anfrage liest das Dokument. Während diese Anfrage bearbeitet wird, ändert die zweite Anfrage das Dokument. Da die zweite Anfrage eine komplett neue Version des Dokuments anlegt, kann CouchDB diese Version einfach an die Datenbank anhängen, ohne darauf zu warten, dass die erste Anfrage beendet wurde.
 
@@ -148,7 +148,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 </div>
 
-<p>Was passiert, wenn man das gleiche Dokument in zwei verschiedenen Datenbanken ändert und anschließend die Datenbanken synchronisieren möchte? CouchDBs Replikationssystem hat eine automatische Konflikterkennung <em>und</em> Konfliktauflösung. Wenn CouchDB erkennt, dass ein Dokument in beiden Datenbanken geändert wurde, wird es als konfliktbehaftet markiert - genau wie in einem normalen Versionskontrollsystem.
+<p>Was passiert, wenn man das gleiche Dokument in zwei verschiedenen Datenbanken ändert und anschließend die Datenbanken synchronisieren möchte? CouchDBs Replikationssystem hat eine automatische Konflikterkennung <em>und</em> Konfliktauflösung. Wenn CouchDB erkennt, dass ein Dokument in beiden Datenbanken geändert wurde, wird es als konfliktbehaftet markiert — genau wie in einem normalen Versionskontrollsystem.
 
 <p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, wird die Version, die <em>gewinnt</em> als aktuelles Dokument gespeichert. Die Version, die <em>verloren</em> hat, wird nicht vergessen, sondern als voherige Version gespeichert, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent in beiden Datenbanken auf die gleiche Weise. 
 
@@ -212,4 +212,4 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Das Design von CouchDB ist stark an die Architektur des Webs angelehnt und von den Erkenntnissen beim Bau von massiv verteilten Systemen inspiriert. Indem man versteht, warum diese Architektur so arbeitet wie sie es tut und durch Erkennen welche Teile einer Anwendung leicht verteilt werden können und welche nicht, schafft man die Möglichkeit, verteilte und skalierbare Anwendungen zu entwickeln. Mit CouchDB oder auch ohne.
 
-<p>Die Kernpunkte des Konsistenzmodells von CouchDB wurden besprochen und auf einige Vorteile hingewiesen, die man damit erreichen kann, wenn man <em>mit</em> CouchDB arbeitet anstatt dagegen. Doch genug der Theorie - fangen wir endlich an!
+<p>Die Kernpunkte des Konsistenzmodells von CouchDB wurden besprochen und auf einige Vorteile hingewiesen, die man damit erreichen kann, wenn man <em>mit</em> CouchDB arbeitet anstatt dagegen. Doch genug der Theorie — fangen wir endlich an!
