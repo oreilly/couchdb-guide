@@ -52,7 +52,7 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 
 <div class="aside note">
 
-<p><code>curl</code> sendet standardmäßig <code>GET</code> Requests. Um <code>POST</code> Requests zu verschicken, muss man <code>curl -X POST</code> verwenden. Um die Terminal History verwenden zu können, nutzen wir in der Regel die <code>-X</code> Option auch bei <code>GET</code> Requests. Beim nächsten <code>POST</code> Request müssen wir nur die Methode ändern.
+<p><code>curl</code> sendet standardmäßig <code>GET</code> Requests. Um <code>POST</code> Requests zu verschicken, muss man <code>curl -X POST</code> verwenden. Um die Terminal History verwenden zu können, nutzen wir in der Regel die <code>-X</code> Option auch bei <code>GET</code> Requests. Beim nächsten <code>POST</code> Request müssen wir dann nur die Methode ändern.
 
 <p>Unter der Haube ist der HTTP Request etwas komplexer als er hier dargstellt wird. Um alle Details von Request und Response zu sehen, verwendet man die <code>-v</code> Option (z.B. <code>curl -vX GET</code>). Damit werden der Host, mit dem sich <code>curl</code> verbindet sowie sämtliche Header angezeigt. Ideal zum Debuggen!
 
@@ -75,6 +75,8 @@ curl -X PUT http://127.0.0.1:5984/baseball
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
+
+<p>CouchDB antwortet mit:
 
 <pre>
 ["baseball"]
@@ -100,7 +102,7 @@ curl -X PUT http://127.0.0.1:5984/baseball
 {"error":"file_exists","reason":"The database could not be created, the file already exists."}
 </pre>
 
-<p>Es gibt schon eine Datenbank mit diesem Namen, daher antwortet CouchDB mit einer Fehlermeldung. Versuchen wir einen anderen Namen:
+<p>Da es schon eine Datenbank mit diesem Namen gibt, antwortet CouchDB mit einer Fehlermeldung. Versuchen wir es mit einen anderen Namen:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/plankton
@@ -162,7 +164,7 @@ http://127.0.0.1:5984/_utils/
 
 <p>Ab Version 0.9 oder später sollte die Oberfläche ungefähr wie in <a href="#figure/1">Abbildung 1 „Der Futon Home Screen”</a> aussehen. In späteren Kapiteln gehen wir dann mehr darauf ein, CouchDB mit Server Sprachen wir Ruby und Python zu nutzen. Deshalb ist das jetzt eine gute Gelegenheit zu zeigen, wie man eine dynamische Webanwendung ausschließlich mit CouchDB und seinem integrierten Webserver ausliefert. Das ist vielleicht auch etwas für ihre Anwendungen.
 
-<p>Das erste, was man mit einer neuen CouchDB Installation machen sollte, ist die Test Suite auszuführen, um sicherzustellen, dass alles korrekt funktioniert. Liefern die Tests keine Fehler kann ausgeschlossen werden, dass spätere Probleme an einem fehlerhaften Setup liegen. Zugleich ist ein Fehler in der Test Suite ein Warnzeichen, die Installation noch einmal genau zu überprüfen bevor man einen eventuell defekten Datenbankserver produktiv einsetzt. Damit sparen wir uns viele Kopfschmerzen, wenn die Dinge nicht so recht laufen, wie sie sollten.
+<p>Das erste, was man mit einer neuen CouchDB Installation machen sollte, ist die Test Suite auszuführen, um sicherzustellen, dass alles korrekt funktioniert. Liefern die Tests keine Fehler kann ausgeschlossen werden, dass spätere Probleme an einem fehlerhaften Setup liegen. Zugleich ist ein Fehler in der Test Suite ein Warnzeichen, die Installation noch einmal genau zu überprüfen bevor man einen eventuell defekten Datenbankserver produktiv einsetzt. Damit sparen wir uns viele Kopfschmerzen, wenn die Dinge nicht so laufen, wie sie sollten.
 
 <div class="figure" id="figure/1">
 
@@ -188,7 +190,7 @@ http://127.0.0.1:5984/_utils/
 
 </div>
 
-<p>Da die Test Suite vom Browser aus gestartet wird, testet sie nicht nur die Funktion von CouchDB, sondern auch das die Kommunikation zwischen Browser und CouchDB korrekt funktioniert. Das kann sehr hilfreich sein für schlecht konfigurierte Proxies oder andere HTTP Middleware.
+<p>Da die Test Suite vom Browser aus gestartet wird, testet sie nicht nur die Funktion von CouchDB, sondern auch das die Kommunikation zwischen Browser und CouchDB korrekt funktioniert. Das kann sehr hilfreich sein, schlecht konfigurierte Proxies oder andere HTTP Middleware zu erkennen.
 
 <div class="aside warning">
 
@@ -196,7 +198,7 @@ http://127.0.0.1:5984/_utils/
 
 </div>
 
-<p>Nachdem die Test Suite erfolgreich durchlaufen wurde, wissen sie, dass ihre CouchDB Installation korrekt arbeitet und es kann weiter gehen mit anderen Funktionen, die Futon zu bieten hat.
+<p>Nachdem die Test Suite erfolgreich durchlaufen wurde, wissen sie, dass ihre CouchDB Installation korrekt arbeitet und es kann weiter gehen mit den anderen Funktionen, die Futon zu bieten hat.
 
 <h3 id="first">Your First Database and Document</h3>
 
