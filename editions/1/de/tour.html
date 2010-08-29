@@ -1,4 +1,4 @@
-<title>Getting Started</title>
+<title>Der Anfang</title>
 
 <meta charset="utf-8">
 
@@ -10,67 +10,67 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="tour">Getting Started</h2>
+<h2 id="tour">Der Anfang</h2>
 
-<p>In this chapter, we’ll take a quick tour of CouchDB’s features, familiarizing ourselves with <em>Futon</em>, the built-in administration interface. We’ll create our first document and experiment with CouchDB views. Before we start, skip to <a href="source.html">Appendix D, Installing from Source</a> and look for your operating system. You will need to follow those instructions and get CouchDB installed before you can progress.
+<p>In diesem Kapitel werden wir die einzelnen Funktionen von CouchDB kurz vorstellen. Dazu gehört auch <em>Futon</em>, die integrierte Administrationsanwendung. Wir werden ein erstes Dokument anlegen und die Views von CouchDB genauer untersuchen. Zunächst jedoch muß CouchDB installiert und konfiguriert werden. Die passende Anleitung für das jeweilige Betriebssystem sind in <a href="source.html">Anhang D - Installation von den Sourcen</a>.
 
-<h3 id="go">All Systems Are Go!</h3>
+<h3 id="go">Alles auf Grün</h3>
 
-<p>We’ll have a very quick look at CouchDB’s bare-bones <em>Application Programming Interface (API)</em> by using the command-line utility <code>curl</code>. Please note that this is only one way of talking to CouchDB. We will show you plenty more throughout the rest of the book. What’s interesting about <code>curl</code> is that it gives you control over raw HTTP requests, and you can see exactly what is going on “underneath the hood” of your database.
+<p>Anfangen wollen wir mit dem kompakten CouchDB <em>API (Application Programming Interface)</em>, welches mit dem Kommandozeilentool <code>curl</code> bedient werden kann. Das ist nur ein möglicher Weg, um mit CouchDB zu arbeiten. Es gibt noch viele andere Wege, die wir im Laufe des Buchs noch vorstellen werden. Das Interessante an <code>curl</code> ist, dass es volle Kontrolle über die reinen HTTP Requests erlaubt, denn man sieht genau was „unter der Haube“ passiert. 
 
-<p>Make sure CouchDB is still running, and then do:
+<p>Zunächst stellen wir sicher, dass CouchDB noch läuft. Danach führen wir folgendes Kommando aus:
 
 <pre>
 curl http://127.0.0.1:5984/
 </pre>
 
-<p>This issues a <code>GET</code> request to your newly installed CouchDB instance.
+<p>Das sendet einen <code>GET</code> Request zu CouchDB.
 
-<p>The reply should look something like:
+<p>Die Antwort sollte ungefähr so aussehen:
 
 <pre>
 {"couchdb":"Welcome","version":"0.10.1"}
 </pre>
 
-<p>Not all that spectacular. CouchDB is saying “hello” with the running version number.
+<p>Nicht besonders aufregend. CouchDB sagt „Hallo“ und teilt uns seine Versionsnummer mit. 
 
-<p>Next, we can get a list of databases:
+<p>Anschließend holen wir die Liste der verfügbaren Datenbanken:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>All we added to the previous request is the <code>_all_dbs</code> string.
+<p>Dazu mussten wir lediglich <code>_all_dbs</code> an den vorherigen Request anhängen.
 
-<p>The response should look like:
+<p>Die Antwort sollte ungefähr so aussehen:
 
 <pre>
 []
 </pre>
 
-<p>Oh, that’s right, we didn’t create any databases yet! All we see is an empty list.
+<p>Hmm, vielleicht sollten wir zuerst eine Datenbank anlegen. Was wir zurückbekommen haben ist eine leere Liste.
 
 <div class="aside note">
 
-<p>The <code>curl</code> command issues <code>GET</code> requests by default. You can issue <code>POST</code> requests using <code>curl -X POST</code>. To make it easy to work with our terminal history, we usually use the <code>-X</code> option even when issuing <code>GET</code> requests. If we want to send a <code>POST</code> next time, all we have to change is the method.
+<p><code>curl</code> sendet standardmäßig <code>GET</code> Requests. Um <code>POST</code> Requests zu verschicken, muss man <code>curl -X POST</code> verwenden. Um die Terminal History verwenden zu können, nutzen wir in der Regel die <code>-X</code> Option auch bei <code>GET</code> Requests. Beim nächsten <code>POST</code> Request müssen wir nur die Methode ändern.
 
-<p>HTTP does a bit more under the hood than you can see in the examples here. If you’re interested in every last detail that goes over the wire, pass in the <code>-v</code> option (e.g., <code>curl -vX GET</code>), which will show you the server <code>curl</code> tries to connect to, the request headers it sends, and response headers it receives back. Great for debugging!
+<p>Unter der Haube ist der HTTP Request etwas komplexer als er hier dargstellt wird. Um alle Details von Request und Response zu sehen, verwendet man die <code>-v</code> Option (z.B. <code>curl -vX GET</code>). Damit werden der Host, mit dem sich <code>curl</code> verbindet sowie sämtliche Header angezeigt. Ideal zum Debuggen!
 
 </div>
 
-<p>Let’s create a database:
+<p>Legen wir eine Datenbank an:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/baseball
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>Retrieving the list of databases again shows some useful results this time:
+<p>Diesmal ist die Liste der verfügbaren Datenbanken etwas umfangreicher:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
@@ -82,121 +82,121 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 
 <div class="aside note">
 
-<p>We should mention <em>JavaScript Object Notation (JSON)</em> here, the data format CouchDB speaks. JSON is a lightweight data interchange format based on JavaScript syntax. Because JSON is natively compatible with JavaScript, your web browser is an ideal client for CouchDB.
+<p>Das ist eine gute Gelegenheit die <em>JavaScript Object Notation (JSON)</em> zu erwähnen — die Sprache für Daten in CouchDB. JSON ist ein schlankes Format zum Austausch von Daten auf Basis der JavaScript Syntax. Da JSON direkt von JavaScript verstanden wird, ist der Web Browser ein idealier Client für CouchDB.
 
-<p>Brackets (<code>[]</code>) represent ordered lists, and curly braces (<code>{}</code>) represent key/value dictionaries. Keys must be strings, delimited by quotes (<code>"</code>), and values can be strings, numbers, booleans, lists, or key/value dictionaries. For a more detailed description of JSON, see <a href="json.html">Appendix E, JSON Primer</a>.
+<p>Eckige Klammern (<code>[]</code>) sind sortierte Listen und geschweifte Klammern (<code>{}</code>) sind Key/Value Hashmaps. Die Schlüssel müssen Strings mit doppelten Anführungszeichen (<code>"</code>) sein. Die Werte können Strings, Zahlen, Bool'sche Werte, Listen oder andere Key/Value Hashmaps sein. Eine ausführlichere Beschreibugn von JSON ist im <a href="json.html">Anhang E — JSON Einführung</a>.
 
 </div>
 
-<p>Let’s create another database:
+<p>Legen wir noch eine Datenbank an:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/baseball
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"error":"file_exists","reason":"The database could not be created, the file already exists."}
 </pre>
 
-<p>We already have a database with that name, so CouchDB will respond with an error. Let’s try again with a different database name:
+<p>Es gibt schon eine Datenbank mit diesem Namen, daher antwortet CouchDB mit einer Fehlermeldung. Versuchen wir einen anderen Namen:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/plankton
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>Retrieving the list of databases yet again shows some useful results:
+<p>Die Liste der verfügbaren Datenbanken sollte nun beide Datenbanken anzeigen:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>CouchDB will respond with:
+<p>CouchDB antwortet mit:
 
 <pre>
 ["baseball", "plankton"]
 </pre>
 
-<p>To round things off, let’s delete the second database:
+<p>Zum Abschluß entfernen wir die zweite Datenbank:
 
 <pre>
 curl -X DELETE http://127.0.0.1:5984/plankton
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>The list of databases is now the same as it was before:
+<p>Die Liste der Datenbanken ist nun wieder so wie vorher:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>CouchDB will respond with:
+<p>CouchDB antwortet mit:
 
 <pre>
 ["baseball"]
 </pre>
 
-<p>For brevity, we’ll skip working with documents, as the next section covers a different and potentially easier way of working with CouchDB that should provide experience with this. As we work through the example, keep in mind that “under the hood” everything is being done by the application exactly as you have been doing here manually. Everything is done using <code>GET</code>, <code>PUT</code>, <code>POST</code>, and <code>DELETE</code> with a URI.
+<p>Um die Sache abzukürzen, überspringen wir das Arbeiten mit Dokumenten, da der nächste Abschnitte einen anderen und wahrscheinlich einfacheren Weg zeigt, um mit CouchDB Dokumente zu verwalten. Während wir durch die Beispiele gehen, sollten wir im Hinterkopf behalten, dass die Anwendung „unter der Haube“ genauso arbeitet, wie wir in den vorherigen Beispielen. Alle Aktionen werden über eine URI und <code>GET</code>, <code>PUT</code>, <code>POST</code> und <code>DELETE</code> durchgeführt.
 
-<h3 id="welcome">Welcome to Futon</h3>
+<h3 id="welcome">Willkommen zu Futon</h3>
 
-<p>After having seen CouchDB’s raw API, let’s get our feet wet by playing with Futon, the built-in administration interface. Futon provides full access to all of CouchDB’s features and makes it easy to work with some of the more complex ideas involved. With Futon we can create and destroy databases; view and edit documents; compose and run MapReduce views; and trigger replication between databases.
+<p>Nachdem wir die nackte HTTP Schnittstelle von CouchDB gesehen haben, gehen wir einen Schritt weiter zu Futon, der integrierten Administrationsanwendung. Futon bietet vollen Zugang zu sämtlichen Funktionen von CouchDB und macht es einfach mit den komplexeren Features von CouchDB zu experementieren. Mit Futon kann man Datenbanken anlegen und löschen, Dokumente anzeigen und bearbeiten, MapReduce Views erzeugen und ausführen als auch die Replikation zwischen Datenbanken anstoßen.
 
-<p>To load Futon in your browser, visit:
+<p>Um Futon zu laden müssen wir folgende URL öffnen:
 
 <pre>
 http://127.0.0.1:5984/_utils/
 </pre>
 
-<p>If you’re running version 0.9 or later, you should see something similar to <a href="#figure/1">Figure 1, “The Futon welcome screen”</a>. In later chapters, we’ll focus on using CouchDB from server-side languages such as Ruby and Python. As such, this chapter is a great opportunity to showcase an example of natively serving up a dynamic web application using nothing more than CouchDB’s integrated web server, something you may wish to do with your own applications.
+<p>Ab Version 0.9 oder später sollte die Oberfläche ungefähr wie in <a href="#figure/1">Abbildung 1 „Der Futon Home Screen”</a> aussehen. In späteren Kapiteln gehen wir dann mehr darauf ein, CouchDB mit Server Sprachen wir Ruby und Python zu nutzen. Deshalb ist das jetzt eine gute Gelegenheit zu zeigen, wie man eine dynamische Webanwendung ausschließlich mit CouchDB und seinem integrierten Webserver ausliefert. Das ist vielleicht auch etwas für ihre Anwendungen.
 
-<p>The first thing we should do with a fresh installation of CouchDB is run the test suite to verify that everything is working properly. This assures us that any problems we may run into aren’t due to bothersome issues with our setup. By the same token, failures in the Futon test suite are a red flag, telling us to double-check our installation before attempting to use a potentially broken database server, saving us the confusion when nothing seems to be working quite like we expect!
+<p>Das erste, was man mit einer neuen CouchDB Installation machen sollte, ist die Test Suite auszuführen, um sicherzustellen, dass alles korrekt funktioniert. Liefern die Tests keine Fehler kann ausgeschlossen werden, dass spätere Probleme an einem fehlerhaften Setup liegen. Zugleich ist ein Fehler in der Test Suite ein Warnzeichen, die Installation noch einmal genau zu überprüfen bevor man einen eventuell defekten Datenbankserver produktiv einsetzt. Damit sparen wir uns viele Kopfschmerzen, wenn die Dinge nicht so recht laufen, wie sie sollten.
 
 <div class="figure" id="figure/1">
 
 <img src="tour/01.png">
 
-<p class="caption">Figure 1. The Futon welcome screen
+<p class="caption">Abbildung 1: Der Futon Home Screen
 
 </div>
 
 <div class="aside warning">
 
-<p>Some common network configurations cause the replication test to fail when accessed via the <code>localhost</code> address. You can fix this by accessing CouchDB via <em>http://127.0.0.1:5984/_utils/</em>.
+<p>Bei einigen Netzwerkkonfigurationen schlagen die Tests für die Replikation fehl, wenn auf den CouchDB Server über <code>localhost</code> zugegriffen wird. Das kann man umgehen, indem man stattdessen direkt über die IP Adresse mit <code>http://127.0.0.1:5984/_utils/</code> zugreift.
 
 </div>
 
-<p>Navigate to the test suite by clicking “Test Suite” on the Futon sidebar, then click “run all” at the top to kick things off. <a href="#figure/2">Figure 2, “The Futon test suite running some tests”</a> shows the Futon test suite running some tests.
+<p>Um die Test Suite auszuführen, klickt man rechts in der Futon Seitenleiste auf „Test Suite“ und anschließend oben auf „Run all“ um die Tests zu starten. <a href="#figure/2">Abbildung 2 Futon Test Suite in Aktion</a> zeigt die Futon Test Suite während die Tests ausgeführt werden
 
 <div class="figure" id="figure/2">
 
 <img src="tour/02.png">
 
-<p class="caption">Figure 2. The Futon test suite running some tests
+<p class="caption">Abbildung 2: Futon Test Suite in Aktion
 
 </div>
 
-<p>Because the test suite is run from the browser, not only does it test that CouchDB is functioning properly, it also verifies that your browser’s connection to the database is properly configured, which can be very handy for diagnosing misbehaving proxies or other HTTP middleware.
+<p>Da die Test Suite vom Browser aus gestartet wird, testet sie nicht nur die Funktion von CouchDB, sondern auch das die Kommunikation zwischen Browser und CouchDB korrekt funktioniert. Das kann sehr hilfreich sein für schlecht konfigurierte Proxies oder andere HTTP Middleware.
 
 <div class="aside warning">
 
-<p>If the test suite has an inordinate number of failures, you’ll need to see the troubleshooting section in <a href="source.html">Appendix D, Installing from Source</a> for the next steps to fix your installation.
+<p>Falls die Test Suite eine ungewöhnlich hohe Anzahl von Fehlern produziert, sollten sie den Abschnitt Troubleshooting in <a href="source.html">Anhang D Installation von Source</a> durchlesen, um die Installation zu reparieren.
 
 </div>
 
-<p>Now that the test suite is finished, you’ve verified that your CouchDB installation is successful and you’re ready to see what else Futon has to offer.
+<p>Nachdem die Test Suite erfolgreich durchlaufen wurde, wissen sie, dass ihre CouchDB Installation korrekt arbeitet und es kann weiter gehen mit anderen Funktionen, die Futon zu bieten hat.
 
 <h3 id="first">Your First Database and Document</h3>
 
