@@ -200,27 +200,27 @@ http://127.0.0.1:5984/_utils/
 
 <p>Nachdem die Test Suite erfolgreich durchlaufen wurde, wissen sie, dass ihre CouchDB Installation korrekt arbeitet und es kann weiter gehen mit den anderen Funktionen, die Futon zu bieten hat.
 
-<h3 id="first">Your First Database and Document</h3>
+<h3 id="first">Die erste Datenbank und das erste Dokument</h3>
 
-<p>Creating a database in Futon is simple. From the overview page, click “Create Database.” When asked for a name, enter <code>hello-world</code> and click the Create button.
+<p>Eine Datenbank in Futon zu erstellen ist simpel. Auf der Übersichtsseite klickt man auf „Create Database“. Wenn man nach einem Namen gefragt wird, gibt man <code>hello-world</code> ein und klickt auf den „Create“ Button.
 
-<p>After your database has been created, Futon will display a list of all its documents. This list will start out empty (<a href="#figure/3">Figure 3, “An empty database in Futon”</a>), so let’s create our first document. Click the “Create Document” link and then the Create button in the pop up. Make sure to leave the document ID blank, and CouchDB will generate a UUID for you.
+<p>Nachdem die Datenbank angelegt wurde zeigt Futon eine Liste aller Dokumente. Da diese Liste ist anfangs leer ist (<a href="#figure/3">Abbildung 3: Eine leere Datenbank in Futon</a>), sollten wir mit einem Klick auf „New Document“ ein erstes Dokument anlegen. Futon wird dabei das <code>_id</code> Feld bereits mit einer UUID vorbelegt haben. Lässt man es frei, wird CouchDB eine UUID für das Dokument bestimmen. Um das Dokument zu speichern, klickt man zum Schluß auf „Save Document“.
 
 <div class="aside warning">
 
-<p>For demoing purposes, having CouchDB assign a UUID is fine. When you write your first programs, we recommend assigning your own UUIDs. If your rely on the server to generate the UUID and you end up making two POST requests because the first POST request bombed out, you might generate two docs and never find out about the first one because only the second one will be reported back. Generating your own UUIDs makes sure that you’ll never end up with duplicate documents.
+<p>Für die Beispiele ist es in Ordnung, wenn CouchDB die UUIDs für die Dokumente bestimmt. Für eigene Anwendungen empfehlen wir jedoch, die UUIDs selber zu wählen. Wenn man sich auf darauf verlässt, den Server die UUIDs wählen zu lassen und man zwei POST Requests macht weil der erste fehlschlägt, kann es sein, das man zwei Dokumente erzeugt hat. Das erste geht verloren, weil nur das Anlegen des zweiten erfolgreich gemeldet wird. Wenn man die UUIDs selber wählt, kann man sicher sein, keine doppelten Dokumente zu haben.
 
 </div>
 
-<p>Futon will display the newly created document, with its <code>_id</code> and <code>_rev</code> as the only fields. To create a new field, click the “Add Field” button. We’ll call the new field <code>hello</code>. Click the green check icon (or hit the Enter key) to finalize creating the <code>hello</code> field. Double-click the <code>hello</code> field’s value (default <code>null</code>) to edit it.
+<p>Futon zeigt anschließend das neu Dokument mit den beiden einzigen Attributen <code>_id</code> und <code>_rev</code> an. Um ein weiteres Feld hinzuzufügen, klickt man auf „Add Field“. Nennen wir das neue Feld <code>hello</code> und es wird mit einem Default Wert von <code>null</code> angelegt. Bei einem Doppelklick auf den Wert von <code>hello</code> kann man ihn ändern.
 
-<p>If you try to enter <code>world</code> as the new value, you’ll get an error when you click the value’s green check icon. CouchDB values must be entered as valid JSON. Instead, enter <code>"world"</code> (with quotes) because this is a valid JSON string. You should have no problems saving it. You can experiment with other JSON values; e.g., <code>[1, 2, "c"]</code> or <code>{"foo":"bar"}</code>. Once you’ve entered your values into the document, make a note of its <code>_rev</code> attribute and click “Save Document.” The result should look like <a href="#figure/4">Figure 4, “A “hello world” document in Futon”</a>.
+<p>Wenn man versucht ungültiges JSON als neuen Wert einzutragen, erhält man einen Fehler, wenn man auf den grünen Haken klickt. CouchDB Werte müssen ein gültiger JSON Ausdruck sein. Streng genommen sollte Futon den Wert <code>world</code> als ungültig ablehnen, weil in JSON Strings in einfachen oder doppelten Anführungszeichen stehen müssen. Futon erkennt jedoch, dass wir einen String eingeben möchten und fügt die Anführungszeichen selber hinzu. Experementieren sie ein wenig mit anderen JSON Ausdrücken wie <code>[1, 2, "c"]</code> oder <code>{"foo":"bar"}</code>. Achten sie vor dem Speichern auf den Wert des <code>_rev</code> Attributes und klicken dann auf „Save Document“. Das Ergebnis sollte so ähnlich aussehen, wie in <a href="#figure/4">Abbildung 4: Ein „Hello World“ Dokument in Futon</a>.
 
 <div class="figure" id="figure/3">
 
 <img src="tour/03.png">
 
-<p class="caption">Figure 3. An empty database in Futon
+<p class="caption">Abbildung 3: Eine leere Datenbank in Futon
 
 </div>
 
@@ -228,19 +228,20 @@ http://127.0.0.1:5984/_utils/
 
 <img src="tour/04.png">
 
-<p class="caption">Figure 4. A “hello world” document in Futon
+<p class="caption">Abbildung 4: Ein „Hello World“ Dokument in Futon
 
 </div>
 
-<p>You’ll notice that the document’s <code>_rev</code> has changed. We’ll go into more detail about this in later chapters, but for now, the important thing to note is that <code>_rev</code> acts like a safety feature when saving a document. As long as you and CouchDB agree on the most recent <code>_rev</code> of a document, you can successfully save your changes.
+<p>Wenn sie gut aufgepasst haben, ist ihnen aufgefallen, dass sich der Wert des <code>_rev</code> Attributs geändert hat. Wir werden auf die Bedeutung später noch genauer eingehen. Im Moment genügt es zu verstehen, dass das <code>_rev</code> Attribut ein Sicherheitsmechanismus ist, wenn man ein Dokument speichert. So lange CouchDB und ihre Anwendung die gleiche Version des Dokuments als die aktuelle betrachten, können sie das Dokument speichern.
 
-<p>Futon also provides a way to display the underlying JSON data, which can be more compact and easier to read, depending on what sort of data you are dealing with. To see the JSON version of our “hello world” document, click the Source tab. The result should look like <a href="#figure/5">Figure 5, “The JSON source of a “hello world” document in Futon”</a>.
+<p>Futon erlaubt auch, das Dokument als JSON auszugeben, was jenach Daten kompakter und einfacher zu lesen sein kann. Um die JSON Repräsentation unseres „Hello World“ Dokuments zu sehen, klickt man auf den „Source“ Reiter. Das Ergebnis sollte ungefähr so aussehen wie in <a href="#figure/5">Abbildung 5: Der JSON Source eines „Hello World“ Dokuments in Futon</a>.
+
 
 <div class="figure" id="figure/5">
 
 <img src="tour/05.png">
 
-<p class="caption">Figure 5. The JSON source of a “hello world” document in Futon
+<p class="caption">Abbildung 5: Der JSON Source eines „Hello World“ Dokuments in Futon
 
 </div>
 
