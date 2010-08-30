@@ -16,15 +16,15 @@
 
 <h3 id="go">Alles auf Grün</h3>
 
-<p>Anfangen wollen wir mit dem kompakten CouchDB <em>API (Application Programming Interface)</em>, welches mit dem Kommandozeilentool <code>curl</code> bedient werden kann. Das ist nur ein möglicher Weg, um mit CouchDB zu arbeiten. Es gibt noch viele andere Wege, die wir im Laufe des Buchs noch vorstellen werden. Das Interessante an <code>curl</code> ist, dass es volle Kontrolle über die reinen HTTP Requests erlaubt, denn man sieht genau was „unter der Haube“ passiert. 
+<p>CouchDB hat ein kompaktes HTTP <em>API (Application Programming Interface)</em>, das man gut mit dem Kommandozeilentool <code>curl</code> bedienen kann. Neben <em>curl</em> gibt es noch viele andere Möglichkeiten mit CouchDB zu arbeiten, wie wir später noch sehen werden. Das Interessante an <code>curl</code> ist, dass es volle Kontrolle über die reinen HTTP Requests erlaubt, denn man sieht genau was „unter der Haube“ passiert. 
 
-<p>Zunächst stellen wir sicher, dass CouchDB noch läuft. Danach führen wir folgendes Kommando aus:
+<p>Prüfen wir, ob CouchDB noch läuft:
 
 <pre>
 curl http://127.0.0.1:5984/
 </pre>
 
-<p>Das sendet einen <code>GET</code> Request zu CouchDB.
+<p>Damit wird ein einfacher HTTP <code>GET</code> Request ohne Parameter zu CouchDB geschickt. 
 
 <p>Die Antwort sollte ungefähr so aussehen:
 
@@ -40,7 +40,7 @@ curl http://127.0.0.1:5984/
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>Dazu mussten wir lediglich <code>_all_dbs</code> an den vorherigen Request anhängen.
+<p>Der Request unterscheidet sich vom vorherigen nur durch <code>_all_dbs</code> am Ende.
 
 <p>Die Antwort sollte ungefähr so aussehen:
 
@@ -48,17 +48,17 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 []
 </pre>
 
-<p>Hmm, vielleicht sollten wir zuerst eine Datenbank anlegen. Was wir zurückbekommen haben ist eine leere Liste.
+<p>Da wir noch keine Datenbank angelegt haben, antwortet CouchDB mit einer leeren Liste.
 
 <div class="aside note">
 
-<p><code>curl</code> sendet standardmäßig <code>GET</code> Requests. Um <code>POST</code> Requests zu verschicken, muss man <code>curl -X POST</code> verwenden. Um die Terminal History verwenden zu können, nutzen wir in der Regel die <code>-X</code> Option auch bei <code>GET</code> Requests. Beim nächsten <code>POST</code> Request müssen wir dann nur die Methode ändern.
+<p>Ohne zusätzliche Parameter sendet <code>curl</code> immer <code>GET</code> Requests. Um <code>POST</code> Requests zu verschicken, muss man <code>curl</code> mit <code>-X POST</code> aufrufen. Wir verwenden in der Regel die <code>-X</code> Option auch bei <code>GET</code> Requests, um die Terminal Historie besser nutzen zu können. Beim nächsten <code>POST</code> Request muß dann nur die Methode geändert werden.
 
-<p>Unter der Haube ist der HTTP Request etwas komplexer als er hier dargstellt wird. Um alle Details von Request und Response zu sehen, verwendet man die <code>-v</code> Option (z.B. <code>curl -vX GET</code>). Damit werden der Host, mit dem sich <code>curl</code> verbindet sowie sämtliche Header angezeigt. Ideal zum Debuggen!
+<p>Der tatsächliche HTTP Request ist etwas komplexer als er hier dargestellt wird, weil <code>curl</code> einige Details der Übersichtlichkeit halber weglässt. Um alle Details von Request und Response zu sehen, ruft man <code>curl</code> mit der <code>-v</code> Option auf, z.B. <code>curl -vX GET</code>. Damit werden der Host, mit dem sich <code>curl</code> verbindet sowie sämtliche Header angezeigt. Ideal zum Debuggen!
 
 </div>
 
-<p>Legen wir eine Datenbank an:
+<p>Legen wir nun eine Datenbank an:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/baseball
@@ -70,7 +70,7 @@ curl -X PUT http://127.0.0.1:5984/baseball
 {"ok":true}
 </pre>
 
-<p>Diesmal ist die Liste der verfügbaren Datenbanken etwas umfangreicher:
+<p>Anschließend taucht die neue Datenbank in der Liste der Datenbanken auf:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
@@ -84,9 +84,9 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 
 <div class="aside note">
 
-<p>Das ist eine gute Gelegenheit die <em>JavaScript Object Notation (JSON)</em> zu erwähnen — die Sprache für Daten in CouchDB. JSON ist ein schlankes Format zum Austausch von Daten auf Basis der JavaScript Syntax. Da JSON direkt von JavaScript verstanden wird, ist der Web Browser ein idealier Client für CouchDB.
+<p>Jetzt ist ein guter Zeitpunkt auf <em>JSON</em>, die <em>JavaScript Object Notation</em> hinzuweisen. JSON ist die Sprache der Daten in CouchDB. Es ist ein schlankes Format auf Basis der JavaScript Notation. Da JSON direkt von JavaScript verstanden wird, ist der Web Browser ein idealer Client für CouchDB.
 
-<p>Eckige Klammern (<code>[]</code>) sind sortierte Listen und geschweifte Klammern (<code>{}</code>) sind Key/Value Hashmaps. Die Schlüssel müssen Strings mit doppelten Anführungszeichen (<code>"</code>) sein. Die Werte können Strings, Zahlen, Bool'sche Werte, Listen oder andere Key/Value Hashmaps sein. Eine ausführlichere Beschreibugn von JSON ist im <a href="json.html">Anhang E — JSON Einführung</a>.
+<p>JSON kann man leicht erklären: Eckige Klammern (<code>[]</code>) sind sortierte Listen und geschweifte Klammern (<code>{}</code>) sind Key/Value Hashmaps. Die Schlüssel müssen Strings in doppelten Anführungszeichen (<code>"</code>) sein. Die Werte können Strings, Zahlen, Bool'sche Werte, Listen oder andere Key/Value Hashmaps sein. Das war's eigentlich schon. Eine ausführlichere Beschreibung von JSON ist im <a href="json.html">Anhang E — JSON Einführung</a>.
 
 </div>
 
@@ -126,7 +126,7 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 ["baseball", "plankton"]
 </pre>
 
-<p>Zum Abschluß entfernen wir die zweite Datenbank:
+<p>Die zweite Datenbank brauchen wir nicht, also löschen wir sie:
 
 <pre>
 curl -X DELETE http://127.0.0.1:5984/plankton
@@ -138,7 +138,7 @@ curl -X DELETE http://127.0.0.1:5984/plankton
 {"ok":true}
 </pre>
 
-<p>Die Liste der Datenbanken ist nun wieder so wie vorher:
+<p>Die Liste der Datenbanken ist nun wieder wie vorher:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
@@ -150,21 +150,21 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 ["baseball"]
 </pre>
 
-<p>Um die Sache abzukürzen, überspringen wir das Arbeiten mit Dokumenten, da der nächste Abschnitte einen anderen und wahrscheinlich einfacheren Weg zeigt, um mit CouchDB Dokumente zu verwalten. Während wir durch die Beispiele gehen, sollten wir im Hinterkopf behalten, dass die Anwendung „unter der Haube“ genauso arbeitet, wie wir in den vorherigen Beispielen. Alle Aktionen werden über eine URI und <code>GET</code>, <code>PUT</code>, <code>POST</code> und <code>DELETE</code> durchgeführt.
+<p>Ziemlich einfach, oder? Wir überspringen an dieser Stelle die Arbeit mit Dokumenten und <code>curl</code>, da der nächste Abschnitt einen anderen und wahrscheinlich einfacheren Weg zeigt, um mit CouchDB Dokumente zu verwalten. Wir sollten uns jedoch merken, dass jede Anwendung mit genau den gleichen Mitteln arbeitet wie in den vorangegangenen Beispielen: Ein HTTP Request mit <code>GET</code>, <code>PUT</code>, <code>POST</code> oder <code>DELETE</code> und ein URI.
 
 <h3 id="welcome">Willkommen zu Futon</h3>
 
 <p>Nachdem wir die nackte HTTP Schnittstelle von CouchDB gesehen haben, gehen wir einen Schritt weiter zu Futon, der integrierten Administrationsanwendung. Futon bietet vollen Zugang zu sämtlichen Funktionen von CouchDB und macht es einfach mit den komplexeren Features von CouchDB zu experementieren. Mit Futon kann man Datenbanken anlegen und löschen, Dokumente anzeigen und bearbeiten, MapReduce Views erzeugen und ausführen als auch die Replikation zwischen Datenbanken anstoßen.
 
-<p>Um Futon zu laden müssen wir folgende URL öffnen:
+<p>Futon ist unter folgender URL zu erreichen:
 
 <pre>
 http://127.0.0.1:5984/_utils/
 </pre>
 
-<p>Ab Version 0.9 oder später sollte die Oberfläche ungefähr wie in <a href="#figure/1">Abbildung 1 „Der Futon Home Screen”</a> aussehen. In späteren Kapiteln gehen wir dann mehr darauf ein, CouchDB mit Server Sprachen wir Ruby und Python zu nutzen. Deshalb ist das jetzt eine gute Gelegenheit zu zeigen, wie man eine dynamische Webanwendung ausschließlich mit CouchDB und seinem integrierten Webserver ausliefert. Das ist vielleicht auch etwas für ihre Anwendungen.
+<p>Ab Version 0.9 oder später sollte die Oberfläche ungefähr wie in <a href="#figure/1">Abbildung 1: Der Futon Home Screen</a> aussehen. Spätere Kapitel gehen dann mehr darauf ein, CouchDB mit Server Sprachen wir Ruby und Python zu nutzen. Deshalb ist das jetzt eine gute Gelegenheit zu zeigen, wie man eine dynamische Webanwendung ausschließlich mit CouchDB und seinem integrierten Webserver ausliefert. Das ist vielleicht auch etwas für ihre Anwendungen.
 
-<p>Das erste, was man mit einer neuen CouchDB Installation machen sollte, ist die Test Suite auszuführen, um sicherzustellen, dass alles korrekt funktioniert. Liefern die Tests keine Fehler kann ausgeschlossen werden, dass spätere Probleme an einem fehlerhaften Setup liegen. Zugleich ist ein Fehler in der Test Suite ein Warnzeichen, die Installation noch einmal genau zu überprüfen bevor man einen eventuell defekten Datenbankserver produktiv einsetzt. Damit sparen wir uns viele Kopfschmerzen, wenn die Dinge nicht so laufen, wie sie sollten.
+<p>Das Erste, was man mit einer neuen CouchDB Installation machen sollte, ist die Test Suite auszuführen, um sicherzustellen, dass alles korrekt funktioniert. Liefern die Tests keine Fehler, kann ausgeschlossen werden, dass spätere Probleme an einem fehlerhaften Setup liegen. Zugleich ist ein Fehler in der Test Suite ein Warnzeichen, die Installation noch einmal genau zu überprüfen bevor man einen eventuell defekten Datenbankserver produktiv einsetzt. Das spart viele Kopfschmerzen, wenn die Dinge nicht so laufen, wie sie sollten.
 
 <div class="figure" id="figure/1">
 
@@ -176,11 +176,11 @@ http://127.0.0.1:5984/_utils/
 
 <div class="aside warning">
 
-<p>Bei einigen Netzwerkkonfigurationen schlagen die Tests für die Replikation fehl, wenn auf den CouchDB Server über <code>localhost</code> zugegriffen wird. Das kann man umgehen, indem man stattdessen direkt über die IP Adresse mit <code>http://127.0.0.1:5984/_utils/</code> zugreift.
+<p>Bei einigen Netzwerkkonfigurationen schlagen die Tests für die Replikation fehl, wenn man Futon über <code>localhost</code> aufruft. Man kann das umgehen, indem man stattdessen die IP Adresse benutzt (<code>http://127.0.0.1:5984/_utils/</code>).
 
 </div>
 
-<p>Um die Test Suite auszuführen, klickt man rechts in der Futon Seitenleiste auf „Test Suite“ und anschließend oben auf „Run all“ um die Tests zu starten. <a href="#figure/2">Abbildung 2 Futon Test Suite in Aktion</a> zeigt die Futon Test Suite während die Tests ausgeführt werden
+<p>Um die Test Suite auszuführen, klickt man rechts in der Futon Seitenleiste auf „Test Suite“ und anschließend oben auf „Run all“ um die Tests zu starten. <a href="#figure/2">Abbildung 2: Futon Test Suite in Aktion</a> zeigt Futon während die Tests ausgeführt werden
 
 <div class="figure" id="figure/2">
 
@@ -190,31 +190,30 @@ http://127.0.0.1:5984/_utils/
 
 </div>
 
-<p>Da die Test Suite vom Browser aus gestartet wird, testet sie nicht nur die Funktion von CouchDB, sondern auch das die Kommunikation zwischen Browser und CouchDB korrekt funktioniert. Das kann sehr hilfreich sein, schlecht konfigurierte Proxies oder andere HTTP Middleware zu erkennen.
+<p>Da die Test Suite vom Browser aus gestartet wird, testet sie nicht nur die Funktion von CouchDB, sondern auch die Kommunikation zwischen Browser und CouchDB. So erkennt man schlecht konfigurierte Proxies oder andere HTTP Middleware.
 
 <div class="aside warning">
 
-<p>Falls die Test Suite eine ungewöhnlich hohe Anzahl von Fehlern produziert, sollten sie den Abschnitt Troubleshooting in <a href="source.html">Anhang D Installation von Source</a> durchlesen, um die Installation zu reparieren.
+<p>Falls die Test Suite eine ungewöhnlich hohe Anzahl von Fehlern produziert, sollten sie im Abschnitt Troubleshooting in <a href="source.html">Anhang D Installation von Source</a> nachschlagen, wie man die Installation repariert.
 
 </div>
-
-<p>Nachdem die Test Suite erfolgreich durchlaufen wurde, wissen sie, dass ihre CouchDB Installation korrekt arbeitet und es kann weiter gehen mit den anderen Funktionen, die Futon zu bieten hat.
+<p>Ist die Test Suite erfolgreich durchgelaufen, ist sichergestellt, das CouchDB korrekt arbeitet.
 
 <h3 id="first">Die erste Datenbank und das erste Dokument</h3>
 
-<p>Eine Datenbank in Futon zu erstellen ist simpel. Auf der Übersichtsseite klickt man auf „Create Database“. Wenn man nach einem Namen gefragt wird, gibt man <code>hello-world</code> ein und klickt auf den „Create“ Button.
+<p>Eine Datenbank in Futon zu erstellen ist simpel. Auf der Übersichtsseite klickt man zunächst auf „Create Database“. Für die erste Datenbank wählen wir den Namen <code>hello-world</code>. Mit einem Klick auf den „Create“ Button wird die Datenbank angelegt.
 
-<p>Nachdem die Datenbank angelegt wurde zeigt Futon eine Liste aller Dokumente. Da diese Liste ist anfangs leer ist (<a href="#figure/3">Abbildung 3: Eine leere Datenbank in Futon</a>), sollten wir mit einem Klick auf „New Document“ ein erstes Dokument anlegen. Futon wird dabei das <code>_id</code> Feld bereits mit einer UUID vorbelegt haben. Lässt man es frei, wird CouchDB eine UUID für das Dokument bestimmen. Um das Dokument zu speichern, klickt man zum Schluß auf „Save Document“.
+<p>Anschließend zeigt Futon eine Liste aller Dokumente, die bei einer neuen Datenbank jedoch leer ist (<a href="#figure/3">Abbildung 3: Eine leere Datenbank in Futon</a>). Mit einem Klick auf „New Document“ legen wir ein erstes Dokument an. Futon hat das <code>_id</code> Feld bereits mit einer UUID vorbelegt. Lässt man es frei, wird CouchDB eine UUID für das Dokument wählen. Zum Speichern klickt man auf „Save Document“.
 
 <div class="aside warning">
 
-<p>Für die Beispiele ist es in Ordnung, wenn CouchDB die UUIDs für die Dokumente bestimmt. Für eigene Anwendungen empfehlen wir jedoch, die UUIDs selber zu wählen. Wenn man sich auf darauf verlässt, den Server die UUIDs wählen zu lassen und man zwei POST Requests macht weil der erste fehlschlägt, kann es sein, das man zwei Dokumente erzeugt hat. Das erste geht verloren, weil nur das Anlegen des zweiten erfolgreich gemeldet wird. Wenn man die UUIDs selber wählt, kann man sicher sein, keine doppelten Dokumente zu haben.
+<p>In den Beispielen ist es in Ordnung, wenn CouchDB die UUIDs für die Dokumente bestimmt. Für eigene Anwendungen empfehlen wir jedoch grundsätzlich die UUIDs selber zu wählen. Wenn man sich auf darauf verlässt, dass der Server die UUIDs wählt, kann es vorkommen, dass man Dokumente doppelt anlegt. Das geschieht wenn man einen zweiten POST Request abschickt weil der erste aus irgendeinem Grund fehlgeschlagen ist. In dieser Situation kann es passieren, das man zwei Dokumente erzeugt hat, weil CouchDB das Dokument angelegt haben kann ohne das die Bestätigung beim Absender eintrifft. So geht das erste Dokument verloren. Wählt man die UUIDs selber, kann man Dokumente nicht doppelt anlegen.
 
 </div>
 
-<p>Futon zeigt anschließend das neu Dokument mit den beiden einzigen Attributen <code>_id</code> und <code>_rev</code> an. Um ein weiteres Feld hinzuzufügen, klickt man auf „Add Field“. Nennen wir das neue Feld <code>hello</code> und es wird mit einem Default Wert von <code>null</code> angelegt. Bei einem Doppelklick auf den Wert von <code>hello</code> kann man ihn ändern.
+<p>Futon zeigt anschließend das neue Dokument an, welches nur aus den beiden Attributen <code>_id</code> und <code>_rev</code> besteht. Um ein weiteres Feld hinzuzufügen, klickt man auf „Add Field“ und gibt dem Feld einen Namen. Durch einen Doppelklick auf den Wert kann man ihn ändern.
 
-<p>Wenn man versucht ungültiges JSON als neuen Wert einzutragen, erhält man einen Fehler, wenn man auf den grünen Haken klickt. CouchDB Werte müssen ein gültiger JSON Ausdruck sein. Streng genommen sollte Futon den Wert <code>world</code> als ungültig ablehnen, weil in JSON Strings in einfachen oder doppelten Anführungszeichen stehen müssen. Futon erkennt jedoch, dass wir einen String eingeben möchten und fügt die Anführungszeichen selber hinzu. Experementieren sie ein wenig mit anderen JSON Ausdrücken wie <code>[1, 2, "c"]</code> oder <code>{"foo":"bar"}</code>. Achten sie vor dem Speichern auf den Wert des <code>_rev</code> Attributes und klicken dann auf „Save Document“. Das Ergebnis sollte so ähnlich aussehen, wie in <a href="#figure/4">Abbildung 4: Ein „Hello World“ Dokument in Futon</a>.
+<p>CouchDB lehnt ungültiges JSON als Wert ab. Versucht man es, erhält man einen Fehler. CouchDB Werte müssen ein gültiger JSON Ausdruck sein. Streng genommen sollte Futon den Wert <code>world</code> als ungültig ablehnen, weil in JSON Strings in einfachen oder doppelten Anführungszeichen stehen müssen. Futon erkennt jedoch, dass wir einen String eingeben möchten und fügt die Anführungszeichen selber hinzu. Experementieren sie ein wenig mit anderen JSON Ausdrücken wie <code>[1, 2, "c"]</code> oder <code>{"foo":"bar"}</code>. Achten sie vor dem Speichern auf den Wert des <code>_rev</code> Attributes und klicken dann auf „Save Document“. Das Ergebnis sollte so ähnlich aussehen, wie in <a href="#figure/4">Abbildung 4: Ein „Hello World“ Dokument in Futon</a>.
 
 <div class="figure" id="figure/3">
 
@@ -232,9 +231,9 @@ http://127.0.0.1:5984/_utils/
 
 </div>
 
-<p>Wenn sie gut aufgepasst haben, ist ihnen aufgefallen, dass sich der Wert des <code>_rev</code> Attributs geändert hat. Wir werden auf die Bedeutung später noch genauer eingehen. Im Moment genügt es zu verstehen, dass das <code>_rev</code> Attribut ein Sicherheitsmechanismus ist, wenn man ein Dokument speichert. So lange CouchDB und ihre Anwendung die gleiche Version des Dokuments als die aktuelle betrachten, können sie das Dokument speichern.
+<p>Wenn sie gut aufgepasst haben, ist ihnen aufgefallen, dass sich der Wert des <code>_rev</code> Attributs geändert hat. Wir werden auf die Bedeutung später noch genauer eingehen. Im Moment genügt es zu verstehen, dass das <code>_rev</code> Attribut ein Sicherheitsmechanismus beim Speichern von Dokumenten ist. So lange ihre Anwendung die gleiche Version des Dokuments speichern möchte, die CouchDB als die aktuelle Version betrachtet, können sie das Dokument speichern.
 
-<p>Futon erlaubt auch, das Dokument als JSON auszugeben, was jenach Daten kompakter und einfacher zu lesen sein kann. Um die JSON Repräsentation unseres „Hello World“ Dokuments zu sehen, klickt man auf den „Source“ Reiter. Das Ergebnis sollte ungefähr so aussehen wie in <a href="#figure/5">Abbildung 5: Der JSON Source eines „Hello World“ Dokuments in Futon</a>.
+<p>Futon erlaubt auch das Dokument in JSON Notation auszugeben, was jenach Art der Daten kompakter und einfacher zu lesen sein kann. Um die JSON Repräsentation unseres „Hello World“ Dokuments zu sehen, klicken sie auf den „Source“ Reiter. Das Ergebnis sollte ungefähr so aussehen wie in <a href="#figure/5">Abbildung 5: Der JSON Source eines „Hello World“ Dokuments in Futon</a>.
 
 
 <div class="figure" id="figure/5">
@@ -245,21 +244,23 @@ http://127.0.0.1:5984/_utils/
 
 </div>
 
-<h3 id="mapreduce">Running a Query Using MapReduce</h3>
+<h3 id="mapreduce">Eine Abfrage mit MapReduce</h3>
 
-<p>Traditional relational databases allow you to run any queries you like as long as your data is structured correctly. In contrast, CouchDB uses predefined <em>map</em> and <em>reduce</em> functions in a style known as MapReduce. These functions provide great flexibility because they can adapt to variations in document structure, and indexes for each document can be computed independently and in parallel. The combination of a map and a reduce function is called a <em>view</em> in CouchDB terminology.
+<p>Relationale Datenbanken erlauben, dass man jederzeit Abfragen gegen die Datenbank ausführen kann, solange die Daten orderntlich strukturiert sind. Im Gegensatz dazu verwendet CouchDB vordefinierte <em>map</em> und <em>reduce</em> Funktionen in einer Form, die man unter dem Begriff <em>MapReduce</em> kennt. Diese Funktionen erlauben eine große Flexibilität, denn sie können mit Variationen in der Struktur der Dokumente umgehen. Sie erlauben es auch, die Indizes für verschiedene Dokumente unabhängig voneinander und parallel zu berechnen. Die Kombination einer <em>map</em> und einer <em>reduce</em> Funktion nennt man in CouchDB eine <em>View</em>.
 
 <div class="aside note">
 
-<p>For experienced relational database programmers, MapReduce can take some getting used to. Rather than declaring which rows from which tables to include in a result set and depending on the database to determine the most efficient way to run the query, reduce queries are based on simple range requests against the indexes generated by your map functions.
+<p>MapReduce verwendet man anders als Abfragen in relationalen Datenbanken. Dort bestimmt eine Abfrage, welche Zeilen einer Tabelle Teil des Result Sets sind und welches der effizienteste Weg ist, dieses Result Set zu berechnen. Abfragen mit einer <em>reduce</em> Funktion dagegen arbeiten mit einfachen Bereichsabfragen auf Indizes, die zuvor mit <em>map</em> Funktionen erstellt wurden.
 
 </div>
 
-<p>Map functions are called once with each document as the argument. The function can choose to skip the document altogether or <em>emit</em> one or more view rows as key/value pairs. Map functions may not depend on any information outside of the document. This independence is what allows CouchDB views to be generated incrementally and in parallel.
+<p>Die <em>map</em> Funktionen werden genau einmal für jedes Dokument aufgerufen und das Dokument ist das einzige Argument. Die Funktion kann das Dokument ignorieren oder eine oder mehrere Zeilen als Key/Value Paare zurückliefern (<em>emit</em>). 
 
-<p>CouchDB views are stored as rows that are kept sorted by key. This makes retrieving data from a range of keys efficient even when there are thousands or millions of rows. When writing CouchDB map functions, your primary goal is to build an index that stores related data under nearby keys.
+<p><em>map</em> Funktionen müssen in sich abgeschlossen sein und dürfen nur auf Daten innerhalb des Dokuments zugreifen. Diese Unabhängigkeit von anderen Dokumenten und globalen Variablen ermöglicht es CouchDB Views inkrementell und parallel zu erstellen.
 
-<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different stores. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
+<p>Die Ergebnisse der Views von CouchDB werden als Zeilen gespeichert, die nach dem Schlüssel sortiert sind. Das ermöglicht einen sehr effizienten Zugriff, selbst wenn bei Tausenden oder Millionen von Zeilen. Schreibt man eine <em>map</em> Funktion in CouchDB, so ist das Ziel einen Index zu erzeugen, der alle relevanten Daten unter einem Schlüssel enthält.
+
+<p>Bevor wir ein Beispiel mit einer MapReduce View erstellen können, benötigen wir einige Daten. Dazu erzeugen wir drei Dokumente mit Preisen von Früchten aus verschiedenen Geschäften. Nutzen wir Futon um die Dokumente für die Preise von Äpfeln, Orangen und Bananen anzulegen. Die JSON Struktur sollte dabei wie folgt aussehen. Das Setzen der <em>_id</em> und <em>_rev</em> Felder überlassen wir dabei CouchDB.
 
 <pre>
 {
@@ -274,17 +275,17 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>This document should look like <a href="#figure/6">Figure 6, “An example document with apple prices in Futon”</a> when entered into Futon.
+<p>Dieses Dokument sollte in Futon wie in <a href="#figure/6">Abbildung 6: Ein Beispiel Dokument in Futon mit Preisen für Äpfel</a> aussehen.
 
 <div class="figure" id="figure/6">
 
 <img src="tour/06.png">
 
-<p class="caption">Figure 6. An example document with apple prices in Futon
+<p class="caption">Abbildung 6: Ein Beispiel Dokument in Futon mit Preisen für Äpfel
 
 </div>
 
-<p>OK, now that that’s done, let’s create the document for oranges:
+<p>Anschließend die Preise für Orangen:
 
 <pre>
 {
@@ -299,7 +300,7 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>And finally, the document for bananas:
+<p>Zum Schluss die Preise für Bananen:
 
 <pre>
 {
@@ -314,17 +315,17 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>Imagine we’re catering a big luncheon, but the client is very price-sensitive. To find the lowest prices, we’re going to create our first view, which shows each fruit sorted by price. Click “hello-world” to return to the hello-world overview, and then from the “select view” menu choose “Temporary view…” to create a new view. The result should look something like <a href="#figure/7">Figure 7, “A temporary view in Futon”</a>.
+<p>Stellen wir uns nun vor, wir müssten ein Buffet für einen Kunden organisieren, der sehr auf den Preis achtet. Um den niedrigsten Preis zu finden erstellen wir eine erste View, welche die Früchte nach Preis sortiert. Dazu klicken wir zunächst oben auf „hello-world“, um wieder auf die Übersicht der Datenbank zu gelangen. Anschließend wählen wir aus der „View“ Drop-Downliste „Temporary View…“ aus, um eine neue View anzulegen. Das Ergebnis sollte ungefähr so aussehen wie in  <a href="#figure/7">Abbildung 7: Eine temporäre View in Futon</a>.
 
 <div class="figure" id="figure/7">
 
 <img src="tour/07.png">
 
-<p class="caption">Figure 7. A temporary view in Futon
+<p class="caption">Abbildung 7: Eine temporäre View in Futon
 
 </div>
 
-<p>Edit the map function, on the left, so that it looks like the following:
+<p>Die dazugehörige <em>map</em> Funktion sieht wie folgt aus:
 
 <pre>
 function(doc) {
@@ -339,19 +340,19 @@ function(doc) {
 }
 </pre>
 
-<p>This is a <em>JavaScript</em> function that CouchDB runs for each of our documents as it computes the view. We’ll leave the reduce function blank for the time being.
+<p>Diese <em>JavaScript</em> Funktion führt CouchDB mit jedem der Dokumente aus, während es die View berechnet. Die <em>reduce</em> Funktion bleibt im Moment noch leer.
 
-<p>Click “Run” and you should see result rows like in <a href="#figure/8">Figure 8, “The results of running a view in Futon”</a>, with the various items sorted by price. This map function could be even more useful if it grouped the items by type so that all the prices for bananas were next to each other in the result set. CouchDB’s key sorting system allows any valid JSON object as a key. In this case, we’ll emit an array of <code>[item, price]</code> so that CouchDB groups by item type and price.
+<p>Wenn sie auf „Run“ klicken sollte das Ergebnis wie in <a href="#figure/8">Abbildung 8: Das Ergebnis einer View in Futon</a> aussehen. Die verschiedenen Früchte sind dabei nach Preis sortiert. Allerdings kann die Sortierung noch verbessert werden. Besser wäre es die Ergebnisse zuerst nach Typ und dann nach Preis zu sortieren. Dazu muß der Schlüssel jedoch mehr als einen Wert enthalten. Da in CouchDB jedes JSON Objekt ein Schlüssel sein kann, schreibt man die Map Funktion so um, dass sie ein Array <code>[item, price]</code> zurückliefert, sodass CouchDB die Daten entsprechend sortiert.
 
 <div class="figure" id="figure/8">
 
 <img src="tour/08.png">
 
-<p class="caption">Figure 8. The results of running a view in Futon
+<p class="caption">Abbildung 8: Das Ergebnis einer View in Futon
 
 </div>
 
-<p>Let’s modify the view function so that it looks like this:
+<p>Ändern wir die <em>map</em> Funktion wie folgt:
 
 <pre>
 function(doc) {
@@ -366,48 +367,48 @@ function(doc) {
 }
 </pre>
 
-<p>Here, we first check that the document has the fields we want to use. CouchDB recovers gracefully from a few isolated map function failures, but when a map function fails regularly (due to a missing required field or other JavaScript exception), CouchDB shuts off its indexing to prevent any further resource usage. For this reason, it’s important to check for the existence of any fields before you use them. In this case, our map function will skip the first “hello world” document we created without emitting any rows or encountering any errors. The result of this query should look like <a href="#figure/9">Figure 9, “The results of running a view after grouping by item type and price”</a>.
+<p>CouchDB verkraftet einige isolierte Fehler in einer <em>map</em> Funktion. Werden jedoch zuviele Fehler produziert — beispielsweise durch falsches JavaScript oder durch ein fehlendes Attribut — beendet CouchDB die Indizierung, um nicht noch mehr Rechenzeit zu verschwenden. Daher sollte die <em>map</em> Funktion prüfen, ob das Dokument alle benötigten Felder besitzt. In diesem Fall wird die <em>map</em> Funktion das erste „Hello World“ Dokument überspringen, weil es weder ein Attribut „item“ noch ein Attribut „price“ hat. Das Ergebnis sollte wie in  <a href="#figure/9">Abbildung 9: Das Ergebnis einer View nach der Gruppierung von Typ und Preis</a> aussehen.
 
 <div class="figure" id="figure/9">
 
 <img src="tour/09.png">
 
-<p class="caption">Figure 9. The results of running a view after grouping by item type and price
+<p class="caption">Abbildung 9: Das Ergebnis einer View nach der Gruppierung von Typ und Preis
 
 </div>
 
-<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the store where the item can be found for the listed price.
+<p>Hat das Dokument einen Typ und einen oder mehrere Preise, iteriert die <em>map</em> Funktion über die Preise und gibt für jeden einzelnen ein Key/Value Paar aus (<em>emit</em>). Der Schlüssel ist ein Array aus Typ und Preis und ist die Basis für den sortierten Index. In diesem Fall ist der Wert nur der Name des Geschäfts in dem die Früchte zu dem angegebenen Preis gekauft werden können.
 
-<p>View rows are sorted by their keys—in this example, first by item, then by price. This method of complex sorting is at the heart of creating useful indexes with CouchDB.
+<p>Die Zeilen von Views werden immer nach ihrem Schlüssel sortiert. In diesem Beispiel zuerst nach Typ und dann nach Preis. Diese Sortierung ist das Kernstück um sinnvolle Indizes mit CouchDB zu erstellen.
 
 <div class="aside note">
 
-<p>MapReduce can be challenging, especially if you’ve spent years working with relational databases. The important things to keep in mind are that map functions give you an opportunity to sort your data using any key you choose, and that CouchDB’s design is focused on providing fast, efficient access to data within a range of keys.
+<p>MapReduce kann eine Herausforderung darstellen, besonders wenn man jahrelange Erfahrung mit relationalen Datenbanken hat. Das Wichtigste an <em>map</em> Funktionen ist, dass sie es erlauben die Daten nach einem beliebigen Schlüssel zu sortieren kann und CouchDB darauf ausgerichtet ist, auf Schlüsselbereiche schnell und effizient zuzugreifen. 
 
 </div>
 
-<h3 id="replication">Triggering Replication</h3>
+<h3 id="replication">Replikation</h3>
 
-<p>Futon can trigger replication between two local databases, between a local and remote database, or even between two remote databases. We’ll show you how to replicate data from one local database to another, which is a simple way of making backups of your databases as we’re working through the examples.
+<p>Mit Futon kann man die Replikation von zwei lokalen Datenbanken, zwischen einer lokalen und einer Remote-Datenbank und sogar zwischen zwei Remote-Datenbanken anstoßen. Das folgende Beispiel repliziert eine lokale Datenbank in eine andere lokale Datenbank. Das ist zugleich ein einfacher Weg,  ein Backup einer Datenbank zu erstellen.
 
-<p>First we’ll need to create an empty database to be the target of replication. Return to the overview and create a database called <code>hello-replication</code>. Now click “Replicator” in the sidebar and choose <code>hello-world</code> as the source and <code>hello-replication</code> as the target. Click “Replicate” to replicate your database. The result should look something like <a href="#figure/10">Figure 10, “Running database replication in Futon”</a>.
+<p>Zuerst wird eine leere Datenbank benötigt, welche das Ziel der Replikation sein wird. Dazu erzeugen wir in der Übersicht eine neue Datenbank <code>hello-replication</code>. Anschließend wählt man rechts den „Replicator“, wählt <code>hello-world</code> als Quelle und <code>hello-replication</code> als Ziel. Ein Klick auf „Replicate“ startet die Replikation und das Ergebnis sollte wie in <a href="#figure/10">Abbildung 10: Datenbank Replikation in Futon</a> aussehen.
 
 <div class="figure" id="figure/10">
 
 <img src="tour/10.png">
 
-<p class="caption">Figure 10. Running database replication in Futon
+<p class="caption">Abbildung 10: Datenbank Replikation in Futon
 
 </div>
 
 <div class="aside warning">
 
-<p>For larger databases, replication can take much longer. It is important to leave the browser window open while replication is taking place. As an alternative, you can trigger replication via <code>curl</code> or some other HTTP client that can handle long-running connections. If your client closes the connection before replication finishes, you’ll have to retrigger it. Luckily, CouchDB’s replication can take over from where it left off instead of starting from scratch.
+<p>Die Replikation von größeren Datenbanken kann natürlich viel länger dauern. Da wir die Replikation über den Browser angestoßen haben, darf das Fenster nicht geschlossen werden, bis die Replikation abgeschlossen ist. Alternativ kann die Replikation auch mit <code>curl</code> oder einem anderen HTTP Client gestartet werden, der lang laufenden Anfragen verarbeiten kann. Schließt der Client die Verbindung bevor die Replikation abgeschlossen ist, muss sie erneut gestartet werden. Allerdings fängt CouchDB nicht von vorne an sondern macht da weiter, wo es vorher aufgehört hat.
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Fassen wir zusammen</h3>
 
-<p>Now that you’ve seen most of Futon’s features, you’ll be prepared to dive in and inspect your data as we build our example application in the next few chapters. Futon’s pure JavaScript approach to managing CouchDB shows how it’s possible to build a fully featured web application using only CouchDB’s HTTP API and integrated web server.
+<p>Nachdem wir die meisten der Features von Futon gesehen haben, sind wir für die kommenden Kapitel gerüstet, in denen wir die Daten genauer untersuchen und eine Beispiel Anwendung bauen werden. Futon ist vollständig in JavaScript geschrieben und zeigt das es möglich ist, nur mit dem HTTP API von CouchDB und dem integrierten Web Server eine vollständige Web Anwendung zu entwickeln.
 
-<p>But before we get there, we’ll have another look at CouchDB’s HTTP API—now with a magnifying glass. Let’s <em>curl</em> on the couch and relax.
+<p>Doch als Nächstes werden wir das HTTP API von CouchDB genauer unter die Lupe nehmen. Ab auf die Couch zum Entspannen.
