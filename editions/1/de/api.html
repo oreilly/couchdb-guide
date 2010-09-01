@@ -1,4 +1,4 @@
-<title>The Core API</title>
+<title>Das Core API</title>
 
 <meta charset="utf-8">
 
@@ -10,85 +10,85 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="api">The Core API</h2>
+<h2 id="api">Das Core API</h2>
 
-<p>This chapter explores the CouchDB in minute detail. It shows all the nitty-gritty and clever bits. We show you best practices and guide you around common pitfalls.
+<p>In diesem Kaptiel nehmen wir CouchDB genau unter die Lupe. Wir gehen richtig in die Details und zeigen knifflige Sachen. Wir erklären die Best Practices und helfen die üblichen Stolperfallen zu umgehen.
 
-<p>We start out by revisiting the basic operations we ran in the last chapter, looking behind the scenes. We also show what Futon needs to do behind its user interface to give us the nice features we saw earlier.
+<p>Zu Beginn gehen wir noch einmal die Grundoperationen durch, die wir bereits im letzten Kapitel vorgestellt haben und schauen anschließend unter die Haube. Wir zeigen auch, was Futon hinter der Benutzerschnittstelle machen muss, um die vielen Funktionen zu haben, die wir zuvor gesehen haben.
 
-<p>This chapter is both an introduction to the core CouchDB API as well as a reference. If you can’t remember how to run a particular request or why some parameters are needed, you can always come back here and look things up (we are probably the heaviest users of this chapter).
+<p>Dieses Kapitel ist zugleich eine Einführung in das Core API von CouchDB und eine Referenz. Wenn sie sich nicht mehr erinnern können, wie ein bestimmter Request funktioniert oder warum bestimmte Parameter benötigt werden, können sie jederzeit hierhin zurückkehren und nachschlagen. Von allen Kapiteln nutzen wir dieses wahrscheinlich am häufigsten.
 
-<p>While explaining the API bits and pieces, we sometimes need to take a larger detour to explain the reasoning for a particular request. This is a good opportunity for us to tell you why CouchDB works the way it does.
+<p>Während wir das API genauer erklären, müssen wir manchmal etwas weiter ausholen, um die Motivation hinter einem Request zu erklären. Dabei können wir gleich erklären, warum CouchDB so funktioniert wie es funktioniert.
 
-<p>The API can be subdivided into the following sections. We’ll explore them individually:
+<p>Das API kann man in folgende Bereiche aufteilen, die wir nacheinander besprechen werden:
 
 <ul>
 
 <li>Server</li>
 
-<li>Databases</li>
+<li>Databanken</li>
 
-<li>Documents</li>
+<li>Dokumente</li>
 
-<li>Replication</li>
+<li>Replikation</li>
 
 </ul>
 
 <h3 id="server">Server</h3>
 
-<p>This one is basic and simple. It can serve as a sanity check to see if CouchDB is running at all. It can also act as a safety guard for libraries that require a certain version of CouchDB. We’re using the <code>curl</code> utility again:
+<p>Der erste Request ist simpel. Man benutzt ihn um zu sehen ob CouchDB überhaupt läuft. Setzt eine externe Bibliothek eine bestimmte Version voraus, kann sie mit diesem Request prüfen, ob diese Bedingung erfüllt ist. Wir nutzen wieder <code>curl</code> um mit CouchDB zu sprechen:
 
 <pre>
 curl http://127.0.0.1:5984/
 </pre>
 
-<p>CouchDB replies, all excited to get going:
+<p>Voller Erwartung antwortet CouchDB mit:
 
 <pre>
 {"couchdb":"Welcome","version":"0.10.1"}
 </pre>
 
-<p>You get back a JSON string, that, if parsed into a native object or data structure of your programming language, gives you access to the welcome string and version information.
+<p>Zurück kommt ein JSON String, der einen Willkommensgruß und die Version von CouchDB enthält.
 
-<p>This is not terribly useful, but it illustrates nicely the way CouchDB behaves. You send an HTTP request and you receive a JSON string in the HTTP response as a result.
+<p>Damit kann man zwar nicht viel anfangen, allerdings zeigt es, wie sich CouchDB verhält. Man schickt einen HTTP Request und bekommt einen JSON String als HTTP Response.
 
-<h3 id="databases">Databases</h3>
+<h3 id="databases">Datenbanken</h3>
 
-<p>Now let’s do something a little more useful: create databases. For the strict, CouchDB is a <em>database management system</em> (DMS). That means it can hold multiple <em>databases</em>. A database is a bucket that holds “related data.” We’ll explore later what that means exactly. In practice, the terminology is overlapping—often people refer to a DMS as “a database” and also a database within the DMS as “a database.” We might follow that slight oddity, so don’t get confused by it. In general, it should be clear from the context if we are talking about the whole of CouchDB or a single database within CouchDB.
+<p>Machen wir etwas Sinnvolleres: Legen wir eine Datenbank an. Wenn man es genau nimmt, ist CouchDB ein <em>Datenbank Management System (DBMS)</em>, weil es mehrere <em>Datenbanken</em> enthalten kann. Eine Datenbank ist ein Behälter, der „zusammenhängende Daten“ enthält. Wir werden später sehen was das genau bedeutet. Meist verschwimmen die Begriffe etwas und „die Datenbank“ sind dann zugleich das DBMS und die Datenbank darin. Wir nehmen es auch nicht so genau, denn aus dem Kontext geht meist hervor, ob CouchDB als Ganzes oder eine Datenbank darin gemeint ist.
 
-<p>Now let’s make one! We want to store our favorite music albums, and we creatively give our database the name <code>albums</code>. Note that we’re now using the <code>-X</code> option again to tell <code>curl</code> to send a <code>PUT</code> request instead of the default <code>GET</code> request:
+<p>Legen wir die Datenbank nun an – zum Beispiel um unsere Lieblingsalben zu speichern. Sinnigerweise nennen wir die Datenbank <code>albums</code>. Datenbanken werden in CouchDB mit einem <code>PUT</code> Request angelegt. Deshalb nehmen wir bei <code>curl</code> die <code>-X</code> Option. Anderfalls würde <code>curl</code> einen <code>GET</code> Request schicken.
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/albums
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>That’s it. You created a database and CouchDB told you that all went well. What happens if you try to create a database that already exists? Let’s try to create that database again:
+<p>Das war's. Sie haben eine Datenbank angelegt und CouchDB sagt, das alles funktioniert hat. Was passiert, wenn man versucht eine Datenbank anzulegen, die bereits existiert sehen wir, wenn wir versuchen, die gleiche Datenbank nochmal anzulegen:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/albums
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB antwortet mit:
 
 <pre>
 {"error":"file_exists","reason":"The database could not be created, the file already exists."}
 </pre>
 
-<p>We get back an error. This is pretty convenient. We also learn a little bit about how CouchDB works. CouchDB stores each database in a single file. Very simple. This has some consequences down the road, but we’ll skip the details for now and explore the underlying storage system in <a href="btree.html">Appendix F, The Power of B-trees</a>.
+<p>CouchDB antwortet mit einem Fehler, was sehr praktisch ist. Zugleich lernen wir wieder ein wenig mehr darüber, wie CouchDB arbeitet. CouchDB speichert jede Datenbank in einer eigenen Datei. Ganz einfach. Daraus ergeben sich einige Konsequenzen, auf die wir jedoch erst später eingehen. Schauen wir zunächst auf das zugrundeliegende Speichersystem in <a href="btree.html">Anhang F - Die Macht der B-Trees</a>.
 
-<p>Let’s create another database, this time with <code>curl</code>’s <code>-v</code> (for “verbose”) option. The verbose option tells <code>curl</code> to show us not only the essentials—the HTTP response body—but all the underlying request and response details:
+<p>Legen wir noch eine Datenbank an – diesmal mit der <code>-v</code> Option (für „verbose“) von <code>curl</code>. Mit dieser Option zeigt <code>curl</code> nicht nur die wesentlichen Teile – den HTTP Response Body – sondern alle Bestandteile des Requests an.
 
 <pre>
 curl -vX PUT http://127.0.0.1:5984/albums-backup
 </pre>
 
-<p><code>curl</code> elaborates:
+<p><code>curl</code> zeigt:
 
 <pre>
 * About to connect() to 127.0.0.1 port 5984 (#0)
@@ -111,74 +111,74 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 * Closing connection #0
 </pre>
 
-<p>What a mouthful. Let’s step through this line by line to understand what’s going on and find out what’s important. Once you’ve seen this output a few times, you’ll be able to spot the important bits more easily.
+<p>Wupps, das ist doch einiges mehr als ohne <code>-v</code>. Gehen wir der Reihe nach durch die einzelnen Zeilen, um zu verstehen, was genau passiert ist und was wichtig ist. Wenn man diese Ausgabe ein paarmal gesehen hat, weiß man worauf man achten muss und sieht die wichtigen Teile sofort.
 
 <pre>
 * About to connect() to 127.0.0.1 port 5984 (#0)
 </pre>
 
-<p>This is <code>curl</code> telling us that it is going to establish a <em>TCP</em> connection to the CouchDB server we specified in our request URI. Not at all important, except when debugging networking issues.
+<p>Damit sagt <code>curl</code> uns, dass es eine TCP Verbindung zu dem CouchDB Server aufbauen wird, den wir in dem Request URL angegeben haben. Das ist meist nicht besonders wichtig, ausser man sucht gerade einen Fehler im Netzwerk.
 
 <pre>
 *   Trying 127.0.0.1... connected
 * Connected to 127.0.0.1 (127.0.0.1) port 5984 (#0)
 </pre>
 
-<p><code>curl</code> tells us it successfully connected to CouchDB. Again, not important if you aren’t trying to find problems with your network.
+<p><code>curl</code> sagt uns mit diesen Zeilen, dass es sich erfolgreich mit CouchDB verbunden hat. Wieder nicht besonders wichtig, ausser man kämpft mit Netzwerkfehlern.
 
-<p>The following lines are prefixed with <code>&gt;</code> and <code>&lt;</code> characters. <code>&gt;</code> means the line was sent to CouchDB verbatim (without the actual <code>&gt;</code>). <code>&lt;</code> means the line was sent back to <code>curl</code> by CouchDB.
+<p>Die folgenden Zeilen beginnen jeweils mit den Zeichen <code>&gt;</code> und <code>&lt;</code>. Steht am Anfang ein <code>&gt;</code> bedeutet das, dass diese Zeile exakt so an CouchDB geschickt wurde (ohne das <code>&gt;</code>). Ein <code>&lt;</code> am Anfang bedeutet, dass diese Zeile genau so von CouchDB zurück an <code>curl</code> geschickt wurde.
 
 <pre>
 &gt; PUT /albums-backup HTTP/1.1
 </pre>
 
-<p>This initiates an HTTP request. Its <em>method</em> is <code>PUT</code>, the <em>URI</em> is <code>/albums-backup</code>, and the HTTP version is <code>HTTP/1.1</code>. There is also <code>HTTP/1.0</code>, which is simpler in some cases, but for all practical reasons you should be using <code>HTTP/1.1</code>.
+<p>Damit wird der HTTP Request eingeleitet. Die <em>Methode</em> ist <code>PUT</code>, die <em>URI</em> ist <code>/albums-backup</code> und die  HTTP Version ist <code>HTTP/1.1</code>. Es gibt auch ein <code>HTTP/1.0</code> welches in manchen Fällen etwas einfacher ist, doch im allgemeinen sollte man  <code>HTTP/1.1</code> verwenden.
 
-<p>Next, we see a number of <em>request headers</em>. These are used to provide additional details about the request to CouchDB.
+<p>Anschließend folgen eine Menge von <em>Request Headern</em>, die zusätzliche Informationen über den Request enthalten.
 
 <pre>
 &gt; User-Agent: curl/7.16.3 (powerpc-apple-darwin9.0) libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
 </pre>
 
-<p>The <code>User-Agent</code> header tell CouchDB which piece of client software is doing the HTTP request. We don’t learn anything new: it’s <code>curl</code>. This header is often useful in web development when there are known errors in client implementations that a server might want to prepare the response for. It also helps to determine which platform a user is on. This information can be used for technical and statistical reasons. For CouchDB, the <code>User-Agent</code> header is irrelevant.
+<p>Der <code>User-Agent</code> Header teilt CouchDB mit, welche Software den Request gerade durchführt. Für uns ist das nichts Neues: es ist <code>curl</code>. Dieser Header wird oft in Web Anwendungen benutzt, um Fehler mit bestimmten HTTP Clients (z.B. Browsern) zu umgehen. Der Server kann dann eine auf den Client zugeschnittene Antwort schicken. Zudem kann man an dem Header erkennen, auf welcher Plattform der Benutzer ist, was für statistische Zwecke ganz hilfreich sein kann.  Für CouchDB dagegen ist der <code>User-Agent</code> Header irrelevant.
 
 <pre>
 &gt; Host: 127.0.0.1:5984
 </pre>
 
-<p>The <code>Host</code> header is required by HTTP 1.1. It tells the server the hostname that came with the request.
+<p>Der <code>Host</code> Header ist Pflicht in HTTP 1.1. Er sagt dem Server, welcher Hostname in der URL stand.
 
 <pre>
 &gt; Accept: */*
 </pre>
 
-<p>The <code>Accept</code> header tells CouchDB that <code>curl</code> accepts any media type. We’ll look into why this is useful a little later.
+<p>Der <code>Accept</code> Header sagt CouchDB, dass <code>curl</code> jeden Medientyp als Antwort akzeptiert. Wir werden gleich noch sehen, wie man das nutzen kann.
 
 <pre>
 &gt;
 </pre>
 
-<p>An empty line denotes that the request headers are now finished and the rest of the request contains data we’re sending to the server. In this case, we’re not sending any data, so the rest of the curl output is dedicated to the HTTP response.
+<p>Eine leere Zeile zeigt das Ende der Liste der Request Header an und markiert den Beginn der Daten, die wir an den Server schicken. In dem Fall schicken wir keine Daten, insofern ist der Rest der Ausgabe die HTTP Response. 
 
 <pre>
 &lt; HTTP/1.1 201 Created
 </pre>
 
-<p>The first line of CouchDB’s HTTP response includes the HTTP version information (again, to acknowledge that the requested version could be processed), an HTTP <em>status code</em>, and a <em>status code message</em>. Different requests trigger different response codes. There’s a whole range of them telling the client (<code>curl</code> in our case) what effect the request had on the server. Or, if an error occurred, what kind of error. RFC 2616 (the HTTP 1.1 specification) defines clear behavior for response codes. CouchDB fully follows the RFC.
+<p>Die erste Zeile der Antwort von CouchDB enthält die HTTP Version (damit teilt uns der Server seine höchste HTTP Version mit, die er versteht), einen HTTP <em>Status Code</em> und eine Status Meldung. Unterschiedliche Requests liefern unterschiedliche Status Codes zurück. Es gibt eine ganze Menge an vordefinierten Status Codes, welche dem Client (in unserem Fall <code>curl</code>) sagen, welchen Effekt der Request auf den Server hatte. Ist jedoch ein Fehler aufgetreten, so enthält der Status Code den Typ des Fehlers. <a href="http://www.ietf.org/rfc/rfc2616.txt">RFC 2616</a> (die HTTP Spezifikation) beschreibt genau, welches Verhalten welchen Status Code auslösen sollte. CouchDB hält sich genau an den RFC.
 
-<p>The <em>201 Created</em> status code tells the client that the resource the request was made against was successfully created. No surprise here, but if you remember that we got an error message when we tried to create this database twice, you now know that this response could include a different response code. Acting upon responses based on response codes is a common practice. For example, all response codes of 400 or larger tell you that some error occurred. If you want to shortcut your logic and immediately deal with the error, you could just check a <code>&gt;= 400</code> response code.
+<p>Der Status Code <em>201 Created</em> teilt dem Client mit, dass die Ressource, gegen die der Request gemacht wurde (<code>/albums-backup</code>), erfolgreich angelegt wurde. Das ist das keine große Überraschung, doch wir haben vorher bereits gesehen, das CouchDB bei dem gleichen Request auch einen Fehler melden kann, wenn die Datenbank bereits existiert. Dabei könnte auch ein anderer Status Code zurückgeliefert worden sein. Zum Beispiel sind alle Status Codes größer oder gleich 400 Fehlercodes. Eine einfache Fehlerprüfung kann sich das zunutze mache, indem man auf Status Code <code>&gt;= 400</code> prüft.
 
 <pre>
 &lt; Server: CouchDB/0.10.1 (Erlang OTP/R13B)
 </pre>
 
-<p>The <code>Server</code> header is good for diagnostics. It tells us which CouchDB version and which underlying Erlang version we are talking to. In general, you can ignore this header, but it is good to know it’s there if you need it.
+<p>Der <code>Server</code> Header eignet sich gut zur Diagnose. Er enthält die CouchDB Version und die Version des zugrundeliegenden Erlang Systems. Meist kann man diesen Header ignorieren, doch es ist gut zu wissen, dass er da ist, falls man ihn braucht.
 
 <pre>
 &lt; Date: Sun, 05 Jul 2009 22:48:28 GMT
 </pre>
 
-<p>The <code>Date</code> header tells you the time of the server. Since client and server time are not necessary synchronized, this header is purely informational. You shouldn’t build any critical application logic on top of this!
+<p>In dem <code>Date</code> Header teilt uns CouchDB die Serverzeit mit. Da Client und Server Zeit nicht notwendigerweise synchronisiert sind, hat dieser Header reinen Informationscharacter. Unter keinen Umständen sollte man sich in einer Anwendung auf diesen Header verlassen.
 
 <pre>
 &lt; Content-Type: text/plain;charset=utf-8
