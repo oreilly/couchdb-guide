@@ -178,60 +178,60 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &lt; Date: Sun, 05 Jul 2009 22:48:28 GMT
 </pre>
 
-<p>In dem <code>Date</code> Header teilt uns CouchDB die Serverzeit mit. Da Client und Server Zeit nicht notwendigerweise synchronisiert sind, hat dieser Header reinen Informationscharacter. Unter keinen Umständen sollte man sich in einer Anwendung auf diesen Header verlassen.
+<p>In dem <code>Date</code> Header teilt uns CouchDB die Uhrzeit auf dem Server mit. Da die Zeit auf dem Client und Server nicht unbedingt synchronisiert sind, ist dieser Header eine reine Information. Unter keinen Umständen sollte man sich in einer Anwendung auf eine Wert dieses Header verlassen.
 
 <pre>
 &lt; Content-Type: text/plain;charset=utf-8
 </pre>
 
-<p>The <code>Content-Type</code> header tells you which MIME type the HTTP response body is and its encoding. We already know CouchDB returns JSON strings. The appropriate <code>Content-Type</code> header is <code>application/json</code>. Why do we see <code>text/plain</code>? This is where pragmatism wins over purity. Sending an <code>application/json</code> <code>Content-Type</code> header will make a browser offer you the returned JSON for download instead of just displaying it. Since it is extremely useful to be able to test CouchDB from a browser, CouchDB sends a <code>text/plain</code> content type, so all browsers will display the JSON as text.
+<p>Der <code>Content-Type</code> Header zeigt an, welche Art von Daten der HTTP Response Body enthält und wie diese codiert sind. Die Art der Daten steht im MIME Type und die Codierung im <code>charset</code> Parameter. Wir wissen bereits, das CouchDB JSON Strings zurückliefert. Der passende <code>Content-Type</code> Header wäre also <code>application/json</code>. Warum schickt CouchDB dann <code>text/plain</code>? An dieser Stelle ist Pragmatismus wichtiger als Purismus. Schickt man <code>application/json</code> als <code>Content-Type</code> Header, so wird jeder Browser versuchen den JSON String als Datei zu speichern anstatt ihn einfach anzuzeigen. Da es jedoch sehr praktisch ist CouchDB von einem Webbrowser aus zu testen, schickt CouchDB als Content Type <code>text/plain</code>, so dass alle Browser den JSON String einfach anzeigen.
 
-<p>There are some browser extensions that make your browser JSON-aware, but they are not installed by default.
-
-<p>Do you remember the <code>Accept</code> request header and how it is set to <code>\*/\* -&gt; */*</code> to express interest in any MIME type? If you send <code>Accept: application/json</code> in your request, CouchDB knows that you can deal with a pure JSON response with the proper <code>Content-Type</code> header and will use it instead of <code>text/plain</code>.
+<p>Es gibt Erweiterungen für Webbrowser, mit denen der Browser JSON korrekt erkennt und entsprechend behandelt. Allerdings werden diese standardmäßig nicht installiert.
+	
+<p>Erinnern sie sich noch an den <code>Accept</code> Header im HTTP Request und wie er zu <code>*/*</code> gesetzt wurde, um damit zu zeigen, dass der Client jeden MIME Type akzeptiert? Schickt ein Client im Request <code>Accept: application/json</code>, so weiß CouchDB, dass der Client korrekt mit JSON Strings und dem <code>Content-Type: application/json</code> Header umgehen kann und wird diesen verwenden anstelle von <code>text/plain</code>.
 
 <pre>
 &lt; Content-Length: 12
 </pre>
 
-<p>The <code>Content-Length</code> header simply tells us how many bytes the response body has.
+<p>Der <code>Content-Length</code> Header sagt lediglich aus wievielen Bytes der Response Body besteht.
 
 <pre>
 &lt; Cache-Control: must-revalidate
 </pre>
 
-<p>This <code>Cache-Control</code> header tells you, or any proxy server between CouchDB and you, not to cache this response.
+<p>Dieser <code>Cache-Control</code> Header signalisiert, dass unser Client und jeder Proxy Server zwischen dem Client und CouchDB die Antwort nicht cachen darf.
 
 <pre>
 &lt;
 </pre>
 
-<p>This empty line tells us we’re done with the response headers and what follows now is the response body.
+<p>Diese leere Zeile zeigt uns, dass keine weiteren Response Header folgen und dass der Rest der Response Body ist.
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>We’ve seen this before.
+<p>Das haben wir schon mal gesehen.
 
 <pre>
 * Connection #0 to host 127.0.0.1 left intact
 * Closing connection #0
 </pre>
 
-<p>The last two lines are <code>curl</code> telling us that it kept the TCP connection it opened in the beginning open for a moment, but then closed it after it received the entire response.
+<p>Mit den letzen beiden Zeilen zeigt <code>curl</code> an, dass es die TCP Verbindung noch einen Moment offen gehalten hat, um sie dann nach Erhalt des vollständigen Response Bodys zu schließen.
 
-<p>Throughout the book, we’ll show more requests with the <code>-v</code> option, but we’ll omit some of the headers we’ve seen here and include only those that are important for the particular request.
-
-<p>Creating databases is all fine, but how do we get rid of one? Easy—just change the HTTP method:
+<p>Wir werden im ganzen Buch immer mal wieder Requests mit der <code>-v</code> Option zeigen, aber bestimmte Header, die wir hier gezeigt haben, weglassen und nur die wichtigen für den jeweiligen Request anzeigen.
+	
+<p>Datenbanken anzulegen ist schön und gut, aber wie löschen wir eine? Ganz einfach – Man ändert einfach die HTTP Methode:
 
 <pre>
 &gt; curl -vX DELETE http://127.0.0.1:5984/albums-backup
 </pre>
 
-<p>This deletes a CouchDB database. The request will remove the file that the database contents are stored in. There is no “Are you sure?” safety net or any “Empty the trash” magic you’ve got to do to delete a database. Use this command with care. Your data will be deleted without a chance to bring it back easily if you don’t have a backup copy.
+<p>Damit löscht man eine CouchdB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in ihrer Verantwortung und ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht. 
 
-<p>This section went knee-deep into HTTP and set the stage for discussing the rest of the core CouchDB API. Next stop: documents.
+<p>In diesem Abschnitt sind wir tief in HTTP eingestiegen und haben damit die Grundlage geschaffen um den Rest des Core APIs von CouchDB zu erklären. Nächste Haltestelle: Dokumente.
 
 <h3 id="documents">Documents</h3>
 
