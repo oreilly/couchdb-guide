@@ -775,6 +775,12 @@ pre {
   font-size: 12px;
 }
 
+/* prevent wrapping of code tags */
+
+code {
+	white-space: nowrap;
+}
+
 .aside {
   position: relative;
   font-size: 0.75em;
