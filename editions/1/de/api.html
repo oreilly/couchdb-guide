@@ -403,7 +403,7 @@ curl http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
 <p>Die Replikation in CouchDB ist ein Mechanismus, um Datenbanken zu synchronisieren. Änhlich wie mit <code>rsync</code> zwei Verzeichnisse lokal oder über ein Netzwerk synchronisiert werden können, synchronisiert die Replikation in CouchDB zwei Datenbanken entweder lockal oder über ein Netzwerk.
 	
 
-<p>Mit einem einfachen POST Request teilt man CouchDB die <em>Quelle (source)</em> und das <em>Ziel (target)</em> der Replikation mit. CouchDB findet anschließend heraus, welche Dokumente und neuen Versionen von Dokumenten in der Quelldatenbank existieren, aber nicht in der Zieldatenbank und wird beginnen, die fehlenden Dokumente und Versionen zu kopieren.
+<p>Mit einem einfachen POST Request teilt man CouchDB die Quelle (<em>source</em>) und das Ziel (<em>target</em>) der Replikation mit. CouchDB findet anschließend heraus, welche Dokumente und neuen Versionen von Dokumenten in der Quelldatenbank existieren, aber nicht in der Zieldatenbank und wird beginnen, die fehlenden Dokumente und Versionen zu kopieren.
 
 <p>Wir gehen auf die Replikation in <a href="replication.html">Kapitel 16: Replikation</a> noch genauer ein. In diesem Kapitel zeigen wir lediglich, wie man sie benutzt.
 
@@ -448,36 +448,35 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 }
 </pre>
 
-<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Es ist auch wichtig zu erwähnen, dass der Request für die Replikation erst beantwortet wird und damit offen bleibt, bis die Replikation abgeschlossen ist. Wenn ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis sie all kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur zu dem Punkt repliziert wird, wie sie zu Beginn der Replikation ausgesehen hat. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
+<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
 
-<p>Wir überspringen die Details nocheinmal, denn der <code>"ok": true</code> am Ende sagt uns, das alles geklappt hat. Wenn man dann auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
+<p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man dann auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
-<p>Was wir gerade durchgeführt haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
+<p>Was wir gerade gemacht haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen der Datenbak für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
 
-<p>
-<p>There are more types of replication useful in other situations. The <code>source</code> and <code>target</code> members of our replication request are actually links (like in HTML) and so far we’ve seen links relative to the server we’re working on (hence <em>local</em>). You can also specify a remote database as the target:
+<p>Es gibt noch weitere Arten der Replikation, die in anderen Situationen sinnvoll sind. Die <code>source</code> und <code>target</code> Parameter in unserem Replikationsrequest sind Links (genau wie in HTML) und bis jetzt haben wir nur relative Links verwendet, die relativ zu dem Server sind, auf dem wir gerade arbeiten (deshalb auch <em>lokale Replikation</em>). Man kann aber auch eine entfernte Datenbank als Ziel angeben:
 
 <pre>
 curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"http://127.0.0.1:5984/albums-replica"}'
 </pre>
 
-<p>Using a local <code>source</code> and a remote <code>target</code> database is called <em>push replication</em>. We’re pushing changes to a remote server.
+<p>Verwendet man eine lokale Datenbank als <code>source</code> und eine entfernte Datenbank als <code>target</code>, dann nennt man das <em>Push Replikation</em>, weil die Änderungen auf den entfernten Server geschoben werden.
 
 <div class="aside note">
 
-<p>Since we don’t have a second CouchDB server around just yet, we’ll just use the absolute address of our single server, but you should be able to infer from this that you can put any remote server in there.
+<p>Da wir im Moment keinen zweiten CouchDB Server zur Verfügung haben, nutzen wir für die Beispiele die absolute Adresse unseres Servers doch es sollte klar sein, wie man das für Netzwerkserver verwendet.
 
 </div>
 
-<p>This is great for sharing local changes with remote servers or buddies next door.
+<p>Das ist Klasse, um lokale Änderungen mit entfernten Servern zu teilen – und sei es auch nur der Kumpel von nebenan.
 
-<p>You can also use a remote <code>source</code> and a local <code>target</code> to do a <em>pull replication</em>. This is great for getting the latest changes from a server that is used by others:
+<p>Eine weitere Form der Replikation ist eine entfernte <em>source</em> und ein lokales <em>target</em>. In dem Fall führt man eine <em>Pull Replikation</em> durch. Das ist sehr gut geeignet, um sich die letzten Änderungen von einem entfernten Server zu holen, der von anderen gepflegt wird:
 
 <pre>
 curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5984/albums-replica","target":"albums"}'
 </pre>
 
-<p>Finally, you can run <em>remote replication</em>, which is mostly useful for management operations:
+<p>Letztendlich kann man auch noch eine <em>Remote Replikation</em> starten, die hauptsächlich für Management Aufgaben eingesetzt wird:
 
 <pre>
 curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5984/albums","target":"http://127.0.0.1:5984/albums-replica"}'
@@ -485,16 +484,17 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5
 
 <div class="aside note">
 
-<p><strong>CouchDB and REST</strong>
+<p><strong>CouchDB und REST</strong>
 
-<p>CouchDB prides itself on having a <em>RESTful API</em>, but these replication requests don’t look very RESTy to the trained eye. What’s up with that? While CouchDB’s core database, document, and attachment API are RESTful, not all of CouchDB’s API is. The replication API is one example. There are more, as we’ll see later in the book.
+<p>CouchDB ist stolz darauf, ein <em>RESTful API</em> zu haben, doch diese Repkilations Request schauen für das geübte Auge nicht gerade sehr REST-mäßig aus. Warum ist das so? Obwohl das Core API für Datenbanken, Dokumente und Anhänge RESTful ist, so gilt das nicht für alle Bereiche des CouchDB APIs. Das API für die Replikation ist ein Beispiel und weitere werden im Rest des Buches noch folgen.
 
-<p>Why are there RESTful and non-RESTful APIs mixed up here? Have the developers been too lazy to go REST all the way? Remember, REST is an architectural style that lends itself to certain architectures (such as the CouchDB document API). But it is not a one-size-fits-all. Triggering an event like replication does not make a whole lot of sense in the REST world. It is more like a traditional remote procedure call. And there is nothing wrong with this.
-
-<p>We very much believe in the “use the right tool for the job” philosophy, and REST does not fit every job. For support, we refer to Leonard Richardson and Sam Ruby who wrote <a href="http://oreilly.com/catalog/9780596529260">RESTful Web Services</a> (O’Reilly), as they share our view.
+<p>Warum existieren RESTful und nicht RESTful APIs so durcheinander? Waren die Entwickler zu faul REST wirklich überall durchzusetzen? REST ist ein Architektur Stil, der zu bestimmten Architekturen führt, wie zum Beispiel dem CouchDB API für Dokumente. Doch es ist keine Eierlegendewollmilchsau. Das Auslösen eines Events ergibt unter REST wenig Sinn, denn es ist viel eher ein traditioneller Remote Procedure Call – und daran gibt es nichts auszusetzen.
+	
+<p>Wir glauben sehr daran, das Richtige Werkzeug für den Job einzusetzen und REST ist kein Werkzeug für jeden Job. Zur Unterstützung möchten wir an dieser Stelle Leonard Richardson und Sam Ruby zitieren, die <a href="http://oreilly.com/catalog/9780596529260">RESTful Web Services</a> (O’Reilly), da sie unsere Ansichten teilen.
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Fassen wir zusammen</h3>
 
-<p>This is still not the full CouchDB API, but we discussed the essentials in great detail. We’re going to fill in the blanks as we go. For now, we believe you’re ready to start building CouchDB applications.
+<p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten sie soweit gerüstet sein, dass sie anfangen können, mit CouchDB Anwendungen zu schreiben.
+	
