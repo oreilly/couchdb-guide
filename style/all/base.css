@@ -506,6 +506,10 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 .save_a_tree h3 {
+  display: none;
+}
+
+.save_a_tree h3 {
   line-height: 1.5;
   border-bottom: none;
 }
@@ -533,7 +537,7 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
 }
 
 .shopping_cart_button_line_bottom {
-  margin-bottom: 1.5em;
+  margin-bottom: 7em;
 }
 
 
@@ -578,6 +582,7 @@ div.header {
 
 .safari_read_now {
   float: right;
+  line-height: 2;
 }
 
 
