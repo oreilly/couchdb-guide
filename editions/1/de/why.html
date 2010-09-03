@@ -12,9 +12,9 @@
 
 <h2 id="why">Warum CouchDB?</h2>
 
-<p>Apache CouchDB ist eine neue Art von Datenbank System. Dieses Kapitel soll zuerst beschreiben, warum es einen Bedarf für solche Systeme gibt und die Motivation beschreiben, die hinter der Entwicklung von CouchDB steckt.
+<p>Apache CouchDB ist eine neue Art von Datenbank System. In diesem Kapitel beschreiben wir zunächst, warum es einen Bedarf für solche Systeme gibt. Anschließend gehen wir auf die Motivation ein, die hinter der Entwicklung von CouchDB steckt.
 
-<p>Als CouchDB Entwickler haben wir selbstverständlicherweise ein starkes Interesse daran, CouchDB zu benutzen. Hier wollen wir erklären, was uns begeistert. Wir werden zeigen, warum das schemafreie Dokumenten Modell von CouchDB besser für die heute üblichen Anwendungen geeignet ist. Warum die eingebaute Query-Engine ein guter Weg ist, die gespeicherten Daten zu lesen und zu verarbeiten und wie das Design von CouchDB Modularisierung und Skalierbarkeit fördert.
+<p>Als CouchDB Entwickler haben wir selbstverständlicherweise ein starkes Interesse daran, CouchDB zu benutzen. Wir möchten erzählen, was uns an CouchDB begeistert. Wir werden zeigen, warum das schemafreie Dokumenten Modell von CouchDB besser für die heute üblichen Anwendungen geeignet ist, warum die eingebaute Query-Engine ein guter Weg ist, die gespeicherten Daten zu lesen und zu verarbeiten und wie das Design von CouchDB Modularisierung und Skalierbarkeit fördert.
  
 <h3 id="relax">Entspann Dich</h3>
 
@@ -26,17 +26,17 @@ Apache CouchDB has started. Time to relax.
 
 <p>Warum ist Entspannung wichtig? Die Produktivität von Entwicklern hat sich in den letzten fünf Jahren verdoppelt. Für diesen Schub sind hauptsächlich bessere Tools, die gleichzeitig einfacher zu bedienen sind, verantwortlich. Wenn man &quot;Ruby on Rails&quot; als Beispiel nimmt, so sieht man ein unendlich komplexes Framework mit dem der Einstieg jedoch sehr leicht ist. Rails ist eine Erfolgsgeschichte weil das Hauptziel der Entwicklung auf der einfachen Bedienung lag. Das ist einer der Gründe, warum CouchDB entspannend ist. Das Verstehen der Grundkonzepte von CouchDB fühlt sich für jeden natürlich an, der in irgendeiner Form mit dem Web arbeitet. Selbst nicht-technischen Leuten ist es relativ einfach zu vermitteln.
 
-<p>Nicht im Weg zu stehen, wenn kreative Menschen versuchen ein Problem zu lösen ist eine der wichtigsten Eigenschaften — eine, die CouchDB versucht gut erfüllen. Für uns waren die bestehenden Tools zu schwerfällig — sowohl während der Entwicklung als auch während des Betriebs. Deshalb haben wir uns darauf konzentriert, CouchDB so einfach wie möglich zu halten und es spielend leicht bedienen zu können. Die Kapitel <a href="tour.html">3</a> und <a href="api.html">4</a> zeigen das intuitive HTTP basierte REST API.
+<p>Nicht im Weg zu stehen, wenn kreative Menschen versuchen ein Problem zu lösen, ist eine der wichtigsten Eigenschaften — eine, die CouchDB versucht gut erfüllen. Für uns waren die bestehenden Tools zu schwerfällig — sowohl während der Entwicklung als auch während des Betriebs. Deshalb haben wir uns darauf konzentriert, CouchDB so einfach wie möglich zu halten und es spielend leicht bedienen zu können. <a href="tour.html">Kapitel 3</a> und <a href="api.html">Kapitel 4</a> zeigen das intuitive HTTP basierte REST API.
 
-<p>Ein weiterer Bereich der Entspannung ist der Produktivbetrieb. Im Betrieb mit einer Anwendung, die von echten Benutzern benutzt wird, versucht CouchDB sein möglichstes, um den Administrator in Ruhe zu lassen. Die interne Architektur ist fehlertolerant und Ausnahmen finden in einer kontrollierten Umgebung statt und werden ordentlich bearbeitet. Einzelne Fehler rauschen nicht durch das ganze System nach oben sondern bleiben auf den einen Request beschränkt.
+<p>Ein weiterer Bereich der Entspannung ist der Produktivbetrieb. Im Zusammenspiel mit einer Anwendung, die von echten Benutzern benutzt wird, versucht CouchDB sein Möglichstes, um den Administrator in Ruhe zu lassen. Die interne Architektur ist fehlertolerant, Ausnahmen finden in einer kontrollierten Umgebung statt und werden ordentlich bearbeitet. Einzelne Fehler rauschen nicht durch das ganze System nach oben durch sondern bleiben auf den einen Request beschränkt.
 
-<p>Die Konzepte von CouchDB sind einfach, dennoch mächtig und gut dokumentiert. Das Produktionsteam (falls es ein Team gibt, andernfalls sind das sie) brauchen keine Sorgen vor unvorhersagbarem Verhalten und schwer nachvollziehbaren Fehlern zu haben. Falls etwas schief gehen sollte, kann man einfach herausfinden, wo das Problem liegt — doch diese Fälle sind selten.
+<p>Die Konzepte von CouchDB sind einfach, aber dennoch mächtig und gut dokumentiert. Das Produktionsteam (falls es ein Team gibt, andernfalls sind das sie) brauchen sich keine Sorgen vor unvorhersagbarem Verhalten und schwer nachvollziehbaren Fehlern zu machen. Falls etwas schief gehen sollte, kann man einfach herausfinden, wo das Problem liegt — doch diese Fälle sind selten.
 
 <p>CouchDB ist von Anfang an darauf ausgelegt, mit wechselnder Last intelligent umzugehen. Sollte eine Webseite schlagartig viele Requests bekommen, wird  CouchDB sie einfach weiter beantworten ohne einen zu vergessen. Es mag unter Last etwas länger dauern, aber alle bekommen eine Antwort. Sobald der Ansturm vorüber ist, antwortet CouchDB wieder mit gewohnter Geschwindigkeit.
 
-<p>Der dritte Bereich der Entspannung sind die wechselnden Hardware Anforderungen ihrer Anwendung. Das wird üblicherweise mit <em>Skalierung</em> beschrieben. CouchDB setzt dem Programmierer Grenzen. Das mag auf den ersten Blick unflexibel erscheinen, doch manche Funktionen wurden ganz bewusst weggelassen. Sie wurden weggelassen, weil der Programmierer mit diesen Funktionen in der Lage gewesen wäre, Anwendungen zu schreiben, die nicht skalieren. Das Thema Skalierung von CouchDB wird in <a href="index.html#part/iv">Teil IV, “Deploying CouchDB”</a> ausführlich behandelt.
+<p>Der dritte Bereich der Entspannung sind wechselnde Hardware Anforderungen ihrer Anwendung. Das wird üblicherweise als <em>Skalierung</em> bezeichnet. CouchDB setzt dem Programmierer Grenzen. Das mag auf den ersten Blick unflexibel erscheinen, doch manche Funktionen wurden ganz bewusst weggelassen, weil mit ihnen der Programmierer in der Lage gewesen wäre, Anwendungen zu schreiben, die nicht skalieren. Das Thema Skalierung von CouchDB wird in <a href="index.html#part/iv">Teil IV: Deploying CouchDB</a> ausführlich behandelt.
 
-<p>Kurz gesagt: CouchDB erlaubt keine Dinge, die nachher Ärger machen. Das kann bedeuten, dass man alte Gewohnheiten über Bord werfen muß. In <a href="recipes.html">Kapitel 24, Rezepte</a> finden sich eine Liste von üblichen Aufgaben und wie man sie mit CouchDB löst.
+<p>Kurz gesagt: CouchDB erlaubt keine Dinge, die nachher Ärger machen. Das kann bedeuten, dass man alte Gewohnheiten über Bord werfen muß. In <a href="recipes.html">Kapitel 24 Rezepte</a> finden sich eine Liste von üblichen Aufgaben und wie man sie mit CouchDB löst.
 
 <h3 id="different">Ein anderer Weg Daten zu modellieren</h3>
 
@@ -50,7 +50,7 @@ Apache CouchDB has started. Time to relax.
 
 </blockquote>
 
-<p>Das Design von CouchDB bedient sich stark bei bestehenden Web Architekturen und den Konzepten von Resourcen, Methoden und Darstellungen. Es kombiniert diese Dinge in mächtiger Weise um Daten zu suchen, abzubilden, zu kombinieren und zu filtern. Hinzu kommen Fehlertoleranz, extreme Skalierbarkeit und inkrementelle Replikation. Damit definiert CouchDB genau den Sweet Spot für dokumentenbasierte Datenbanken.
+<p>Das Design von CouchDB ist stark an bestehende Web Architekturen und den Konzepten von Resourcen, Methoden und Darstellungen angelehnt. Es kombiniert sie in mächtiger Weise um Daten zu suchen, abzubilden, zu kombinieren und zu filtern. Hinzu kommen Fehlertoleranz, extreme Skalierbarkeit und inkrementelle Replikation. Damit definiert CouchDB genau den Sweet Spot für dokumentenbasierte Datenbanken.
 
 <h3 id="better">Ein besserer Ansatz für Anwendungen</h3>
 
@@ -58,7 +58,7 @@ Apache CouchDB has started. Time to relax.
 
 <h4 id="containment">In sich abgeschlossene Daten</h4>
 
-<p>Eine Rechnung enthält alle notwendigen Informationen über einen einzelnen Vorgang. Den Verkäufer, den Käufer, das Datum und eine Auflistung der Dinge oder Dienste, die verkauft wurden. Wie in <a href="#figure/1">Abbildung 1, “In sich abgeschlossene Dokumente”</a> zu sehen ist, gibt es keine abstrakten Referenzen auf dem Stück Papier, die zu einem anderen Stück Papier verweisen, zum Beispiel mit dem Namen und der Adresse des Verkäufers. Buchhalter wissen es zu schätzen, alle Informationen auf einen Blick zu haben. Falls sie die Möglichkeit haben, bevorzugen Programmierer das auch. 
+<p>Eine Rechnung enthält alle notwendigen Informationen über einen einzelnen Vorgang. Den Verkäufer, den Käufer, das Datum und eine Auflistung der Dinge oder Dienste, die verkauft wurden. Wie in <a href="#figure/1">Abbildung 1 „In sich abgeschlossene Dokumente“</a> zu sehen ist, gibt es keine abstrakten Referenzen auf dem Stück Papier, die zu einem anderen Stück Papier verweisen, zum Beispiel mit dem Namen und der Adresse des Verkäufers. Buchhalter wissen es zu schätzen, alle Informationen auf einen Blick zu haben. Falls sie die Möglichkeit haben, bevorzugen Programmierer das auch. 
 
 <div class="figure" id="figure/1">
 
@@ -70,25 +70,25 @@ Apache CouchDB has started. Time to relax.
 
 <p>Doch genau mit solchen Referenzen werden Daten in relationalen Datenbanken modelliert. Jede Rechnung wird als Zeile in einer Tabelle gespeichert. Diese Zeile verweist auf andere Zeilen in anderen Tabellen — eine für den Käufer, eine für den Verkäufer, eine für jedes Teil was verkauft wurde und noch mehr Zeilen, die wiederum die verkauften Teile genauer beschreiben. 
 
-<p>Damit soll der Wert von relationalen Modellen nicht geschmälert werden. Sie sind in vielen Anwendungen im Einsatz und haben sich aus verschiedenen Gründen als sehr nützlich erwiesen. Das vorangegange Beispiel sollte zeigen, dass manche Modelle sich nicht so gut für die Daten der realen Welt eignen.
+<p>Damit soll der Wert von relationalen Modellen nicht geschmälert werden. Sie sind in vielen Anwendungen im Einsatz und haben sich aus verschiedenen Gründen als sehr nützlich erwiesen. Das vorangegange Beispiel soll zeigen, dass manche Modelle sich nicht so gut für die Daten der realen Welt eignen.
 
-<p>Schauen wir auf eine einfache Adressdatenbank um einen anderen Ansatz zur Modellierung von Daten zu illustrieren. Ein Ansatz, der näher an der Realität ist, wie zum Beispiel ein Stapel Visitenkarten. Genau wie das Beispiel mit der Rechnung enthält eine Visitenkarte alle wichtigen Informationen auf einen Blick. Wir nennen das "in sich abgeschlossene Daten" und es ist ein wichtiges Konzept beim Verständnis von dokumentenbasierten Datenbanken wie CouchDB.
+<p>Schauen wir auf eine einfache Adressdatenbank um einen anderen Ansatz zur Modellierung von Daten zu illustrieren. Dazu kann man sich einen Stapel Visitenkarten vorstellen. Genau wie das Beispiel mit der Rechnung enthält eine Visitenkarte alle wichtigen Informationen auf einen Blick. Wir nennen das „in sich abgeschlossene Daten“ und es ist ein wichtiges Konzept beim Verständnis von dokumentenbasierten Datenbanken wie CouchDB.
 
 <h4 id="information">Syntax und Semantik</h4>
 
-<p>Die meisten Visitenkarten enthalten ungefähr die gleichen Informationen: den Namen, vielleicht ein Firmenname und Kontaktinformationen. Obwohl die  Daten zwischen den einzelnen Karten differieren kann, ist doch das allgemeine Schema immer gleich und Personen haben keine Schwierigkeiten damit Visitenkarten als solche zu erkennen. So gesehen kann man eine Visitenkarte als ein <em>reales Dokument</em> beschreiben.
+<p>Die meisten Visitenkarten enthalten ungefähr die gleichen Informationen: den Namen, vielleicht ein Firmenname und Kontaktinformationen. Obwohl die  Daten zwischen den einzelnen Karten differieren kann, ist doch das allgemeine Schema immer gleich und Menschen haben keine Schwierigkeiten damit Visitenkarten als solche zu erkennen. So gesehen kann man eine Visitenkarte als ein <em>reales Dokument</em> bezeichnen.
 
-<p>Jan's hat vielleicht eine Telefonnummer aber keine FAX Nummer auf seiner Visitenkarte. Dagegen enthält die Karte von J. Chris beide Nummern. Jan muss das Fehlen einer FAX Nummer nicht umständlich und explizit durch "Fax: Nicht vorhanden" kennzeichnen. Durch einfaches weglassen der FAX Nummer gibt er zu verstehen, dass er keins hat.
+<p>Jan hat vielleicht eine Telefonnummer aber keine FAX Nummer auf seiner Visitenkarte. Dagegen enthält die Karte von J. Chris beide Nummern. Jan muss das Fehlen einer FAX Nummer nicht umständlich und explizit durch „Fax: Nicht vorhanden“ ausdrücken. Durch einfaches Weglassen der FAX Nummer gibt er zu verstehen, dass er keins hat.
 
-<p>Reale Dokumente des gleichen Typs, so wie Visitenkarten, neigen dazu in ihrer <em>Semantik</em> — die Art der Information — sehr ähnlich zu sein. Ihre <em>Syntax</em> oder wie die Information tatsächlich aufgebaut ist, kann jedoch zwischen den einzelnen Karten sehr unterschiedlich sein. Als Personen haben damit kein Problem. Für uns sind diese Variationen normal. 
+<p>Reale Dokumente des gleichen Typs, so wie Visitenkarten, neigen dazu in ihrer <em>Semantik</em> — die Art der Information — sehr ähnlich zu sein. Ihre <em>Syntax</em> oder wie die Information tatsächlich aufgebaut ist, kann jedoch zwischen den einzelnen Karten sehr unterschiedlich sein. Menschen haben damit kein Problem. Für uns sind diese Variationen normal. 
 
-<p>Während ein traditionelles relationales Datenbank System erfordert, dass man die Daten <em>im voraus</em> durch ein Schema strukturiert, erlaubt das Schema-freie Design von CouchDB die Daten erst <em>nach dem Eintrag</em> in die Datenbank zu strukturieren. Genauso wie man das auch mit realen Dokumenten macht. Wie man Anwendungen mit diesem Ansatz zur Speicherung von Daten entwickelt, wird genau erläutert.
+<p>Während ein traditionelles relationales Datenbank System erfordert, dass man die Daten <em>im voraus</em> durch ein Schema strukturiert, erlaubt das schema-freie Design von CouchDB die Daten erst <em>nach dem Eintrag</em> in die Datenbank zu strukturieren. Genauso wie man es auch mit realen Dokumenten macht. Wie man mit diesem Ansatz Anwendungen zur Speicherung von Daten entwickelt, wird im folgenden Abschnitt genauer erläutert.
 
 <h3 id="blocks">Bausteine für größere Systeme</h3>
 
-<p>CouchDB ist ein Speichersystem, das für sich allein genommen schon nützlich  ist. Man kann viele Anwendungen mit den Werkzeugen bauen, die CouchDB bietet. Doch die Vision von CouchDB ist größer. Seine Bestandteile können als Bausteine für große Systeme benutzt werden, um Speicherprobleme für immer stärker wachsende Anwendungen zu lösen.
+<p>CouchDB ist ein Speichersystem, das für sich allein genommen schon recht nützlich ist. Man kann viele Anwendungen mit den Werkzeugen bauen, die CouchDB bietet. Doch die Vision von CouchDB ist größer. Seine Bestandteile können als Bausteine für große Systeme benutzt werden, um Speicherprobleme für immer stärker wachsende Anwendungen zu lösen.
 
-<p>Ob ein System unglaublich schnell sein muss, Zuverlässigkeit aber nicht allzu wichtig ist (z.B. Logging), oder ein System Schreiboperationen in zwei verschiedenen, geografisch getrennten Systemen garantieren muss und die damit verbundene höhere Antwortzeit akzeptabel ist — CouchDB erlaubt es solche Systeme zu bauen.
+<p>Ob ein System unglaublich schnell sein muss, Zuverlässigkeit aber nicht allzu wichtig ist (z.B. für Logging), oder ein System Schreiboperationen in zwei verschiedenen, geografisch getrennten Systemen garantieren muss und die damit verbundene höhere Antwortzeit akzeptabel ist — CouchDB erlaubt es solche Systeme zu bauen.
 
 <p>Meist gibt es viele Knöpfe an denen man drehen kann, um ein System zu optimieren. Doch hat der positive Effekt in der Regel auch unerwünschte Nebenwirkungen. Ein Beispiel ist das CAP Theorem, das im nächsten Kapiel ausführlicher behandelt wird. Andere Parameter, die Datenspeichersysteme in der Regel beeinflussen, werden in  <a href="#figure/2">Abbildung 2</a> und  <a href="#figure/3">Abbildung 3</a> gezeigt.
 
@@ -118,9 +118,9 @@ Apache CouchDB has started. Time to relax.
 
 <p>Die Replikation von CouchDB ist einer dieser Bausteine. Seine primäre Aufgabe ist die Synchronisation von zwei oder mehr CouchDB Datenbanken. Das mag einfach klingen, doch die Einfachheit ist der Schlüssel um mit der Replikation verschiedene Probleme zu lösen: — Zuverlässige Synchronisation von Datenbanken auf verschiedenen Maschinen um Daten redundant zu speichern — Verteilung der Daten über einen Cluster von CouchDB Instanzen, die jeweils einen Teil der Requests beantworten (Lastverteilung) und Spiegelung der Daten über geografisch weit verteilte Standort wie beispielsweise New York und Tokyo.
 
-<p>Die Replikation von CouchDB benutzt dabei das selbe REST API, das alle anderen Clients auch benutzen. HTTP ist allgegenwärtig und sein Verhalten ist bekannt. Die Replikation arbeitet inkrementell — das bedeutet, falls während der Replikation etwas schief geht, wie beispielsweise eine defekte Netzwerkverbindung,  CouchDB wird genau dort wieder weiter machen, wo es aufgehört hat. Dabei werden auch nur die Daten übertragen, die notwendig sind, um die Datenbanken zu synchronisieren.
+<p>Die Replikation von CouchDB benutzt dabei das selbe REST API, das alle anderen Clients auch benutzen. HTTP ist allgegenwärtig und sein Verhalten ist bekannt. Die Replikation von CouchDB arbeitet inkrementell. Das bedeutet, das falls während der Replikation etwas schief geht — weil beispielsweise eine Netzwerkverbindung verschwindet — wird CouchDB genau dort wieder weiter machen, wo es aufgehört hat. Es werden auch nur die Daten übertragen, die notwendig sind, um die Datenbanken zu synchronisieren.
 
-<p>Eine der Grundannahmen in CouchDB ist, das Fehler auftreten werden. CouchDB ist darauf ausgerichtet, Fehler vernünftig zu behandeln anstatt anzunehmen, es wird schon alles klappen. Das inkrementelle Design der Replikation zeigt das am Besten. Die Ideen hinter "Fehler werden passieren" sind in den <a href="http://de.wikipedia.org/wiki/Fallacies_of_Distributed_Computing">Irrtümern der verteilten Datenverarbeitung</a> aufgelistet:
+<p>Eine der Grundannahmen in CouchDB ist, das Fehler auftreten werden. CouchDB ist darauf ausgerichtet, Fehler vernünftig zu behandeln anstatt anzunehmen, es wird keine geben. Das inkrementelle Design der Replikation zeigt das am Besten. Die Ideen hinter „Fehler werden passieren“ sind in den <a href="http://de.wikipedia.org/wiki/Fallacies_of_Distributed_Computing">Irrtümern der verteilten Datenverarbeitung</a> aufgelistet:
 
 <ol>
 
@@ -150,10 +150,10 @@ Apache CouchDB has started. Time to relax.
 
 <p>Was macht man, wenn man offline ist? Das passiert ständig trotz DSL und Kabel Anschluss. Was ist mit dem iPhone, dem G1 oder dem Blackberry, wenn kein Empfang ist? Keine Verbindung bedeutet nicht an die Daten zu kommen.
 
-<p>CouchDB kann in solchen Fällen helfen und in dieser Situation ist Skalierung auch wichtig. Diesmal allerdings in die andere Richtung — nach unten. Warum nicht eine CouchDB Instanz auf einem Smartphone, die sich mit anderen CouchDB Instanzen synchronisiert, wenn eine Verbindung besteht? Die Synchronisation ist nicht nur sinnvoll für schnelle Benutzerschnittstellen. Es ist einfacher ein System auf hohe Bandbreite und hohe Latenz zu optimieren, als für geringe Bandbreite und geringe Latenz. Mobile Anwendung können anschließend die Daten in der lokalen CouchDB Instanz benutzen und weil die Daten lokal sind, ist die Latenz per Definition gering.
+<p>CouchDB kann in solchen Fällen helfen und in dieser Situation ist Skalierung auch wichtig. Diesmal allerdings in die andere Richtung — nämlich nach unten. Warum nicht eine CouchDB Instanz auf einem Smartphone, die sich mit anderen CouchDB Instanzen synchronisiert, wenn eine Verbindung besteht? Die Synchronisation ist nicht nur sinnvoll für schnelle Benutzerschnittstellen. Es ist einfacher ein System auf hohe Bandbreite und hohe Latenz zu optimieren, als für geringe Bandbreite und geringe Latenz. Mobile Anwendung können anschließend die Daten in der lokalen CouchDB Instanz benutzen und weil die Daten lokal sind, ist die Latenz per Definition gering.
 
 <p>Kann man CouchDB wirklich auf einem Smartphone einsetzen? Erlang, die Sprache in der CouchDB geschrieben ist, wurde für viel kleinere und viel schwächere Geräte als die heute verfügbaren entwickelt und auch eingesetzt. 
 
-<h3 id="wrap">Zum Schluß</h3>
+<h3 id="wrap">Fassen wir zusammen</h3>
 
 <p>Das nächste Kapitel zeigt die verteilte Natur von CouchDB. Das letzte Kapitel sollte genug Interessantes enthalten haben, um weiterzulesen. Auf geht's!
