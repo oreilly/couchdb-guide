@@ -450,7 +450,7 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 
 <p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
 
-<p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man dann auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
+<p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man anschließend auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
 <p>Was wir gerade gemacht haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen der Datenbak für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
 
@@ -468,9 +468,9 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 
 </div>
 
-<p>Das ist Klasse, um lokale Änderungen mit entfernten Servern zu teilen – und sei es auch nur der Kumpel von nebenan.
+<p>Das ist sehr praktisch um lokale Änderungen mit entfernten Servern zu teilen – und sei es auch nur mit dem des Kumpels von nebenan.
 
-<p>Eine weitere Form der Replikation ist eine entfernte <em>source</em> und ein lokales <em>target</em>. In dem Fall führt man eine <em>Pull Replikation</em> durch. Das ist sehr gut geeignet, um sich die letzten Änderungen von einem entfernten Server zu holen, der von anderen gepflegt wird:
+<p>Eine weitere Form der Replikation ist eine entfernte <em>source</em> und ein lokales <em>target</em>. In dem Fall führt man eine <em>Pull Replikation</em> durch. Damit lassen sich gut die Änderungen eines entfernten Server, der von anderen gepflegt wird, auf den eigenen Server kopieren:
 
 <pre>
 curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5984/albums-replica","target":"albums"}'
@@ -486,15 +486,17 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5
 
 <p><strong>CouchDB und REST</strong>
 
-<p>CouchDB ist stolz darauf, ein <em>RESTful API</em> zu haben, doch diese Repkilations Request schauen für das geübte Auge nicht gerade sehr REST-mäßig aus. Warum ist das so? Obwohl das Core API für Datenbanken, Dokumente und Anhänge RESTful ist, so gilt das nicht für alle Bereiche des CouchDB APIs. Das API für die Replikation ist ein Beispiel und weitere werden im Rest des Buches noch folgen.
+<p>CouchDB ist stolz darauf, ein <em>RESTful API</em> zu haben, doch diese Repkilations Request sehen für REST Profis nicht sehr REST-mäßig aus. Warum ist das so? Obwohl das Core API für Datenbanken, Dokumente und Anhänge RESTful ist, so gilt das nicht für alle Bereiche des CouchDB APIs. Das API für die Replikation ist ein Beispiel und weitere werden im Rest des Buches noch folgen.
 
-<p>Warum existieren RESTful und nicht RESTful APIs so durcheinander? Waren die Entwickler zu faul REST wirklich überall durchzusetzen? REST ist ein Architektur Stil, der zu bestimmten Architekturen führt, wie zum Beispiel dem CouchDB API für Dokumente. Doch es ist keine Eierlegendewollmilchsau. Das Auslösen eines Events ergibt unter REST wenig Sinn, denn es ist viel eher ein traditioneller Remote Procedure Call – und daran gibt es nichts auszusetzen.
+<p>Warum existieren RESTful und nicht RESTful APIs nebeneinander? Waren die Entwickler zu faul REST wirklich konsequent umzusetzen? 
 	
-<p>Wir glauben sehr daran, das Richtige Werkzeug für den Job einzusetzen und REST ist kein Werkzeug für jeden Job. Zur Unterstützung möchten wir an dieser Stelle Leonard Richardson und Sam Ruby zitieren, die <a href="http://oreilly.com/catalog/9780596529260">RESTful Web Services</a> (O’Reilly), da sie unsere Ansichten teilen.
+<p>REST ist ein Architektur Stil, der zu bestimmten Architekturen führt, wie zum Beispiel dem CouchDB API für Dokumente. Doch es ist keine eierlegende Wollmilchsau. Das Auslösen eines Events ergibt unter REST wenig Sinn, denn es ist viel eher ein traditioneller Remote Procedure Call – und ist nichts Schlimmes dran.
+	
+<p>Wir glauben das es wichtig ist, das richtige Werkzeug für den Job einzusetzen und REST ist kein Werkzeug für jeden Job. Zur Unterstützung möchten wir an dieser Stelle Leonard Richardson und Sam Ruby zitieren, die <a href="http://oreilly.com/catalog/9780596529260">RESTful Web Services</a> (O’Reilly) geschrieben haben und unsere Ansichten teilen.
 
 </div>
 
 <h3 id="wrap">Fassen wir zusammen</h3>
 
-<p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten sie soweit gerüstet sein, dass sie anfangen können, mit CouchDB Anwendungen zu schreiben.
+<p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch einen Schritt weiter gekommen und tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten sie soweit gerüstet sein, dass sie anfangen können, mit CouchDB Anwendungen zu schreiben.
 	
