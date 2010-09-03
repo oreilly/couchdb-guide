@@ -398,21 +398,22 @@ curl http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
 	
 <p>Wir werden später noch weitere Requests für Dokumente sehen, wenn wir uns weitere Funktionen von CouchDB näher ansehen. Wie beispielsweise die Replikation, die unser nächstes Thema ist.
 
-<h3 id="replication">Replication</h3>
+<h3 id="replication">Replikation</h3>
 
-<p>CouchDB replication is a mechanism to synchronize databases. Much like <code>rsync</code> synchronizes two directories locally or over a network, replication synchronizes two databases locally or remotely.
+<p>Die Replikation in CouchDB ist ein Mechanismus, um Datenbanken zu synchronisieren. Änhlich wie mit <code>rsync</code> zwei Verzeichnisse lokal oder über ein Netzwerk synchronisiert werden können, synchronisiert die Replikation in CouchDB zwei Datenbanken entweder lockal oder über ein Netzwerk.
+	
 
-<p>In a simple POST request, you tell CouchDB the <em>source</em> and the <em>target</em> of a replication and CouchDB will figure out which documents and new document revisions are on <em>source</em> that are not yet on <em>target</em>, and will proceed to move the missing documents and revisions over.
+<p>Mit einem einfachen POST Request teilt man CouchDB die <em>Quelle (source)</em> und das <em>Ziel (target)</em> der Replikation mit. CouchDB findet anschließend heraus, welche Dokumente und neuen Versionen von Dokumenten in der Quelldatenbank existieren, aber nicht in der Zieldatenbank und wird beginnen, die fehlenden Dokumente und Versionen zu kopieren.
 
-<p>We’ll take an in-depth look at replication later in the book; in this chapter, we’ll just show you how to use it.
+<p>Wir gehen auf die Replikation in <a href="replication.html">Kapitel 16: Replikation</a> noch genauer ein. In diesem Kapitel zeigen wir lediglich, wie man sie benutzt.
 
-<p>First, we’ll create a target database. Note that CouchDB won’t automatically create a target database for you, and will return a replication failure if the target doesn’t exist (likewise for the source, but that mistake isn’t as easy to make):
+<p>Zunächst erzeugt man eine Zieldatenbank. Beachten sie, dass CouchDB nicht automatisch eine Zieldatenbank für uns anlegt und einen Fehler meldet, wenn das Ziel nicht existiert. (Das gleiche gilt auch für die Quelle, aber diesen Fehler zu machen ist nicht ganz so einfach):
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/albums-replica
 </pre>
 
-<p>Now we can use the database <code>albums-replica</code> as a replication target:
+<p>Ab jetzt können wir die Datenbank <code>albums-replica</code> als Ziel einer Replikation benutzen:
 
 <pre>
 curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"albums-replica"}'
@@ -420,11 +421,11 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 
 <div class="aside note">
 
-<p>As of version 0.11, CouchDB supports the option <code>"create_target":true</code> placed in the JSON POSTed to the <code>_replicate</code> URL. It implicitly creates the target database if it doesn’t exist.
+<p>Seit Version 0.11 bietet CouchDB die Option <code>"create_target":true</code>, die man dem JSON in dem POST Request hinzufügen kann, mit der die Zieldatenbank angelegt wird, falls sie nicht schon exisitert. 
 
 </div>
 
-<p>CouchDB replies (this time we formatted the output so you can read it more easily):
+<p>CouchDB antwortet mit (diesmal haben wir die Ausgabe formatiert, sodass man sie besser lesen kann):
 
 <pre>
 {
@@ -447,12 +448,13 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 }
 </pre>
 
-<p>CouchDB maintains a <em>session history</em> of replications. The response for a replication request contains the history entry for this <em>replication session</em>. It is also worth noting that the request for replication will stay <em>open</em> until replication closes. If you have a lot of documents, it’ll take a while until they are all replicated and you won’t get back the replication response until all documents are replicated. It is important to note that replication replicates the database only as it was at the point in time when replication was started. So, any additions, modifications, or deletions subsequent to the start of replication will not be replicated.
+<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Es ist auch wichtig zu erwähnen, dass der Request für die Replikation erst beantwortet wird und damit offen bleibt, bis die Replikation abgeschlossen ist. Wenn ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis sie all kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur zu dem Punkt repliziert wird, wie sie zu Beginn der Replikation ausgesehen hat. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
 
-<p>We’ll punt on the details again—the <code>"ok": true</code> at the end tells us all went well. If you now have a look at the <code>albums-replica</code> database, you should see all the documents that you created in the <code>albums</code> database. Neat, eh?
+<p>Wir überspringen die Details nocheinmal, denn der <code>"ok": true</code> am Ende sagt uns, das alles geklappt hat. Wenn man dann auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
-<p>What you just did is called <em>local replication</em> in CouchDB terms. You created a local copy of a database. This is useful for backups or to keep snapshots of a specific state of your data around for later. You might want to do this if you are developing your applications but want to be able to roll back to a stable version of your code and data.
+<p>Was wir gerade durchgeführt haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
 
+<p>
 <p>There are more types of replication useful in other situations. The <code>source</code> and <code>target</code> members of our replication request are actually links (like in HTML) and so far we’ve seen links relative to the server we’re working on (hence <em>local</em>). You can also specify a remote database as the target:
 
 <pre>
