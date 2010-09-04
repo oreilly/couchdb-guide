@@ -17,7 +17,7 @@ var l10n = {
         "editionNotice": "This is an outdated edition of the book. Please use\
             the <a href='%s'>latest edition</a> for more up-to-date\
             information.",
-        "footer": "A <a href='http://oreilly.com/'>O&rsquo;Reilly</a> book\
+        "footer": "A <a href='http://oreilly.com/'>O’Reilly</a> book\
             about <a href='http://couchdb.apache.org/'>CouchDB</a> by\
             <a href='http://jchrisa.net/'>J. Chris Anderson</a>,\
             <a href='http://jan.prima.de/'>Jan Lehnardt</a> and\
@@ -37,7 +37,7 @@ var l10n = {
         "editionNotice": "Dies ist eine alte Ausgabe des Buchs. Bitte benutzen\
             sie die <a href='%s'>aktuelle Ausgabe</a> für aktuellere\
             Informationen.",
-        "footer": "Ein <a href='http://oreilly.com/'>O&rsquo;Reilly</a> Buch\
+        "footer": "Ein <a href='http://oreilly.com/'>O’Reilly</a> Buch\
             über <a href='http://couchdb.apache.org/'>CouchDB</a> von\
             <a href='http://jchrisa.net/'>J. Chris Anderson</a>,\
             <a href='http://jan.prima.de/'>Jan Lehnardt</a> und\
