@@ -20,7 +20,7 @@ var l10n = {
         "search": "Search",
         "title": "CouchDB <span>The Definitive Guide</span>",
     },
-    
+
     "de": {
         "draftEdition": "Entwurf",
         "draftNotice": "Diese Ausgabe des Buchs ist noch in Arbeit. Bitte <a href='http://github.com/oreilly/couchdb-guide/issues'>sagen sie uns</a> wo Fehler sind und was wir besser machen können.",
@@ -77,7 +77,7 @@ function get_header() {
         </h1>\
         <div class="search_box">\
           <form class="search" action="http://www.google.com/search">\
-            <input type="hidden" name="as_sitesearch" value="go-left.com/couchdb-guide">\
+            <input type="hidden" name="as_sitesearch" value="guide.couchdb.org">\
             <input type="text" name="as_q" value="" class="search_field">\
             <input type="submit" value="'+l10n[lang].search+'" class="search_btn" />\
           </form>\
