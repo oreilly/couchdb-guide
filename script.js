@@ -10,23 +10,39 @@ var languages = {
 var l10n = {
     "en": {
         "draftEdition": "Draft edition",
-        "draftNotice": "This edition of the book is a work in progress. Please <a href='http://github.com/oreilly/couchdb-guide/issues'>create a ticket</a> for any corrections or suggestions you may have.",
+        "draftNotice": "This edition of the book is a work in progress. Please\
+            <a href='http://github.com/oreilly/couchdb-guide/issues'>create a\
+            ticket</a> for any corrections or suggestions you may have.",
         "edition": "Edition",
-        "editionNotice": "This is an outdated edition of the book. Please use the <a href='%s'>latest edition</a> for more up-to-date information.",
-        "footer": "A <a href='http://oreilly.com/'>O&rsquo;Reilly</a> book about <a href='http://couchdb.apache.org/'>CouchDB</a> by <a href='http://jchrisa.net/'>J. Chris Anderson</a>, <a href='http://jan.prima.de/'>Jan Lehnardt</a> and <a href='http://nslater.org/'>Noah Slater</a>.",
+        "editionNotice": "This is an outdated edition of the book. Please use\
+            the <a href='%s'>latest edition</a> for more up-to-date\
+            information.",
+        "footer": "A <a href='http://oreilly.com/'>O’Reilly</a> book\
+            about <a href='http://couchdb.apache.org/'>CouchDB</a> by\
+            <a href='http://jchrisa.net/'>J. Chris Anderson</a>,\
+            <a href='http://jan.prima.de/'>Jan Lehnardt</a> and\
+            <a href='http://nslater.org/'>Noah Slater</a>.",
         "home": "Home",
         "nextPage": "Next Page",
         "prevPage": "Previous Page",
         "search": "Search",
         "title": "CouchDB <span>The Definitive Guide</span>",
     },
-    
     "de": {
         "draftEdition": "Entwurf",
-        "draftNotice": "Diese Ausgabe des Buchs ist noch in Arbeit. Bitte <a href='http://github.com/oreilly/couchdb-guide/issues'>sagen sie uns</a> wo Fehler sind und was wir besser machen können.",
+        "draftNotice": "Diese Ausgabe des Buchs ist noch in Arbeit. Bitte\
+            <a href='http://github.com/oreilly/couchdb-guide/issues'>sagen sie\
+            uns</a> wo Fehler sind und was wir besser machen können.",
         "edition": "Ausgabe",
-        "editionNotice": "Dies ist eine alte Ausgabe des Buchs. Bitte benutzen sie die <a href='%s'>aktuelle Ausgabe</a> für aktuellere Informationen.",
-        "footer": "Ein <a href='http://oreilly.com/'>O&rsquo;Reilly</a> Buch über <a href='http://couchdb.apache.org/'>CouchDB</a> von <a href='http://jchrisa.net/'>J. Chris Anderson</a> , <a href='http://jan.prima.de/'>Jan Lehnardt</a> und <a href='http://nslater.org/'>Noah Slater</a>. Deutsche Übersetzung von <a href='http://go-left.com/'>Frank Schröder</a>",
+        "editionNotice": "Dies ist eine alte Ausgabe des Buchs. Bitte benutzen\
+            sie die <a href='%s'>aktuelle Ausgabe</a> für aktuellere\
+            Informationen.",
+        "footer": "Ein <a href='http://oreilly.com/'>O’Reilly</a> Buch\
+            über <a href='http://couchdb.apache.org/'>CouchDB</a> von\
+            <a href='http://jchrisa.net/'>J. Chris Anderson</a>,\
+            <a href='http://jan.prima.de/'>Jan Lehnardt</a> und\
+            <a href='http://nslater.org/'>Noah Slater</a>. Deutsche\
+            Übersetzung von <a href='http://go-left.com/'>Frank Schröder</a>.",
         "home": "Anfang",
         "nextPage": "Nächste Seite",
         "prevPage": "Vorherige Seite",
@@ -77,7 +93,7 @@ function get_header() {
         </h1>\
         <div class="search_box">\
           <form class="search" action="http://www.google.com/search">\
-            <input type="hidden" name="as_sitesearch" value="go-left.com/couchdb-guide">\
+            <input type="hidden" name="as_sitesearch" value="guide.couchdb.org">\
             <input type="text" name="as_q" value="" class="search_field">\
             <input type="submit" value="'+l10n[lang].search+'" class="search_btn" />\
           </form>\
