@@ -26,7 +26,7 @@
 
 <p>Le théorème de Brewer définit quelques stratégies pour distribuer la logique applicative en différents points du réseau. CouchDB recourt au mécanisme de réplication pour propager les modifications entre les nœuds. C’est une approche très différente des algorithmes traditionnels et des bases de données relationnelles, lesquels placent le curseur à une autre intersection des courbes de cohérence, de disponibilité et de résistance au morcellement.
 
-<p>Le théorème de Brewer, illustré par la <a href="#figure/1">figure 1, <em>Le théorème de Brewer</em></a>, identifie trois problématiques distinctes&#160;:
+<p>Le théorème de Brewer, illustré par la <a href="#figure/1">figure 1, <em>Le théorème de Brewer</em></a>, identifie trois problématiques distinctes :
 
 <dl>
 
@@ -54,11 +54,11 @@
 
 </div>
 
-<p>Quand un système croît tant qu’un seul nœud de la base de données est incapable de gérer la charge, une solution censée est d’ajouter de nouveaux serveurs. Quand nous ajoutons des nœuds, nous devons nous interroger sur la répartition des données entre eux. Avons-nous des bases qui stockent exactement les mêmes données&#160;? Mettons-nous différents jeux de données sur différents serveurs&#160;? Laissons-nous uniquement certains serveurs écrire les données et d’autres se contenter de lire&#160;?
+<p>Quand un système croît tant qu’un seul nœud de la base de données est incapable de gérer la charge, une solution censée est d’ajouter de nouveaux serveurs. Quand nous ajoutons des nœuds, nous devons nous interroger sur la répartition des données entre eux. Avons-nous des bases qui stockent exactement les mêmes données ? Mettons-nous différents jeux de données sur différents serveurs ? Laissons-nous uniquement certains serveurs écrire les données et d’autres se contenter de lire ?
 
-<p>Quelle que soit l’approche que l’on choisit, nous devrons nous confronter à un problème commun&#160;: conserver la synchronisation entre ces serveurs de base de données. Si vous écrivez quelque information sur un nœud, comment vous assurez-vous qu’une requête de lecture adressée à un autre serveur reflète ce dernier changement&#160;? Ces évènements pourraient se succéder de quelques millisecondes. Même avec un petit nombre de serveurs, ce problème peut devenir d’une complexité extrême.
+<p>Quelle que soit l’approche que l’on choisit, nous devrons nous confronter à un problème commun : conserver la synchronisation entre ces serveurs de base de données. Si vous écrivez quelque information sur un nœud, comment vous assurez-vous qu’une requête de lecture adressée à un autre serveur reflète ce dernier changement ? Ces évènements pourraient se succéder de quelques millisecondes. Même avec un petit nombre de serveurs, ce problème peut devenir d’une complexité extrême.
 
-<p>Lorsqu’il est absolument nécessaire que tous les clients accèdent à une vue cohérente des données, les utilisateurs d’un nœud devront attendre que tous les autres nœuds s’accordent avant de pouvoir effectuer l’opération de lecture ou d’écriture. Dans ce cas, nous voyons que la <em>disponibilité</em> subit le contrecoup de la <em>cohérence</em>. Cependant, il y a des situations dans lesquelles la disponibilité l’emporte sur la cohérence&#160;:
+<p>Lorsqu’il est absolument nécessaire que tous les clients accèdent à une vue cohérente des données, les utilisateurs d’un nœud devront attendre que tous les autres nœuds s’accordent avant de pouvoir effectuer l’opération de lecture ou d’écriture. Dans ce cas, nous voyons que la <em>disponibilité</em> subit le contrecoup de la <em>cohérence</em>. Cependant, il y a des situations dans lesquelles la disponibilité l’emporte sur la cohérence :
 
 <blockquote>
 
@@ -68,7 +68,7 @@
 
 </blockquote>
 
-<p>Si la disponibilité est la priorité, nous pouvons laisser un client écrire sur un nœud de la base de données sans attendre l’accord des autres nœuds. Si la base de données est capable de réconcilier ces opérations avec les autres nœuds, nous obtenons une sorte de «&#160;cohérence finale&#160;» en échange de la haute disponibilité. Étonnamment, c’est un compromis souvent acceptable pour les applications.
+<p>Si la disponibilité est la priorité, nous pouvons laisser un client écrire sur un nœud de la base de données sans attendre l’accord des autres nœuds. Si la base de données est capable de réconcilier ces opérations avec les autres nœuds, nous obtenons une sorte de « cohérence finale » en échange de la haute disponibilité. Étonnamment, c’est un compromis souvent acceptable pour les applications.
 
 <p>À la différence des bases de données relationnelles, où chaque action effectuée est nécessairement sujette à des contrôles d’intégrité, CouchDB facilite la conception d’applications qui sacrifient la cohérence immédiate au profit de bien meilleures performances rendues possibles par une distribution simple.
 
@@ -78,7 +78,7 @@
 
 <h4 id="key">La clé de vos données</h4>
 
-<p>Au cœur de CouchDB se trouve un puissant moteur de stockage en <em>B-Tree</em> [NdT&#160;: arbre équilibré]. Un arbre B est une structure ordonnée qui permet la recherche, l’insertion et la suppression avec un temps de traitement logarithmique. Comme le montre la <a href="#figure/2">Figure 2, <em>Anatomie d’une requête sur une vue</em></a>, CouchDB utilise ce moteur de stockage en arbre B pour toutes les données, documents et vues. Si nous en comprenons un, nous les comprendrons tous.
+<p>Au cœur de CouchDB se trouve un puissant moteur de stockage en <em>B-Tree</em> [NdT : arbre équilibré]. Un arbre B est une structure ordonnée qui permet la recherche, l’insertion et la suppression avec un temps de traitement logarithmique. Comme le montre la <a href="#figure/2">Figure 2, <em>Anatomie d’une requête sur une vue</em></a>, CouchDB utilise ce moteur de stockage en arbre B pour toutes les données, documents et vues. Si nous en comprenons un, nous les comprendrons tous.
 
 <div class="figure" id="figure/2">
 
@@ -88,7 +88,7 @@
 
 </div>
 
-<p>CouchDB utilise MapReduce pour trouver les résultats d’une vue. MapReduce utilise deux fonctions&#160;: subdiviser [NdT&#160;: <em>map</em>] et agréger [NdT&#160;: <em>reduce</em>] qui sont appliquées sur chaque document indépendamment des autres. Être à même de séparer ces deux opérations induit que le calcul d’une vue peut être parallélisé et permettre le calcul incrémental. Plus important encore, ces deux fonctions produisent un couple (clé,valeur), ce qui permet à CouchDB de stocker les résultats dans l’arbre B, trié par clé. Or, les recherches par clé, ou intervalle de clés, sont d’une rapidité redoutable dans un arbre B. Traduit en notation de complexité (O), cela donne respectivement <em>O(log N)</em> et <em>O(log N + K)</em>.
+<p>CouchDB utilise MapReduce pour trouver les résultats d’une vue. MapReduce utilise deux fonctions : subdiviser [NdT : <em>map</em>] et agréger [NdT : <em>reduce</em>] qui sont appliquées sur chaque document indépendamment des autres. Être à même de séparer ces deux opérations induit que le calcul d’une vue peut être parallélisé et permettre le calcul incrémental. Plus important encore, ces deux fonctions produisent un couple (clé,valeur), ce qui permet à CouchDB de stocker les résultats dans l’arbre B, trié par clé. Or, les recherches par clé, ou intervalle de clés, sont d’une rapidité redoutable dans un arbre B. Traduit en notation de complexité (O), cela donne respectivement <em>O(log N)</em> et <em>O(log N + K)</em>.
 
 <p>Avec CouchDB, nous accédons aux documents et aux vues par clé ou intervalle de clés. C’est une correspondance directe avec les opérations sous-jacentes effectuées par le moteur de stockage en arbre B de CouchDB. En joignant les insertions et mises à jour de documents, cette correspondance directe explique que nous parlions de fine couche d’interface entourant le moteur de base de données pour décrire l’API.
 
@@ -110,7 +110,7 @@
 
 <p>Dans CouchDB, les documents sont versionnés, à peu près comme ils le seraient dans un système de gestion de version tel que Subversion. Si vous voulez changer une valeur dans un document, vous créez une toute nouvelle version de ce document et la sauvegardez par-dessus la première. Cela fait, vous vous retrouvez avec deux versions du même document, une ancienne et une nouvelle.
 
-<p>En quoi cela est-il meilleur que le verrouillage&#160;? Considérez un ensemble de requêtes de lecture du document. La première requête accède au document. Pendant que cette lecture est traitée, une deuxième requête modifie le document. Puisque la deuxième requête inclut une toute nouvelle version de celui-ci, CouchDB peut simplement l’ajouter à la base de données sans avoir à attendre que la requête de lecture s’achève.
+<p>En quoi cela est-il meilleur que le verrouillage ? Considérez un ensemble de requêtes de lecture du document. La première requête accède au document. Pendant que cette lecture est traitée, une deuxième requête modifie le document. Puisque la deuxième requête inclut une toute nouvelle version de celui-ci, CouchDB peut simplement l’ajouter à la base de données sans avoir à attendre que la requête de lecture s’achève.
 
 <p>Au moment où une troisième requête arrive pour lire ce même document, CouchDB va l’orienter vers la nouvelle version du document qui vient d’être écrite. Pendant ce temps, la première requête peut toujours lire le document original.
 
@@ -126,13 +126,13 @@
 
 <h3 id="distributed">Cohérence distribuée</h3>
 
-<p>Maintenir la cohérence au sein d’un unique nœud de base de données est relativement simple pour la plupart des bases. Les réels problèmes surviennent lorsqu’il s’agit de faire la même chose entre plusieurs serveurs. Si un client écrit sur le serveur A, comment s’assurer que c’est cohérent avec le serveur B, ou C, ou D&#160;? Pour les bases de données relationnelles, c’est un problème complexe avec des livres entiers qui traitent du sujet. Vous pourriez utiliser des topologies de réplication multimaître, maître-esclave, partitionner, fragmenter, disposer des caches d’écriture et toutes sortes de techniques compliquées.
+<p>Maintenir la cohérence au sein d’un unique nœud de base de données est relativement simple pour la plupart des bases. Les réels problèmes surviennent lorsqu’il s’agit de faire la même chose entre plusieurs serveurs. Si un client écrit sur le serveur A, comment s’assurer que c’est cohérent avec le serveur B, ou C, ou D ? Pour les bases de données relationnelles, c’est un problème complexe avec des livres entiers qui traitent du sujet. Vous pourriez utiliser des topologies de réplication multimaître, maître-esclave, partitionner, fragmenter, disposer des caches d’écriture et toutes sortes de techniques compliquées.
 
 <h4 id="incremental">Réplication incrémentale</h4>
 
-<p>Puisqu’avec CouchDB les opérations s’effectuent toutes au niveau du document, si vous voulez utiliser deux nœuds, vous n’avez plus à vous inquiéter de les garder en communication permanente. CouchDB parvient à une <em>cohérence finale</em> entre les bases de données en recourant à la réplication incrémentale&#160;: un processus où les modifications des documents sont périodiquement copiées entre les serveurs. Nous sommes ainsi capables de construire un cluster dont les nœuds sont autosuffisants [NdT&#160;: <em>shared-nothing cluster</em>] et indépendants, ne laissant ainsi aucun point de contention dans le système.
+<p>Puisqu’avec CouchDB les opérations s’effectuent toutes au niveau du document, si vous voulez utiliser deux nœuds, vous n’avez plus à vous inquiéter de les garder en communication permanente. CouchDB parvient à une <em>cohérence finale</em> entre les bases de données en recourant à la réplication incrémentale : un processus où les modifications des documents sont périodiquement copiées entre les serveurs. Nous sommes ainsi capables de construire un cluster dont les nœuds sont autosuffisants [NdT : <em>shared-nothing cluster</em>] et indépendants, ne laissant ainsi aucun point de contention dans le système.
 
-<p>Vous avez besoin d’absorber plus de charges avec un cluster CouchDB&#160;? Il vous suffit d’ajouter un serveur.
+<p>Vous avez besoin d’absorber plus de charges avec un cluster CouchDB ? Il vous suffit d’ajouter un serveur.
 
 <p>Comme le montre la <a href="#figure/4">figure 4, <em>Réplication incrémentale entre nœuds CouchDB</em></a>, avec le mécanisme de réplication incrémentale, vous pouvez synchroniser vos données entre deux bases de données comme vous le voulez et quand vous le voulez. Après la réplication, chaque base de données est capable de travailler indépendamment.
 
@@ -146,7 +146,7 @@
 
 </div>
 
-<p>Que se passe-t-il quand vous modifiez le même document dans deux bases de données différentes et que vous voulez les synchroniser entre elles&#160;? Le mécanisme de réplication de CouchDB est capable de détecter automatiquement les conflits <em>et</em> de les résoudre. Quand CouchDB détecte qu’un document a été modifié dans les deux bases de données, il y place un drapeau l’indiquant en conflit, comme le ferait un traditionnel système de gestion de version.
+<p>Que se passe-t-il quand vous modifiez le même document dans deux bases de données différentes et que vous voulez les synchroniser entre elles ? Le mécanisme de réplication de CouchDB est capable de détecter automatiquement les conflits <em>et</em> de les résoudre. Quand CouchDB détecte qu’un document a été modifié dans les deux bases de données, il y place un drapeau l’indiquant en conflit, comme le ferait un traditionnel système de gestion de version.
 
 <p>Ce n’est pas aussi problématique que cela pourrait le paraître. Quand deux versions d’un document sont en conflit à l’occasion de la réplication, la version <em>gagnante</em> est sauvegardée comme étant la nouvelle version. Plutôt que de jeter la version <em>perdante</em>, comme vous pourriez le penser, CouchDB la sauvegarde comme une version antérieure dans l’historique du document. Ainsi, il vous est possible d’y accéder si vous en avez besoin. Cela se produit automatiquement et de manière cohérente, donc les deux bases feront le même choix.
 
@@ -164,7 +164,7 @@
 
 <p>Examinons le fonctionnement de cette application de sauvegarde. En premier lieu, du point de vue d’un utilisateur sauvegardant un seul ordinateur puis, ensuite, utilisant Songbird pour synchroniser les listes de lectures entre plusieurs ordinateurs. Nous verrons en quoi la gestion des versions des documents transforme un problème épineux en une solution qui <em>fonctionne simplement</em>.
 
-<p>La première fois que nous utilisons ce logiciel de sauvegarde, nous y chargeons nos listes de lectures et initialisons la sauvegarde. Chaque liste est convertie en un objet JSON qui est envoyé à la base de données CouchDB. Comme l’indique la <a href="#figure/5">figure 5, <em>Sauvegarde vers une seule base de données</em></a>, CouchDB retourne l’identifiant du document et le numéro de version [NdT&#160;: <em>revision number</em>] de chaque liste quand il le stocke dans la base.
+<p>La première fois que nous utilisons ce logiciel de sauvegarde, nous y chargeons nos listes de lectures et initialisons la sauvegarde. Chaque liste est convertie en un objet JSON qui est envoyé à la base de données CouchDB. Comme l’indique la <a href="#figure/5">figure 5, <em>Sauvegarde vers une seule base de données</em></a>, CouchDB retourne l’identifiant du document et le numéro de version [NdT : <em>revision number</em>] de chaque liste quand il le stocke dans la base.
 
 <div class="figure" id="figure/5">
 
@@ -182,7 +182,7 @@
 
 <p>Nous avons maintenant un ordinateur portable que nous voulons synchroniser avec notre ordinateur de bureau. Avec toutes nos listes de lectures sur notre bureau, la première étape consiste à restaurer la sauvegarde du bureau. C’est la première fois que nous le faisons, donc notre ordinateur portable est à présent à niveau avec celui du bureau.
 
-<p>Après avoir édité notre liste de tango argentin sur notre ordinateur portable pour y inclure de nouvelles musiques que nous avons achetées, nous voulons sauvegarder nos modifications. Le logiciel de sauvegarde remplace le document de la liste de lecture dans la base de données CouchDB du portable&#160;; un nouveau numéro de version est généré. Quelques jours plus tard, nous nous souvenons de ces nouveaux morceaux et voulons les copier sur notre ordinateur de bureau. Comme le montre la <a href="#figure/6">figure 6, <em>Synchronisation entre deux bases de données</em></a>, le logiciel de sauvegarde copie le nouveau document et le nouveau numéro de version sur la base de l’ordinateur de bureau. Les deux bases de données sont désormais à niveau.
+<p>Après avoir édité notre liste de tango argentin sur notre ordinateur portable pour y inclure de nouvelles musiques que nous avons achetées, nous voulons sauvegarder nos modifications. Le logiciel de sauvegarde remplace le document de la liste de lecture dans la base de données CouchDB du portable ; un nouveau numéro de version est généré. Quelques jours plus tard, nous nous souvenons de ces nouveaux morceaux et voulons les copier sur notre ordinateur de bureau. Comme le montre la <a href="#figure/6">figure 6, <em>Synchronisation entre deux bases de données</em></a>, le logiciel de sauvegarde copie le nouveau document et le nouveau numéro de version sur la base de l’ordinateur de bureau. Les deux bases de données sont désormais à niveau.
 
 <div class="figure" id="figure/6">
 
@@ -210,4 +210,4 @@
 
 <p>CouchDB s’inspire grandement de l’architecture du Web et des leçons apprises lors du déploiement de systèmes fortement distribués se basant sur celle-ci. En comprenant pourquoi cette architecture fonctionne comme cela et en apprenant à identifier quelles parties de votre application peuvent être facilement distribuées, mais aussi lesquelles ne le peuvent pas, vous améliorerez votre capacité à concevoir des applications distribuées et échelonnables, avec ou sans CouchDB.
 
-<p>Nous avons parcouru les principaux problèmes liés au modèle de cohérence de CouchDB et indiqué quelques bénéfices à en tirer quand vous travaillez <em>dans le sens</em> de CouchDB et non à son encontre. Mais voilà assez de théorie&#160;! Démarrons l’engin et faisons fonctionner tout ça, qu’on voit de quoi il en retourne&#160;!
+<p>Nous avons parcouru les principaux problèmes liés au modèle de cohérence de CouchDB et indiqué quelques bénéfices à en tirer quand vous travaillez <em>dans le sens</em> de CouchDB et non à son encontre. Mais voilà assez de théorie ! Démarrons l’engin et faisons fonctionner tout ça, qu’on voit de quoi il en retourne !

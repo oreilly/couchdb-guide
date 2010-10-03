@@ -1,4 +1,4 @@
-<title>Pourquoi CouchDB&#160;?</title>
+<title>Pourquoi CouchDB ?</title>
 
 <meta charset="utf-8">
 
@@ -10,7 +10,7 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="why">Pourquoi CouchDB&#160;?</h2>
+<h2 id="why">Pourquoi CouchDB ?</h2>
 
 <p>Apache CouchDB est une nouvelle engeance de système de gestion de base de données. Ce chapitre explique les raisons du besoin de nouveaux systèmes ainsi que les motivations sous-jacentes à la conception de CouchDB.
 
@@ -18,19 +18,19 @@
 
 <h3 id="relax">Détendez-vous</h3>
 
-<p>S’il est un mot pour décrire CouchDB, c’est <em>détendez-vous</em> [NdT&#160;: en anglais, <em>relax</em>]. C’est le titre de ce livre, c’est le slogan du logo officiel de CouchDB, et quand vous démarrez CouchDB, vous voyez&#160;:
+<p>S’il est un mot pour décrire CouchDB, c’est <em>détendez-vous</em> [NdT : en anglais, <em>relax</em>]. C’est le titre de ce livre, c’est le slogan du logo officiel de CouchDB, et quand vous démarrez CouchDB, vous voyez :
 
 <pre>
 Apache CouchDB has started. Time to relax.
 </pre>
 
-<p>Pourquoi la détente est-elle importante&#160;? La productivité d’un développeur a environ doublé ces cinq dernières années. La principale raison de cette amélioration réside dans la facilité d’utilisation d’outils de plus en plus puissants. Prenez <em>Ruby on rails</em>, par exemple&#160;: c’est un <em>framework</em> d’une complexité extrême, mais il est très aisé de faire ses premiers pas avec. Rails est une réussite, car le principe de base de sa conception est la facilité d’usage. C’est une des raisons pour lesquelles CouchDB est reposant&#160;: découvrir CouchDB et comprendre ses principes fondamentaux devrait paraître naturel pour la plupart des personnes qui se sont penchées un tant soit peu sur le Web. Et c’est aussi assez simple à expliquer à des profils non techniques.
+<p>Pourquoi la détente est-elle importante ? La productivité d’un développeur a environ doublé ces cinq dernières années. La principale raison de cette amélioration réside dans la facilité d’utilisation d’outils de plus en plus puissants. Prenez <em>Ruby on rails</em>, par exemple : c’est un <em>framework</em> d’une complexité extrême, mais il est très aisé de faire ses premiers pas avec. Rails est une réussite, car le principe de base de sa conception est la facilité d’usage. C’est une des raisons pour lesquelles CouchDB est reposant : découvrir CouchDB et comprendre ses principes fondamentaux devrait paraître naturel pour la plupart des personnes qui se sont penchées un tant soit peu sur le Web. Et c’est aussi assez simple à expliquer à des profils non techniques.
 
 <p>Ne pas entraver les créateurs quand ils tentent de construire des solutions spécialisées est en soi une fonctionnalité fondamentale et une chose que CouchDB aime à satisfaire. Nous trouvons que les outils existants sont trop encombrants pour s’en accommoder durant les phases de développement et de production. C’est pourquoi nous avons décidé de faire de CouchDB une solution facile, voire plaisante à utiliser. Les chapitres <a href="tour.html">3</a> et <a href="api.html">4</a> démontrent l’intuitivité de l’API REST basée sur HTTP.
 
 <p>Le paramètre de production est un autre aspect de la relaxation procurée par CouchDB à ses utilisateurs. Si vous avez une application en production, CouchDB fait en sorte de ne pas vous déranger. Son architecture interne est tolérante aux pannes, les défaillances se produisent dans un environnement contrôlé et sont gérées harmonieusement. Les problèmes unitaires ne se cascadent pas à travers tout le système, mais demeurent isolés dans les requêtes.
 
-<p>Les concepts fondamentaux de CouchDB sont simples, puissants et bien compris. Les équipes d’exploitation (si vous en avez une&#160;; à défaut, c’est vous) n’ont pas à s’inquiéter de comportements aléatoires et d’erreurs impossibles à tracer. Si quelque chose devait aller de travers, vous pourriez facilement trouver le problème&#160;; mais ces situations sont rares.
+<p>Les concepts fondamentaux de CouchDB sont simples, puissants et bien compris. Les équipes d’exploitation (si vous en avez une ; à défaut, c’est vous) n’ont pas à s’inquiéter de comportements aléatoires et d’erreurs impossibles à tracer. Si quelque chose devait aller de travers, vous pourriez facilement trouver le problème ; mais ces situations sont rares.
 
 <p>CouchDB est aussi conçu pour s’adapter aux variations de trafic. Par exemple, si un site web connaît un pic soudain de trafic, CouchDB absorbera généralement un grand nombre de requêtes concurrentes sans s’effondrer. Cela nécessitera peut-être plus de temps pour chaque requête, mais elles seront toutes satisfaites. Quand ce pic retombe, CouchDB recouvrera sa rapidité habituelle.
 
@@ -44,7 +44,7 @@ Apache CouchDB has started. Time to relax.
 
 <blockquote>
 
-<p>Django est peut-être conçu <em>pour</em> le Web, mais CouchDB est conçu <em>par</em> le Web. Je n’ai jamais vu de logiciel embrassant si profondément la philosophie sous-jacente à HTTP. CouchDB fait pâlir Django et le relègue à la «&#160;vieille école&#160;» de la même manière que Django relègue l’ASP au passé.
+<p>Django est peut-être conçu <em>pour</em> le Web, mais CouchDB est conçu <em>par</em> le Web. Je n’ai jamais vu de logiciel embrassant si profondément la philosophie sous-jacente à HTTP. CouchDB fait pâlir Django et le relègue à la « vieille école » de la même manière que Django relègue l’ASP au passé.
 
 <p class="attribution">&mdash; Jacob Kaplan-Moss, développeur de Django
 
@@ -58,7 +58,7 @@ Apache CouchDB has started. Time to relax.
 
 <h4 id="containment">Données autosuffisantes</h4>
 
-<p>Une facture contient toutes les informations décrivant une unique transaction&#160;: le vendeur, l’acquéreur, la date et une liste d’objets ou de services cédés. Comme le montre la <a href="#figure/1">Figure 1, <em>Documents autosuffisants</em></a>, il n’y a pas de référence abstraite dans ce document qui pointe vers un autre bout de papier qui contient le nom et l’adresse du vendeur. Les comptables apprécient la simplicité d’avoir tout au même endroit. Et, si le choix leur est donné, les développeurs aussi.
+<p>Une facture contient toutes les informations décrivant une unique transaction : le vendeur, l’acquéreur, la date et une liste d’objets ou de services cédés. Comme le montre la <a href="#figure/1">Figure 1, <em>Documents autosuffisants</em></a>, il n’y a pas de référence abstraite dans ce document qui pointe vers un autre bout de papier qui contient le nom et l’adresse du vendeur. Les comptables apprécient la simplicité d’avoir tout au même endroit. Et, si le choix leur est donné, les développeurs aussi.
 
 <div class="figure" id="figure/1">
 
@@ -68,17 +68,17 @@ Apache CouchDB has started. Time to relax.
 
 </div>
 
-<p>Et pourtant, recourir aux références est exactement la manière dont nous modélisons les données dans les bases de données relationnelles&#160;! Chaque facture est stockée dans une table sous la forme d’un enregistrement qui référence d’autres enregistrements dans d’autres tables&#160;: un pour les informations concernant le vendeur, un pour chaque objet, et encore davantage pour le détail des objets, sans compter les informations du constructeur, <em>et cetera desunt</em>.
+<p>Et pourtant, recourir aux références est exactement la manière dont nous modélisons les données dans les bases de données relationnelles ! Chaque facture est stockée dans une table sous la forme d’un enregistrement qui référence d’autres enregistrements dans d’autres tables : un pour les informations concernant le vendeur, un pour chaque objet, et encore davantage pour le détail des objets, sans compter les informations du constructeur, <em>et cetera desunt</em>.
 
 <p>Il n’est pas question de détracter le modèle relationnel qui est largement adapté et extrêmement utile pour de nombreuses raisons. Toutefois, cela illustre la problématique des modèles de données qui ne correspondent pas à la manière dont la donnée est traitée dans le monde réel.
 
-<p>Prenons le cas du carnet d’adresses pour illustrer une modélisation différente des données qui se rapproche davantage du monde réel&#160;: une pile de cartes de visite. Tout comme l’exemple des factures, une carte de visite contient toutes les informations importantes sur le même bout de carton. Nous appelons cela les données «&#160;autosuffisantes&#160;» et c’est un concept important pour comprendre les bases de données telles que CouchDB [NdT&#160;: en anglais, <em>self-contained data</em>].
+<p>Prenons le cas du carnet d’adresses pour illustrer une modélisation différente des données qui se rapproche davantage du monde réel : une pile de cartes de visite. Tout comme l’exemple des factures, une carte de visite contient toutes les informations importantes sur le même bout de carton. Nous appelons cela les données « autosuffisantes » et c’est un concept important pour comprendre les bases de données telles que CouchDB [NdT : en anglais, <em>self-contained data</em>].
 
 <h4 id="information">Syntaxe et sémantique</h4>
 
-<p>La plupart des cartes de visite affichent les mêmes informations&#160;: l’identité de quelqu’un, une affiliation et quelques informations de contact. Malgré les divergences de présentation, les informations véhiculées sont les mêmes et nous identifions rapidement le bout de carton comme étant une carte de visite. En ce sens, nous pouvons dire d’une carte de visite qu’elle est un <em>document du monde réel</em>.
+<p>La plupart des cartes de visite affichent les mêmes informations : l’identité de quelqu’un, une affiliation et quelques informations de contact. Malgré les divergences de présentation, les informations véhiculées sont les mêmes et nous identifions rapidement le bout de carton comme étant une carte de visite. En ce sens, nous pouvons dire d’une carte de visite qu’elle est un <em>document du monde réel</em>.
 
-<p>La carte de visite de Jan pourrait indiquer un numéro de téléphone, mais pas de numéro de fax, tandis que celle de J. Chris affiche les deux informations. Jan n’a pas à rendre ce manque d’information explicite en écrivant quelque chose de ridicule comme&#160;: «&#160;Fax&#160;: aucun&#160;» sur sa carte. Il préfère plutôt ne pas l’inscrire, ce qui signifie qu’il n’en a pas.
+<p>La carte de visite de Jan pourrait indiquer un numéro de téléphone, mais pas de numéro de fax, tandis que celle de J. Chris affiche les deux informations. Jan n’a pas à rendre ce manque d’information explicite en écrivant quelque chose de ridicule comme : « Fax : aucun » sur sa carte. Il préfère plutôt ne pas l’inscrire, ce qui signifie qu’il n’en a pas.
 
 <p>Nous pouvons constater que les documents du monde réel de même type, tels que les cartes de visite, ont une <em>sémantique</em> similaire (le type d’informations écrites), mais diverge grandement en <em>syntaxe</em>, c’est-à-dire dans la manière dont elles sont structurées. L’Homme est habitué à gérer facilement ce genre de divergence.
 
@@ -90,7 +90,7 @@ Apache CouchDB has started. Time to relax.
 
 <p>Que vous ayez besoin d’un système qui soit extrêmement rapide aux dépens de la fiabilité (pensez à la journalisation) ou d’un système qui garantisse le stockage dans deux locaux différents aux dépens de la performance, CouchDB est votre atout.
 
-<p>Il existe de nombreux paramètres que vous pouvez ajuster pour rendre un système plus performant dans un domaine, mais vous allez nécessairement impacter d’autres aspects. Nous décrirons un exemple au prochain chapitre&#160;: le théorème CAP (ou CDP ou théorème de Brewer en français). Pour avoir un aperçu des autres aspects qui affectent les systèmes de stockage, consultez les figures <a href="#figure/2">2</a> et <a href="#figure/3">3</a>.
+<p>Il existe de nombreux paramètres que vous pouvez ajuster pour rendre un système plus performant dans un domaine, mais vous allez nécessairement impacter d’autres aspects. Nous décrirons un exemple au prochain chapitre : le théorème CAP (ou CDP ou théorème de Brewer en français). Pour avoir un aperçu des autres aspects qui affectent les systèmes de stockage, consultez les figures <a href="#figure/2">2</a> et <a href="#figure/3">3</a>.
 
 <p>En réduisant la latence pour un système donné (ce qui ne se limite pas aux systèmes de stockages), vous impactez la parallélisation et la capacité de traitement.
 
@@ -106,49 +106,49 @@ Apache CouchDB has started. Time to relax.
 
 <img src="why/03.png">
 
-<p class="caption">Figure 3. Passage à l’échelle&#160;: requêtes d’écriture, requêtes de lecture, ou données (<em>Scaling: read requests, write requests, or data</em>)
+<p class="caption">Figure 3. Passage à l’échelle : requêtes d’écriture, requêtes de lecture, ou données (<em>Scaling: read requests, write requests, or data</em>)
 
 </div>
 
-<p>Quand vous voulez passer à l’échelle, il existe trois problématiques à aborder&#160;: dimensionner les requêtes de lecture, les requêtes d’écriture et les données. D’autres facteurs, comme la fiabilité ou la simplicité, s’ajoutent orthogonalement aux figures <a href="#figure/2">2</a> et <a href="#figure/3">3</a>. Vous pouvez tracer de nombreux graphiques comme ceux-ci qui montrent combien les différents facteurs vont dans autant de directions différentes et caractériser ainsi le système auxquels ils s’appliquent.
+<p>Quand vous voulez passer à l’échelle, il existe trois problématiques à aborder : dimensionner les requêtes de lecture, les requêtes d’écriture et les données. D’autres facteurs, comme la fiabilité ou la simplicité, s’ajoutent orthogonalement aux figures <a href="#figure/2">2</a> et <a href="#figure/3">3</a>. Vous pouvez tracer de nombreux graphiques comme ceux-ci qui montrent combien les différents facteurs vont dans autant de directions différentes et caractériser ainsi le système auxquels ils s’appliquent.
 
-<p>CouchDB est très flexible et vous permet de bâtir des îlots pour créer un système qui réponde parfaitement à votre problème. Cela ne signifie pas pour autant que CouchDB peut être ajusté pour répondre à tous les problèmes&#160;; ce n’est pas une balle en argent, mais dans le domaine du stockage de données, il peut vous être un compagnon de longue route.
+<p>CouchDB est très flexible et vous permet de bâtir des îlots pour créer un système qui réponde parfaitement à votre problème. Cela ne signifie pas pour autant que CouchDB peut être ajusté pour répondre à tous les problèmes ; ce n’est pas une balle en argent, mais dans le domaine du stockage de données, il peut vous être un compagnon de longue route.
 
 <h4 id="replication">Mécanisme de réplication de CouchDB</h4>
 
-<p>Le mécanisme de réplication de CouchDB est l’un de ces îlots. Son rôle fondamental est de synchroniser au moins deux bases de données CouchDB. Cela peut paraître simple, mais la simplicité est un facteur clé pour permettre à la réplication de résoudre de nombreux problèmes&#160;: permettre de manière fiable la redondance des données entre plusieurs machines&#160;; répartir les données dans un cluster de bases CouchDB qui partagent un sous-ensemble du nombre total de requêtes qui sont adressées au cluster (répartition de charge)&#160;; répartir les données sur des sites différents, par exemple à Tokyo et à New York.
+<p>Le mécanisme de réplication de CouchDB est l’un de ces îlots. Son rôle fondamental est de synchroniser au moins deux bases de données CouchDB. Cela peut paraître simple, mais la simplicité est un facteur clé pour permettre à la réplication de résoudre de nombreux problèmes : permettre de manière fiable la redondance des données entre plusieurs machines ; répartir les données dans un cluster de bases CouchDB qui partagent un sous-ensemble du nombre total de requêtes qui sont adressées au cluster (répartition de charge) ; répartir les données sur des sites différents, par exemple à Tokyo et à New York.
 
 <p>Le mécanisme de réplication de CouchDB exploite la même API REST que les clients. HTTP est omniprésent et bien compris. La réplication est incrémentale, ce qui signifie que, si vous perdez la connexion durant le transfert (ou quoi que ce soit qui aille de travers), elle reprendra là où elle s’était arrêtée la dernière fois. En outre, elle transfère uniquement les données nécessaires à la synchronisation des deux bases de données.
 
-<p>Une hypothèse que CouchDB fait toujours est que les choses peuvent aller de travers (comme la connexion réseau) et CouchDB est conçu pour recouvrer harmonieusement de ces erreurs plutôt que de penser que tout ira bien. Le mécanisme de réplication incrémental en est une bonne illustration. Les pensées inhérentes à l’idée que «&#160;tout peut aller de travers&#160;» est <a href="http://fr.wikipedia.org/wiki/Illusions_de_l%27informatique_distribu%C3%A9e">les illusions de l’informatique distribuée</a>&#160;:
+<p>Une hypothèse que CouchDB fait toujours est que les choses peuvent aller de travers (comme la connexion réseau) et CouchDB est conçu pour recouvrer harmonieusement de ces erreurs plutôt que de penser que tout ira bien. Le mécanisme de réplication incrémental en est une bonne illustration. Les pensées inhérentes à l’idée que « tout peut aller de travers » est <a href="http://fr.wikipedia.org/wiki/Illusions_de_l%27informatique_distribu%C3%A9e">les illusions de l’informatique distribuée</a> :
 
 <ol>
 
-<li>Le réseau est fiable&#160;;</li>
+<li>Le réseau est fiable ;</li>
 
-<li>Le temps de latence est nul&#160;;</li>
+<li>Le temps de latence est nul ;</li>
 
-<li>La bande passante est infinie&#160;;</li>
+<li>La bande passante est infinie ;</li>
 
-<li>Le réseau est sûr&#160;;</li>
+<li>Le réseau est sûr ;</li>
 
-<li>La topologie du réseau ne change pas&#160;;</li>
+<li>La topologie du réseau ne change pas ;</li>
 
-<li>Il y a un et un seul administrateur réseau&#160;;</li>
+<li>Il y a un et un seul administrateur réseau ;</li>
 
-<li>Le coût de transport est nul&#160;;</li>
+<li>Le coût de transport est nul ;</li>
 
 <li>Le réseau est homogène.</li>
 
 </ol>
 
-<p>Les outils existants tâchent souvent de cacher le fait qu’il y a un réseau et que tout ou partie des conditions précitées ne s’appliquent pas à leur application. Cela conduit généralement à des plantages fatidiques quand un élément s’est mis de travers. À l’opposé, CouchDB ne tente pas de masquer le réseau&#160;: il réagit harmonieusement aux erreurs et vous fait savoir quand des actions sont nécessaires à votre niveau.
+<p>Les outils existants tâchent souvent de cacher le fait qu’il y a un réseau et que tout ou partie des conditions précitées ne s’appliquent pas à leur application. Cela conduit généralement à des plantages fatidiques quand un élément s’est mis de travers. À l’opposé, CouchDB ne tente pas de masquer le réseau : il réagit harmonieusement aux erreurs et vous fait savoir quand des actions sont nécessaires à votre niveau.
 
 <h3 id="local">Les données locales sont reines</h3>
 
-<p>CouchDB tire quelques enseignements du Web, et il est une chose qui pourrait être améliorée dans le Web&#160;: la latence. Quand vous devez patienter pour qu’une application réponde ou qu’un site web s’affiche, vous attendez quasiment toujours après un lien réseau trop faible pour votre besoin. Patienter quelques secondes au lieu de quelques millisecondes affecte grandement le ressenti de l’utilisateur.
+<p>CouchDB tire quelques enseignements du Web, et il est une chose qui pourrait être améliorée dans le Web : la latence. Quand vous devez patienter pour qu’une application réponde ou qu’un site web s’affiche, vous attendez quasiment toujours après un lien réseau trop faible pour votre besoin. Patienter quelques secondes au lieu de quelques millisecondes affecte grandement le ressenti de l’utilisateur.
 
-<p>Que faites-vous quand vous êtes déconnecté&#160;? Cela arrive chaque fois que votre FAI rencontre des problèmes ou que votre iPhone, G1 ou BlackBerry ne capte pas le réseau&#160;; et qui dit pas de connectivité dit aucun moyen de récupérer vos données.
+<p>Que faites-vous quand vous êtes déconnecté ? Cela arrive chaque fois que votre FAI rencontre des problèmes ou que votre iPhone, G1 ou BlackBerry ne capte pas le réseau ; et qui dit pas de connectivité dit aucun moyen de récupérer vos données.
 
 <p>CouchDB peut aussi s’employer dans de tels cas, et c’est là que le passage à l’échelle est de nouveau important. Cette fois, il s’agit de réduction. Imaginez que CouchDB soit installé sur les terminaux mobiles qui peuvent synchroniser leurs données avec des bases CouchDB centrales quand ils sont sur le réseau. La synchronisation ne connaît pas les contraintes d’interface utilisateur qui doivent réagir en moins d’une seconde. D’autre part, il est plus facile d’optimiser les systèmes pour une bande passante importante et une grande latence que pour une bande passante faible et des temps de réponses très rapides. Les applications embarquées peuvent alors exploiter CouchDB localement et, comme aucune connexion réseau n’est nécessaire pour cela, la latence est subséquemment faible.
 
@@ -156,5 +156,5 @@ Apache CouchDB has started. Time to relax.
 
 <h3 id="wrap">Conclusion</h3>
 
-<p>Le chapitre suivant explore plus avant le caractère distribué de CouchDB. Nous devrions avoir distillé suffisamment d’informations pour piquer votre curiosité. Allons-y&#160;!
+<p>Le chapitre suivant explore plus avant le caractère distribué de CouchDB. Nous devrions avoir distillé suffisamment d’informations pour piquer votre curiosité. Allons-y !
 
