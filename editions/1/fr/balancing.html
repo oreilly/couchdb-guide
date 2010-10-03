@@ -1,0 +1,41 @@
+<title>Load Balancing</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="conflicts.html">
+
+<link rel="next" href="clustering.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="balancing">Load Balancing</h2>
+
+<p>Jill is woken up at 4:30 a.m. by her mobile phone. She receives text message after text message, one every minute. Finally, Joe calls. Joe is furious, and Jill has trouble understanding what Joe is saying. In fact, Jill has a hard time figuring out why Joe would call her in the middle of the night. Then she remembers: Joe is running an online shop selling sports gear on one of her servers, and he is furious because the server went down and now his customers in New Zealand are angry because they can’t get to the online shop.
+
+<p>This is a typical scenario, and you have probably seen many variations of it, being in the role of Jill, Joe, or both. If you are Jill, you want to sleep at night, and if you are Joe, you want your customers to buy from you whenever it pleases them.
+
+<h3 id="backup">Having a Backup</h3>
+
+<p>The problems persist: computers fail, and in many ways. There are hardware problems, power outages, bugs in the operating system or application software, etc. Only CouchDB doesn’t have any bugs. (Well, of course, that’s not true. All software has bugs, with the possible exception of things written by Daniel J. Bernstein and Donald Knuth.)
+
+<p>Whatever the cause is, you want to make sure that the service you are providing (in Jill and Joe’s case, the database for an online store) is resilient against failure. The road to resilience is a road of finding and removing single points of failure. A server’s power supply can fail. To keep the server from turning off during such an event, most come with at least two power supplies. To take this further, you could get a server where everything is duplicated (or more), but that would be a highly specialized (and expensive) piece of hardware. It is much cheaper to get two similar servers where the one can take over if the other has a problem. However, you need to make sure both servers have the same set of data in order to switch them without a user noticing.
+
+<p>Removing all single points of failure will give you a highly available or a fault-tolerant system. The order of tolerance is restrained only by your budget. If you can’t afford to lose a customer’s shopping cart in any event, you need to store it on at least two servers in at least two far apart geographical locations.
+
+<div class="aside note">
+
+<p>Amazon does this for the <a href="http://www.amazon.com">Amazon.com</a> website. If one data center is the victim of an earthquake, a user will still be able to shop.
+
+<p>It is likely, though, that Amazon’s problems are not your problems and that you will have a whole set of new problems when your data center goes away. But you still want to be able to live through a server failure.
+
+</div>
+
+<p>Before we dive into setting up a highly available CouchDB system, let’s look at another situation. Joe calls Jill during regular business hours and relays his customers’ complaints that loading the online shop takes “forever.” Jill takes a quick look at the server and concludes that this is a lucky problem to have, leaving Joe puzzled. Jill explains that Joe’s shop is suddenly attracting many more users who are buying things. Joe chimes in, “I got a great review on that blog. That’s where they must be coming from.” A quick referrer check reveals that indeed many of the new customers are coming from a single site. The blog post already includes comments from unhappy customers voicing their frustration with the slow site. Joe wants to make his customers happy and asks Jill what to do. Jill advises that they set up a second server that can take half of the load of the current server, making sure all requests get answered in a reasonable amount of time. Joe agrees, and Jill begins to set things up.
+
+<p>The solution to the outlined problem looks a lot like the earlier one for providing a fault-tolerant setup: install a second server and synchronize all data. The difference is that with fault tolerance, the second server just sits there and waits for the first one to fail. In the server-overload case, a second server helps answer all incoming requests. This case is not fault-tolerant: if one server crashes, the other will get all the requests and will likely break down, or at least provide very slow service, either of which is not acceptable.
+
+<p>Keep in mind that although the solutions look similar, high availability and fault tolerance are not the same. We’ll get back to the second scenario later on, but first we will take a look at how to set up a fault-tolerant CouchDB system.
+
+<p>We already gave it away in the previous chapters: the solution to synchronizing servers is replication.
