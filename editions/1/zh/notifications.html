@@ -1,0 +1,237 @@
+<title>Change Notifications</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="clustering.html">
+
+<link rel="next" href="cookbook.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="notifications">Change Notifications</h2>
+
+<p>Say you are building a message service with CouchDB. Each user has an inbox database and other users send messages by dropping them into the inbox database. When users want to read all messages received, they can just open their inbox databases and see all messages.
+
+<p>So far, so simple, but now you’ve got your users hitting the Refresh button all the time once they’ve looked at their messages to see if there are new messages. This is commonly referred to as <em>polling</em>. A lot of users are generating a lot of requests that, most of the time, don’t show anything new, just the list of all the messages they already know about.
+
+<p>Wouldn’t it be nice to ask CouchDB to give you notice when a new message arrives? The <code>_changes</code> database API does just that.
+
+<p>The scenario just described can be seen as the <em>cache invalidation problem</em>; that is, when do I know that what I am displaying right now is no longer an apt representation of the underlying data store? Any sort of cache invalidation, not only backend/frontend-related, can be built using <code>_changes</code>.
+
+<p><code>_changes</code> is also designed and suited to extract an activity stream from a database, whether for simple display or, equally important, to act on a new document (or a document change) when it occurs.
+
+<p>The beauty of systems that use the changes API is that they are <em>decoupled</em>. A program that is interested only in latest updates doesn’t need to know about programs that create new documents and vice versa.
+
+<p>Here’s what a <code>changes</code> item looks like:
+
+<pre>
+{"seq":12,"id":"foo","changes":[{"rev":"1-23202479633c2b380f79507a776743d5"}]}
+</pre>
+
+<p>There are three fields:
+
+<dl>
+
+<dt><code>seq</code></dt>
+
+<dd>The <code>update_seq</code> of the database that was created when the document with the <code>id</code> got created or changed.</dd>
+
+<dt><code>id</code></dt>
+
+<dd>The document ID.</dd>
+
+<dt><code>changes</code></dt>
+
+<dd>An array of fields, which by default includes the document’s revision ID, but can also include information about document conflicts and other things.</dd>
+
+</dl>
+
+<p>The changes API is available for each database. You can get changes that happen in a single database per request. But you can easily send multiple requests to multiple databases’ changes API if you need that.
+
+<p>Let’s create a database that we can use as an example later in this chapter:
+
+<pre>
+&gt; HOST="http://127.0.0.1:5984"
+&gt; curl -X PUT $HOST/db
+{"ok":true}
+</pre>
+
+<p>There are three ways to request notifications: <em>polling</em> (the default), <em>long polling</em> and <em>continuous</em>. Each is useful in a different scenario, and we’ll discuss all of them in detail.
+
+<h3 id="polling">Polling for Changes</h3>
+
+<p>In the previous example, we tried to avoid the polling method, but it is very simple and in some cases the only one suitable for a problem. Because it is the simplest case, it is the default for the changes API.
+
+<p>Let’s see what the changes for our test database look like. First, the request (we’re using <code>curl</code> again):
+
+<pre>
+curl -X GET $HOST/db/_changes
+</pre>
+
+<p>The result is simple:
+
+<pre>
+{"results":[
+
+],
+"last_seq":0}
+</pre>
+
+<p>There’s nothing there because we didn’t put anything in yet—no surprise. But you can guess where we’d see results—when they start to come in. Let’s create a document:
+
+<pre>
+curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
+</pre>
+
+<p>CouchDB replies:
+
+<pre>
+{"ok":true,"id":"test","rev":"1-aaa8e2a031bca334f50b48b6682fb486"}
+</pre>
+
+<p>Now let’s run the changes request again:
+
+<pre>
+{"results":[
+{"seq":1,"id":"test","changes":[{"rev":"1-aaa8e2a031bca334f50b48b6682fb486"}]}
+],
+"last_seq":1}
+</pre>
+
+<p>We get a notification about our new document. This is pretty neat! But wait—when we created the document and got information like the revision ID, why would we want to make a request to the changes API to get it again? Remember that the purpose of the changes API is to allow you to build decoupled systems. The program that creates the document is very likely not the same program that requests changes for the database, since it already knows what it put in there (although this is blurry, the same program could be interested in changes made by others).
+
+<p>Behind the scenes, we created another document. Let’s see what the changes for the database look like now:
+
+<pre>
+{"results":[
+{"seq":1,"id":"test","changes":[{"rev":"1-aaa8e2a031bca334f50b48b6682fb486"}]},
+{"seq":2,"id":"test2","changes":[{"rev":"1-e18422e6a82d0f2157d74b5dcf457997"}]}
+],
+"last_seq":2}
+</pre>
+
+<p>See how we get a new line in the result that represents the new document? In addition, the first document we put in there got listed again. The default result for the changes API is the history of all changes that the database has seen.
+
+<p>We’ve already seen the change for <code>"seq":1</code>, and we’re no longer really interested in it. We can tell the changes API about that by using the <code>since=1</code> query parameter:
+
+<pre>
+curl -X GET $HOST/db/_changes?since=1
+</pre>
+
+<p>This returns all changes <em>after</em> the <code>seq</code> specified by <code>since</code>:
+
+<pre>
+{"results":[
+{"seq":2,"id":"test2","changes":[{"rev":"1-e18422e6a82d0f2157d74b5dcf457997"}]}
+],
+"last_seq":2}
+</pre>
+
+<p>While we’re discussing options, use <code>style=all_docs</code> to get more revision and conflict information in the <code>changes</code> array for each result row. If you want to specify the default explicitly, the value is <code>main_only</code>.
+
+<h3 id="long">Long Polling</h3>
+
+<p>The technique of long polling was invented for web browsers to remove one of the problems with the regular polling approach: it doesn’t run any requests if nothing changed. Long polling works like this: when making a request to the long polling API, you open an HTTP connection to CouchDB until a new row appears in the changes result, and both you and CouchDB keep the HTTP connection open. As soon as a result appears, the connection is closed.
+
+<p>This works well for low-frequency updates. If a lot of changes occur for a client, you find yourself opening many new requests, and the usefulness of this approach over regular polling declines. Another general consequence of this technique is that for each client requesting a long polling change notification, CouchDB will have to keep an HTTP connection open. CouchDB is well capable of doing so, as it is designed to handle many concurrent requests. But you need to make sure your operating system allows CouchDB to use at least as many sockets as you have long polling clients (and a few spare for regular requests, of course).
+
+<p>To make a long polling request, add the <code>feed=longpoll</code> query parameter. For this listing, we added timestamps to show you when things happen.
+
+<pre>
+00:00: &gt; curl -X GET "$HOST/db/_changes?feed=longpoll&amp;since=2"
+00:00: {"results":[
+00:10: {"seq":3,"id":"test3","changes":[{"rev":"1-02c6b758b08360abefc383d74ed5973d"}]}
+00:10: ],
+00:10: "last_seq":3}
+</pre>
+
+<p>At <code>00:10</code>, we create another document behind your back again, and CouchDB promptly sends us the change. Note that we used <code>since=2</code> to avoid getting any of the previous notifications. Also note that we have to use double quotes for the <code>curl</code> command because we are using an ampersand, which is a special character for our shell.
+
+<p>The <code>style</code> option works for long polling requests just like for regular polling requests.
+
+<p>Networks are a tricky beast, and sometimes you don’t know whether there are no changes coming or your network connection went stale. If you add another query parameter, <code>heartbeat=<em>N</em></code>, where <em>N</em> is a number, CouchDB will send you a newline character each <em>N</em> milliseconds. As long as you are receiving newline characters, you know there are no new change notifications, but CouchDB is still ready to send you the next one when it occurs.
+
+<h3 id="continuous">Continuous Changes</h3>
+
+<p>Long polling is great, but you still end up opening an HTTP request for each change notification. For web browsers, this is the only way to avoid the problems of regular polling. But web browsers are not the only client software that can be used to talk to CouchDB. If you are using Python, Ruby, Java, or any other language really, you have yet another option.
+
+<p>The <em>continuous changes API</em> allows you to receive change notifications as they come in using a single HTTP connection. You make a request to the continuous changes API and both you and CouchDB will hold the connection open “forever.” CouchDB will send you newlines for notifications when the occur and—as opposed to long polling—will keep the HTTP connection open, waiting to send the next notification.
+
+<p>This is great for both infrequent and frequent notifications, and it has the same consequence as long polling: you’re going to have a lot of long-living HTTP connections. But again, CouchDB easily supports these.
+
+<p>Use the <code>feed=continuous</code> parameter to make a continuous changes API request. Following is the result, again with timestamps. At <code>00:10</code> and <code>00:15</code>, we’ll create a new document each:
+
+<pre>
+00:00: &gt; curl -X GET "$HOST/db/_changes?feed=continuous&amp;since=3"
+00:10: {"seq":4,"id":"test4","changes":[{"rev":"1-02c6b758b08360abefc383d74ed5973d"}]}
+00:15: {"seq":5,"id":"test5","changes":[{"rev":"1-02c6b758b08360abefc383d74ed5973d"}]}
+</pre>
+
+<p>Note that the continuous changes API result doesn’t include a wrapping JSON object with a results member with the individual notification results as array items; it includes only a raw line per notification. Also note that the lines are no longer separated by a comma. Whereas the regular and long polling APIs result is a full valid JSON object when the HTTP request returns, the continuous changes API sends individual rows as valid JSON objects. The difference makes it easier for clients to parse the respective results. The <code>style</code> and <code>heartbeat</code> parameters work as expected with the continuous changes API.
+
+<h3 id="filters">Filters</h3>
+
+<p>The change notification API and its three modes of operation already give you a lot of options requesting and processing changes in CouchDB. Filters for changes give you an additional level of flexibility. Let’s say the messages from our first scenario have priorities, and a user is interested only in notifications about messages with a <code>high</code> priority.
+
+<p>Enter filters. Similar to view functions, a filter is a JavaScript function that gets stored in a design document and is later executed by CouchDB. They live in special member <code>filters</code> under a name of your choice. Here is an example:
+
+<pre>
+{
+  "_id": "_design/app",
+  "_rev": "1-b20db05077a51944afd11dcb3a6f18f1",
+  "filters": {
+    "important": "function(doc, req) { if(doc.priority == 'high') { return true; }
+    else { return false; }}"
+  }
+}
+</pre>
+
+<p>To query the changes API with this filter, use the <code>filter=designdocname/filtername</code> query parameter:
+
+<pre>
+curl "$HOST/db/_changes?filter=app/important"
+</pre>
+
+<p>The result now includes only rows for document updates for which the filter function returns <code>true</code>—in our case, where the <code>priority</code> property of our document has the value <code>high</code>. This is pretty neat, but CouchDB takes it up another notch.
+
+<p>Let’s take the initial example application where users can send messages to each other. Instead of having a database per user that acts as the inbox, we now use a single database as the inbox for all users. How can a user register for changes that represent a new message being put in her inbox?
+
+<p>We can make the filter function using a request parameter:
+
+<pre>
+function(doc, req)
+{
+  if(doc.name == req.query.name) {
+    return true;
+  }
+
+  return false;
+}
+</pre>
+
+<p>If you now run a request adding a <code>?name=Steve</code> parameter, the filter function will only return result rows for documents that have the <code>name</code> field set to “Steve.” If you are running a request for a different user, just change the request parameter (<code>name=Joe</code>).
+
+<p>Now, adding a query parameter to a filtered changes request is easy. What would hinder Steve from passing in <code>name=Joe</code> as the parameter and seeing Joe’s inbox? Not much. Can CouchDB help with this? We wouldn’t bring this up if it couldn’t, would we?
+
+<p>The <code>req</code> parameter of the filter function includes a member <code>userCtx</code>, the <em>user context</em>. This includes information about the user that has already been authenticated over HTTP earlier in the phase of the request. Specifically, <code>req.userCtx.name</code> includes the username of the user who makes the filtered changes request. We can be sure that the user is who he says he is because he has been authenticated against one of the authenticating schemes in CouchDB. With this, we don’t even need the dynamic filter parameter (although it can still be useful in other situations).
+
+<p>If you have configured CouchDB to use authentication for requests, a user will have to make an authenticated request and the result is available in our filter function:
+
+<pre>
+function(doc, req)
+{
+  if(doc.name) {
+    if(doc.name == req.userCtx.name) {
+      return true;
+    }
+  }
+
+  return false;
+}
+</pre>
+
+<h3 id="wrap">Wrapping Up</h3>
+
+<p>The changes API lets you build sophisticated notification schemes useful in many scenarios with isolated and asynchronous components yet working to the same beat. In combination with replication, this API is the foundation for building distributed, highly available, and high-performance CouchDB clusters.
