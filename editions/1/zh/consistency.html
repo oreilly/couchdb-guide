@@ -10,41 +10,41 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="consistency">Eventual Consistency</h2>
+<h2 id="consistency">最终一致性</h2>
 
-<p>In the previous chapter, we saw that CouchDB’s flexibility allows us to evolve our data as our applications grow and change. In this chapter, we’ll explore how working “with the grain” of CouchDB promotes simplicity in our applications and helps us naturally build scalable, distributed systems.
+<p>在上一章节中, 我们看到CouchDB的灵活性允许我们可以随着我们应用程序的增长和变化来演进我们的数据. 在这一章节中, 我们会了解如何在我们的应用中, 顺着CouchDB的简单性这一特性来工作, 并且帮助我们自然而然的构建可扩展的, 分布式的系统.
 
-<h3 id="grain">Working with the Grain</h3>
+<h3 id="grain">按照套路来工作</h3>
 
-<p>A <em>distributed system</em> is a system that operates robustly over a wide network. A particular feature of network computing is that network links can potentially disappear, and there are plenty of strategies for managing this type of network segmentation. CouchDB differs from others by accepting eventual consistency, as opposed to putting absolute consistency ahead of raw availability, like RDBMS or Paxos. What these systems have in common is an awareness that data acts differently when many people are accessing it simultaneously. Their approaches differ when it comes to which aspects of <em>consistency</em>, <em>availability</em>, or <em>partition tolerance</em> they prioritize.
+<p>分布式系统是一个可以在一个广泛的网络上健壮工作的系统. 网络计算的一个明显的特点就是网络连接可能会断掉, 而且有多种策略来处理这个网络错误. CouchDB不同于其他的地方在于, 它接受最终一致性, 和把绝对一致性放在资源可用性之前(像关系型数据库管理系统或者Paxos算法)正好相反. 但这些系统的共同之处在于它们都关心当多人同时访问时的数据表现不一致. 它们的实现不同在, 它们在一致性, 可用性或者可分割性上的优先级.
 
-<p>Engineering distributed systems is tricky. Many of the caveats and “gotchas” you will face over time aren’t immediately obvious. We don’t have all the solutions, and CouchDB isn’t a panacea, but when you work with CouchDB’s grain rather than against it, the path of least resistance leads you to naturally scalable applications.
+<p>开发分布式系统是不容易的. 许多你会遇到的警告和”gotchas” 不会马上显现. 我们没有全部的解决办法, CouchDB也不是万能药, 但是如果你顺着CouchDB的套路而不是反着它, 那么一条最少阻碍的道路会把你引向自然而然的可扩展的应用.
 
-<p>Of course, building a distributed system is only the beginning. A website with a database that is available only half the time is next to worthless. Unfortunately, the traditional relational database approach to consistency makes it very easy for application programmers to rely on global state, global clocks, and other high availability no-nos, without even realizing that they’re doing so. Before examining how CouchDB promotes scalability, we’ll look at the constraints faced by a distributed system. After we’ve seen the problems that arise when parts of your application can’t rely on being in constant contact with each other, we’ll see that CouchDB provides an intuitive and useful way for modeling applications around high availability.
+<p>当然, 构建一个公布式系统只是一个开始. 一个网站, 用着只有一半时间有用的数据库, 基本没有价值. 不幸的是, 传统的关系数据库对于一致性的实现使得它很容易让程序员依赖于全局状态, 全局时钟等, 却没有意识到自己正在这么做. 在检查CouchDB是如何提升可扩展性之前, 我们来看一看一个分布式系统所面临的各种约束. After we’ve seen the problems that arise when parts of your application can’t rely on being in constant contact with each other, we’ll see that CouchDB provides an intuitive and useful way for modeling applications around high-availability.
 
-<h3 id="cap">The CAP Theorem</h3>
+<h3 id="cap">CAP理论</h3>
 
-<p>The CAP theorem describes a few different strategies for distributing application logic across networks. CouchDB’s solution uses replication to propagate application changes across participating nodes. This is a fundamentally different approach from consensus algorithms and relational databases, which operate at different intersections of consistency, availability, and partition tolerance.
+<p>CAP理论描述了基于网络的分布式系统的几种不同的策略. CouchDB 的解决方法是使用备份在各个参与节点间同步应用的改变. 这是一个与一致性算法和关系数据库在根本上不同的实现, 它们的不同在于, 一致性, 可用性和可分割性的交叉点.
 
-<p>The CAP theorem, shown in <a href="#figure/1">Figure 1, “The CAP theorem”</a>, identifies three distinct concerns:
+<p>CAP理论, 如图1所示, 指出了三个明显不同的关心点:
 
 <dl>
 
-<dt>Consistency</dt>
+<dt>一致性</dt>
 
-<dd>All database clients see the same data, even with concurrent updates.</dd>
+<dd>所有的数据库客户端都看到相同的数据, 即使存在并发的更新.</dd>
 
-<dt>Availability</dt>
+<dt>可用性</dt>
 
-<dd>All database clients are able to access some version of the data.</dd>
+<dd>所有的数据库客户端总能得到某一版本的数据.</dd>
 
-<dt>Partition tolerance</dt>
+<dt>可分割性</dt>
 
-<dd>The database can be split over multiple servers.</dd>
+<dd>数据库可以被分割在多个服务器上.</dd>
 
 </dl>
 
-<p>Pick two.
+<p>选择其中的两个.
 
 <div class="figure" id="figure/1">
 
@@ -54,31 +54,30 @@
 
 </div>
 
-<p>When a system grows large enough that a single database node is unable to handle the load placed on it, a sensible solution is to add more servers. When we add nodes, we have to start thinking about how to partition data between them. Do we have a few databases that share exactly the same data? Do we put different sets of data on different database servers? Do we let only certain database servers write data and let others handle the reads?
+<p>当一个系统增长到足够大, 大到一个单一的数据库节点不能处理给它的负载前, 一个很显然的办法就是增加更加的服务器. 当我们增加节点, 我们不得不开始考虑, 如何在节点间分割数据. 我们是在这些数据库上放置完全相同的数据? 还是把不同部分的数据放在不同的数据库服务器上? 还是应该只让一些确定的数据库服务来写数据而另外一些则处理读的请求?
 
-<p>Regardless of which approach we take, the one problem we’ll keep bumping into is that of keeping all these database servers in synchronization. If you write some information to one node, how are you going to make sure that a read request to another database server reflects this newest information? These events might be milliseconds apart. Even with a modest collection of database servers, this problem can become extremely complex.
+<p>不管我们选择哪种实现, 一个我们一直会遇到的问题是保持所有这些数据库服务器的同步. 如果你在一个节点上写了某些数据, 你要如何保证, 一个到另一个数据库服务器的读请求会反映这个最新的信息? 这些事件可能会发生在几毫秒之内. 即使只有少量的数据库服务器集, 这个问题也是相当复杂的.
 
-<p>When it’s absolutely critical that all clients see a consistent view of the database, the users of one node will have to wait for any other nodes to come into agreement before being able to read or write to the database. In this instance, we see that <em>availability</em> takes a backseat to <em>consistency</em>. However, there are situations where availability trumps consistency:
+<p>当所有客户端都看到数据库的同一视图这一点非常重要的时候, 一个节点的用户在读和写数据库之前, 不得不等待其他节点的用户的同意. 在这个例子中, 我们可以看到, 可用性比一致性更加不重要. 然而, 也有可用性比一致性来的重要的状况.
 
 <blockquote>
 
-<p>Each node in a system should be able to make decisions purely based on local state. If you need to do something under high load with failures occurring and you need to reach agreement, you’re lost. If you’re concerned about scalability, any algorithm that forces you to run agreement will eventually become your bottleneck. Take that as a given.
-
-<p class="attribution">&mdash;Werner Vogels, Amazon CTO and Vice President
-
+<p>“Each node in a system should be able to make decisions purely based on local state. If you need to do something under high load with failures occurring and you need to reach agreement, you’re lost… If you’re concerned about scalability, any algorithm that forces you to run agreement will eventually become your bottleneck. Take that as a given.”
 </blockquote>
 
-<p>If availability is a priority, we can let clients write data to one node of the database without waiting for other nodes to come into agreement. If the database knows how to take care of reconciling these operations between nodes, we achieve a sort of “eventual consistency” in exchange for high availability. This is a surprisingly applicable trade-off for many applications.
+<p class="attribution">— Werner Vogels, Amazon CTO and Vice President
 
-<p>Unlike traditional relational databases, where each action performed is necessarily subject to database-wide consistency checks, CouchDB makes it really simple to build applications that sacrifice immediate consistency for the huge performance improvements that come with simple distribution.
+<p>如果把可用性优先来考虑, 我们可以让客户端在不等待其他节点同意的情况下就把数据写入一个数据库节点. 如果数据库知道在这些操作后, 如何保持数据库节点间的一致性, 那么我们就达到了一种”最终一致性”, 以此为交换, 得到了高可用性. 对于很多应用来说, 这是一个相当可接受的交易.
 
-<h3 id="local">Local Consistency</h3>
+<p>不像关系数据库, 每一个操作都会导致整个数据库层面的一致性检查, CouchDB让构建那些以牺牲限时一致性来换取巨大的性能提升的应用变得简单.
 
-<p>Before we attempt to understand how CouchDB operates in a cluster, it’s important that we understand the inner workings of a single CouchDB node. The CouchDB API is designed to provide a convenient but thin wrapper around the database core. By taking a closer look at the structure of the database core, we’ll have a better understanding of the API that surrounds it.
+<h3 id="local">本地一致性</h3>
 
-<h4 id="key">The Key to Your Data</h4>
+<p>在我们去了解CouchDB是如何在集群上工作之前, 理解单一CouchDB节点的内部工作原理很重要. CouchDB API 的设计提供了一个方便的, 但是瘦小的, 封装的数据库核心. 通过仔细的了解数据库核心结构, 我们会对它的API有一个更好的理解.
 
-<p>At the heart of CouchDB is a powerful <em>B-tree</em> storage engine. A B-tree is a sorted data structure that allows for searches, insertions, and deletions in logarithmic time. As <a href="#figure/2">Figure 2, “Anatomy of a view request”</a> illustrates, CouchDB uses this B-tree storage engine for all internal data, documents, and views. If we understand one, we will understand them all.
+<h4 id="key">数据的钥匙</h4>
+
+<p>在CouchDB的核心, 是一个强大的B-Tree存储引擎. 一个 B-Tree 是一个经过排序的数据结构, 它允许搜索, 插入和删除(in logarithmic time). 如图2所示, CouchDB的所有内部数据, 文档和视图都使用这个B-Tree存储引擎. 如果我们明白了其中一个, 我们就明白了全部.
 
 <div class="figure" id="figure/2">
 
@@ -88,17 +87,17 @@
 
 </div>
 
-<p>CouchDB uses MapReduce to compute the results of a view. MapReduce makes use of two functions, “map” and “reduce,” which are applied to each document in isolation. Being able to isolate these operations means that view computation lends itself to parallel and incremental computation. More important, because these functions produce key/value pairs, CouchDB is able to insert them into the B-tree storage engine, sorted by key. Lookups by key, or key range, are extremely efficient operations with a B-tree, described in <em>big O notation</em> as <em>O(log N)</em> and <em>O(log N + K)</em>, respectively.
+<p>CouchDB使用 MapReduce 来计算一个视图的结果. MapReduce用了两个过程, “map”和”reduce”, 它们被独立的用于每个文档. 可以独立的进行这些操作意味着视图计算本身可以是平行的和增量的. 更加重要的是, 因为这些过程会产生 key/value 对, CouchDB就可以把它们插入到B-Tree引擎中, 并以key来排序. 在B-Tree中, 通过key, 或者key范围来查找, 效率非常高, 用大O表示法来描述的话分别是, O(log N) 和 O(log N + K). 
 
-<p>In CouchDB, we access documents and view results by key or key range. This is a direct mapping to the underlying operations performed on CouchDB’s B-tree storage engine. Along with document inserts and updates, this direct mapping is the reason we describe CouchDB’s API as being a thin wrapper around the database core.
+<p>在CouchDB里, 我们通过key或者key范围来得到文档和视图. 这是基于CouchDB的B-Tree引擎操作的一种直接映射. 和文档插入与更新一起, 这种直接映射是我们把CouchDB API描述成一个数据库核心的轻量的封装的原因.
 
-<p>Being able to access results by key alone is a very important restriction because it allows us to make huge performance gains. As well as the massive speed improvements, we can partition our data over multiple nodes, without affecting our ability to query each node in isolation. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, and <em>memcached</em> restrict object lookups by key for exactly these reasons.
+<p>可以通过单独的key来得到结果是一个非常重要的限制, 因为它允许我们得到巨大的性能提升. 还有巨大的速度提升, 我们可以把我们的数据分割到多个节点, 但却不会影响到每个节点独立查找数据的能力. BigTable, Hadoop, SimpleDB, 还有memcached限制通过key来查找对象也是因为这些原因.
 
-<h4 id="locking">No Locking</h4>
+<h4 id="locking">无锁的</h4>
 
-<p>A table in a relational database is a single data structure. If you want to modify a table—say, update a row—the database system must ensure that nobody else is trying to update that row and that nobody can read from that row while it is being updated. The common way to handle this uses what’s known as a <em>lock</em>. If multiple clients want to access a table, the first client gets the lock, making everybody else wait. When the first client’s request is processed, the next client is given access while everybody else waits, and so on. This serial execution of requests, even when they arrived in parallel, wastes a significant amount of your server’s processing power. Under high load, a relational database can spend more time figuring out who is allowed to do what, and in which order, than it does doing any actual work.
+<p>关系数据库里的一张表是一个单一的数据结构. 如果你想要修改一张表, 比如更新一行, 数据库系统必须保证没有其他正在更新那一行并且没有人可以读正在更新的这一行. 处理这种情况的一般方法就是所谓的锁机制. 如果多个客户端想到用这张表, 第一个客户端会得到一个锁, 这会让其他人全部等待. 当第一个客户端处理完成后, 下一个得到许可, 其他人继续等待, 如此往下. 这种顺序的请求处理方式, 即使是在它们同时到达的时候, 也会浪费掉你服务的相当可观的处理能力. 在高负载下, 一个关系数据库可能会把更多的时候花费在, 谁被允许干什么事, 是以怎样一个顺序, 而大于真正要做的事情的时间.
 
-<p>Instead of locks, CouchDB uses <em>Multi-Version Concurrency Control (MVCC)</em> to manage concurrent access to the database. <a href="#figure/3">Figure 3, “MVCC means no locking”</a> illustrates the differences between MVCC and traditional locking mechanisms. MVCC means that CouchDB can run at full speed, all the time, even under high load. Requests are run in parallel, making excellent use of every last drop of processing power your server has to offer.
+<p>作为锁机制的代替, CouchDB使用了多版本并发控制(MVCC)来管理对于数据库的关发请求. 图3形象描述了MVCC和传统锁机制的不同. MVCC意味着可以一直, 甚至在高负载的情况下全速运行. 请求平行的被处理, 榨干你机器提供的最终一滴处理能力.
 
 <div class="figure" id="figure/3">
 
@@ -108,35 +107,35 @@
 
 </div>
 
-<p>Documents in CouchDB are versioned, much like they would be in a regular version control system such as Subversion. If you want to change a value in a document, you create an entire new version of that document and save it over the old one. After doing this, you end up with two versions of the same document, one old and one new.
+<p>CouchDB里的文档有版本的, 很像一个常规的版本控制系统, 比如Subversion. 如果你想改变一个文档的value, 你会创建一个全新的文档, 然后保存在原来的文档之上. 这么做了之后, 你等于有一个同一文档的两个版本, 一个老的和一个新的.
 
-<p>How does this offer an improvement over locks? Consider a set of requests wanting to access a document. The first request reads the document. While this is being processed, a second request changes the document. Since the second request includes a completely new version of the document, CouchDB can simply append it to the database without having to wait for the read request to finish.
+<p>这种方式与锁机制比改进在哪里呢? 考虑下这种情况, 一堆请求想要同一个文档. 第一个请求读这个文档. 当这个请求正在被处理时, 第二个请求改变了这个方法. 因为第二个请求包含了一个全新版本的文档, CouchDB可以简单的把它附加到数据库, 而不用等待那个读请求结束. 
 
-<p>When a third request wants to read the same document, CouchDB will point it to the new version that has just been written. During this whole process, the first request could still be reading the original version.
+<p>当第三个请求想要读这个文档时, CouchDB会把它指向一个那个被写入的新版本. 在这整个过程中, 第一个请求可以仍旧在读那个原始的版本.
 
-<p>A read request will always see the most recent snapshot of your database.
+<p>一个读请求总是会看到最近的数据库快照.
 
-<h4 id="validation">Validation</h4>
+<h4 id="validation">验证</h4>
 
-<p>As application developers, we have to think about what sort of input we should accept and what we should reject. The expressive power to do this type of validation over complex data <em>within</em> a traditional relational database leaves a lot to be desired. Fortunately, CouchDB provides a powerful way to perform per-document validation from within the database.
+<p>作为应用开发者, 我们必须要考虑哪些请求我们是接受的, 哪些是要拒绝的. 在传统关系数据库中, 对复杂数据作这种有效的验证的能力, 很有诱惑力. 幸运的是, CouchDB提供了一种强大的方法, 可以在数据库中做预文档的验证.
 
-<p>CouchDB can validate documents using JavaScript functions similar to those used for MapReduce. Each time you try to modify a document, CouchDB will pass the validation function a copy of the existing document, a copy of the new document, and a collection of additional information, such as user authentication details. The validation function now has the opportunity to approve or deny the update.
+<p>CouchDB可以使用类似于那些用于MapReduce的JavaScript方法来验证文档. 每当你试图去修改一个文档, CouchDB会传给验证方法一个现存文档的副本, 一个新文档的副本, 和一个附加信息的集合, 比如用户认证细节. 然后, 验证方法可以来通过或者拒绝这个更新.
 
-<p>By working with the grain and letting CouchDB do this for us, we save ourselves a tremendous amount of CPU cycles that would otherwise have been spent serializing object graphs from SQL, converting them into domain objects, and using those objects to do application-level validation.
+<p>顺着这种套路, 让CouchDB帮你做这些工作, 我们为自己节省了极大的CPU时间, 这些时间原本会被用在, 从SQL顺序化对象图表, 把它们转化成域对象, 然后使用这些对象做应用层的验证
 
-<h3 id="distributed">Distributed Consistency</h3>
+<h3 id="distributed">分布一致性</h3>
 
-<p>Maintaining consistency within a single database node is relatively easy for most databases. The real problems start to surface when you try to maintain consistency between multiple database servers. If a client makes a write operation on server <em>A</em>, how do we make sure that this is consistent with server <em>B</em>, or <em>C</em>, or <em>D</em>? For relational databases, this is a very complex problem with entire books devoted to its solution. You could use multi-master, master/slave, partitioning, sharding, write-through caches, and all sorts of other complex techniques.
+<p>保持单一数据库节点的一致性对于大多数数据库来说都相对简单. 当你试图在多个数据库数据库之前保持一致性时, 真正的问题开始浮现. 如果一个客户端在服务器A上做了一个写操作, 我们怎么样才能保证它和服务器B, C或者D保持一致? 对于关系数据库来说, 这是一个非常复杂的问题, 可以用一整本书来阐述它的解决办法. 你可以使用多multi-master, master/slave, partitioning, sharding, write-through caches, 和其他的复杂的技术.
 
-<h4 id="incremental">Incremental Replication</h4>
+<h4 id="incremental">增量备份</h4>
 
-<p>Because CouchDB operations take place within the context of a single document, if you want to use two database nodes, you no longer have to worry about them staying in constant communication. CouchDB achieves <em>eventual consistency</em> between databases by using incremental replication, a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
+<p>因为CouchDB操作是在一个单一文档的上下文中进行的, 如果你想要使用两个数据库节点, 你不需要去担心它们正处于实时通讯中. CouchDB通过增量备份, 一个在各个服务器之间周期性的复制文档变化的过程, 来实现这种最终一致性. 我们可以建立那种有名的shared nothing数据库集群, 在那里每个节点是独立并且自我满足的, 不会有系统级的竞争.
 
-<p>Need to scale out your CouchDB database cluster? Just throw in another server.
+<p>想要扩展你的CouchDB数据库集群? 只要扔进另外一个服务器就行了.
 
-<p>As illustrated in <a href="#figure/4">Figure 4, “Incremental replication between CouchDB nodes”</a>, with CouchDB’s incremental replication, you can synchronize your data between any two databases however you like and whenever you like. After replication, each database is able to work independently.
+<p>如图4所示, 使用CouchDB的增量备份, 你可以用任何你喜欢的方式, 任何你喜欢的时间, 在任意两个数据库之间同步你的数据. 备份完成后, 每个数据库都可以独立工作.
 
-<p>You could use this feature to synchronize database servers within a cluster or between data centers using a job scheduler such as <em>cron</em>, or you could use it to synchronize data with your laptop for offline work as you travel. Each database can be used in the usual fashion, and changes between databases can be synchronized later in both directions.
+<p>你可以使用这个特性,在一个集群或者数据中心之间, 用像cron这样的工作排程来同步数据库, 或者你也可以用它把数据同步到你的笔记本, 然后再旅行的时候作离线工作使用. 每个数据库都可以像平常那样使用而且数据库间的变化可以在以后双向同步.
 
 <div class="figure" id="figure/4">
 
@@ -146,25 +145,21 @@
 
 </div>
 
-<p>What happens when you change the same document in two different databases and want to synchronize these with each other? CouchDB’s replication system comes with automatic conflict detection <em>and</em> resolution. When CouchDB detects that a document has been changed in both databases, it flags this document as being in conflict, much like they would be in a regular version control system.
+<p>如果你在两个数据库中改变了同一个文档并且想要同步它们, 怎么办? CouchDB的备份系统拥有自动的冲突检测和解决方法. 当CouchDB发现两个数据库中的文档都被改变了, 它把这个文档标记成冲突状态, 很像一个常规的版本控制系统所做的那样.
 
-<p>This isn’t as troublesome as it might first sound. When two versions of a document conflict during replication, the <em>winning</em> version is saved as the most recent version in the document’s history. Instead of throwing the <em>losing</em> version away, as you might expect, CouchDB saves this as a previous version in the document’s history, so that you can access it if you need to. This happens automatically and consistently, so both databases will make exactly the same choice.
+<p>这个问题不像第一次听起来那样麻烦. 如果在备份中有一个文档的两个版本冲突了, 胜出的版本是那个在文档历史中最近被保存的那个版本. 不像你可能想像的那样, 把输了的那个版本丢弃, CouchDB把这个版本在文档历史中保存为上一个版本, 这样如果你需要的话就可以得到它. 这是自动和实时的, 所以两个数据库会作出完全相同的选择.
 
-<p>It is up to you to handle conflicts in a way that makes sense for your application. You can leave the chosen document versions in place, revert to the older version, or try to merge the two versions and save the result.
+<p>对于你的应用如何处理冲突更好取决于你自己. 你可以按默认的解决冲突, 也可以把文档版本转而更老的那个, 或者试着把两个版本合并然后存储这个结果.
 
-<h4 id="study">Case Study</h4>
+<h4 id="study>案例分析</h4>
 
-<p>Greg Borenstein, a friend and coworker, built a small library for converting Songbird playlists to JSON objects and decided to store these in CouchDB as part of a backup application. The completed software uses CouchDB’s MVCC and document revisions to ensure that Songbird playlists are backed up robustly between nodes.
-
-<div class="aside note">
+<p>Greg Borenstein, 我们的一个朋友和同事, 写了一个库用来把Songbird播放列表转化成JSON对象, 并决定把它们存储到CouchDB中, 作为一个备份应用的一部分. 整个软件使用了CouchDB的MVCC和文档版本来保证Songbird播放列表在节点间健壮的被备份.
 
 <p>Songbird is a free software media player with an integrated web browser, based on the Mozilla XULRunner platform. Songbird is available for Microsoft Windows, Apple Mac OS X, Solaris, and Linux.
 
-</div>
+<p>让我们来看一下Songbird备份应用的整个工作流程, 首先一个用户从一个单一的计算机备份了播放列表, 然后用Songbird在多个计算机之间同步播放列表. 我们可以看到文档版本如何把一个麻烦的问题变成一件自然而然的事情.
 
-<p>Let’s examine the workflow of the Songbird backup application, first as a user backing up from a single computer, and then using Songbird to synchronize playlists between multiple computers. We’ll see how document revisions turn what could have been a hairy problem into something that <em>just works</em>.
-
-<p>The first time we use this backup application, we feed our playlists to the application and initiate a backup. Each playlist is converted to a JSON object and handed to a CouchDB database. As illustrated in <a href="#figure/5">Figure 5, “Backing up to a single database”</a>, CouchDB hands back the document ID and revision of each playlist as it’s saved to the database.
+<p>第一次我们使用备份程序时, 我们导入我们的播放列表然后初始化一个备份. 每个播放列表被转化成一个JSON对象然后提交给CouchDB数据库. 如图5所示, CouchDB返回保存到数据库的每个播放列表文档的ID和版本号.
 
 <div class="figure" id="figure/5">
 
@@ -174,15 +169,15 @@
 
 </div>
 
-<p>After a few days, we find that our playlists have been updated and we want to back up our changes. After we have fed our playlists to the backup application, it fetches the latest versions from CouchDB, along with the corresponding document revisions. When the application hands back the new playlist document, CouchDB requires that the document revision is included in the request.
+<p>几天以后, 我们发现我们的播放列表已经更新了, 我们想要备份这些改变. 在我们把播放列表导入到备份程序后, 它会去CouchDB取最新的版本, 同时能到相应的文档版本. 当应用程序提交新播放列表文档时, CouchDB接受这个文档, 而文档的版本已经包含在请求中了. 
 
-<p>CouchDB then makes sure that the document revision handed to it in the request matches the current revision held in the database. Because CouchDB updates the revision with every modification, if these two are out of synchronization it suggests that someone else has made changes to the document between the time we requested it from the database and the time we sent our updates. Making changes to a document after someone else has modified it without first inspecting those changes is usually a bad idea.
+<p>然后, CouchDB会保证请求里提交给它的文档版本和数据库里保存的文档版本一致. 因为CouchDB在每个修改后都会更新版本, 如果这两个版本不同步, 这说明有人在我们请求这个文档和发送我们的更新之间, 对这个文档做了改变. 当有人改变文档后, 不首先检查这些改变就去改变这个文档通常会是个坏主意.
 
-<p>Forcing clients to hand back the correct document revision is the heart of CouchDB’s optimistic concurrency.
+<p>强制要求客户端返回正确的文档版本是CouchDB乐观并发的中心.
 
-<p>We have a laptop we want to keep synchronized with our desktop computer. With all our playlists on our desktop, the first step is to “restore from backup” onto our laptop. This is the first time we’ve done this, so afterward our laptop should hold an exact replica of our desktop playlist collection.
+<p>我们有一个笔记本, 我们想要和我们的桌面计算机同步. 为了同步我们在桌面计算机上的所有播放列表, 第一步是在我们的笔记本上选择”从备份恢复”. 这是我们第一次做, 所以做完后我们应该会得到和我们的桌面计算机播放列表完全一个的一个副本.
 
-<p>After editing our Argentine Tango playlist on our laptop to add a few new songs we’ve purchased, we want to save our changes. The backup application replaces the playlist document in our laptop CouchDB database and a new document revision is generated. A few days later, we remember our new songs and want to copy the playlist across to our desktop computer. As illustrated in <a href="#figure/6">Figure 6, “Synchronizing between two databases”</a>, the backup application copies the new document and the new revision to the desktop CouchDB database. Both CouchDB databases now have the same document revision.
+<p>当在笔记本上编辑了Argentine Tango这个播放列表, 增加了一些我们买的新歌之后, 我们想要保存这些改变. 备份程序在笔记本上的CouchDB数据库中替代掉播放列表文档, 一个新文档版本产生了. 几天后我们想起了这些新歌, 想要把播放列表复制到桌面计算机. 如图6所示, 备份程序统计复制新文档和新版本到桌面计算机的CouchDB数据库. 现在两个CouchDB数据库都有相同的版本号.
 
 <div class="figure" id="figure/6">
 
@@ -192,11 +187,11 @@
 
 </div>
 
-<p>Because CouchDB tracks document revisions, it ensures that updates like these will work only if they are based on current information. If we had made modifications to the playlist backups between synchronization, things wouldn’t go as smoothly.
+<p>因为CouchDB跟踪文档版本号, 它保证像这样的更新只会在基于当前信息的基础上才会工作. 如果我们在同步过程之中, 对播放列表备份文档作出了改变, 事情就不会那么顺利了.
 
-<p>We back up some changes on our laptop and forget to synchronize. A few days later, we’re editing playlists on our desktop computer, make a backup, and want to synchronize this to our laptop. As illustrated in <a href="#figure/7">Figure 7, “Synchronization conflicts between two databases”</a>, when our backup application tries to replicate between the two databases, CouchDB sees that the changes being sent from our desktop computer are modifications of out-of-date documents and helpfully informs us that there has been a conflict.
+<p>我们在笔记本上备份了一些改变然后忘记同步了. 几天后, 我们在桌面计算机上编辑了我们的播放列表, 做了个备份, 然后想要和我们的笔记本同步了. 如图7所示, 当我们的应用程序想要在两个数据库之间备份时, CouchDB发现从桌面计算机上发来的文档是经过改变的, 然后告诉我们有一个冲突存在.
 
-<p>Recovering from this error is easy to accomplish from an application perspective. Just download CouchDB’s version of the playlist and provide an opportunity to merge the changes or save local modifications into a new playlist.
+<p>从应用层的观点来看, 从这个错误里恢复很容易做到. 只要下载CouchDB播放列表的版本, 然后可以合并这些改变或者在一个新的播放列表里存储本地改变.
 
 <div class="figure" id="figure/7">
 
@@ -206,8 +201,8 @@
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">收尾</h3>
 
-<p>CouchDB’s design borrows heavily from web architecture and the lessons learned deploying massively distributed systems on that architecture. By understanding why this architecture works the way it does, and by learning to spot which parts of your application can be easily distributed and which parts cannot, you’ll enhance your ability to design distributed and scalable applications, with CouchDB or without it.
+<p>CouchDB的设计从Web架构里借用了很多东西, 并且从在Web架构上部署大型分布式系统中学到了很多. 通过理解为什么这种架构可以按照它的方式运行, 通过学习观察你应用程序的哪些部分容易做分布, 哪些部分不容易, 你将增强你设计分布式的和可扩展的应用程序的能力––––使用CouchDB或者不使用它.
 
-<p>We’ve covered the main issues surrounding CouchDB’s consistency model and hinted at some of the benefits to be had when you work <em>with</em> CouchDB and not against it. But enough theory—let’s get up and running and see what all the fuss is about!
+<p>我们已经了解了CouchDB一致性模型的主要议题, 并提示了顺着CouchDB工作而不是逆着它得到的好处. 但是, 理论已经足够了, 让我们起来看看所有这些到底是什么.
