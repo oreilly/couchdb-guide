@@ -1,0 +1,488 @@
+<title>Les fondamentaux de l’API</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="tour.html">
+
+<link rel="next" href="design.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="api">Les fondamentaux de l’API</h2>
+
+<p>Ce chapitre explore en détail l’API de CouchDB. Il aborde les choses sérieuses et les astuces, de même que les bonnes pratiques ; il aide à éviter les embûches.
+
+<p>Nous commencerons par revoir les opérations de base décrites dans le chapitre précédent et profiterons de cette occasion pour entrer plus en profondeur. Nous montrerons aussi ce que Futon doit incorporer dans sa partie « métier » pour nous fournir ces fonctionnalités ravissantes.
+
+<p>Ce chapitre est à la fois une introduction aux fondamentaux de l’API de CouchDB et une référence. Si vous ne parvenez pas à vous souvenir comment exécuter telle requête, ou pourquoi certains paramètres sont requis, vous pouvez toujours vous référer à ce chapitre (nous sommes nous-mêmes certainement les premiers utilisateurs de ce chapitre).
+
+<p>Pour expliquer chaque détail de l’API, nous avons parfois besoin d’expliquer aussi le raisonnement qui le sous-tend. Nous saisissons ces occasions pour vous expliquer pourquoi CouchDB se comporte ainsi.
+
+<p>L’API peut être catégorisée de la manière suivante. Nous explorerons chacune des catégories :
+
+<ul>
+
+<li>Serveur</li>
+
+<li>Bases de données</li>
+
+<li>Documents</li>
+
+<li>Réplication</li>
+
+</ul>
+
+<h3 id="server">Serveur</h3>
+
+<p>Cette requête est simple et basique. Elle peut permettre de vérifier que CouchDB est lancé. Elle peut aussi permettre à certaines bibliothèques de vérifier la version du moteur. Nous utilisons de nouveau l’outil <code>curl</code> :
+
+<pre>
+curl http://127.0.0.1:5984/
+</pre>
+
+<p>CouchDB répond, tout heureux de participer :
+
+<pre>
+{"couchdb":"Welcome","version":"0.10.1"}
+</pre>
+
+<p>Vous récupérez une chaîne de caractères JSON qui, transformée en un objet natif ou une structure de données de votre langage de programmation, vous permet d’accéder aux deux chaînes que sont la bienvenue et la version.
+
+<p>Ce n’est pas d’une utilité folle, mais cela illustre bien la manière dont CouchDB se comporte. Vous envoyez une requête HTTP et vous recevez une chaîne JSON dans la réponse HTTP.
+
+<h3 id="databases">Bases de données</h3>
+
+<p>Faisons quelque chose d’un peu plus utile : créons des bases de données. Pour les puristes, CouchDB est un <em>système de gestion de bases de données</em> (SGBD). Cela signifie qu’il peut accueillir plusieurs <em>bases de données</em>. Une base de données est un conteneur qui stocke des données corrélées ; nous reviendrons sur ce que cela signifie. Dans la pratique, les termes se recouvrent : on parle d’un SGBD comme d’une « base de données » et réciproquement. Il se peut que nous suivions cette tendance, aussi ne vous en formalisez-vous pas. De manière générale, le contexte est explicite et indique si nous parlons du système CouchDB dans son entièreté ou d’une seule base de données.
+
+<p>Bref, créons-en une ! Nous voulons stocker nos albums de musique préférés, aussi nommons-nous notre base, de manière très inventive, <code>albums</code>. Notez que nous utilisons à nouveau l’option <code>-X</code> pour dire à <code>curl</code> d’envoyer une requête de type <code>PUT</code> plutôt qu’une requête de type <code>GET</code> comme il le ferait par défaut.
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"ok":true}
+</pre>
+
+<p>C’est fait ! Vous venez de créer une base de données et CouchDB vous indique que tout s’est bien passé. Que se passe-t-il si vous tentez de créer une base de données qui existe déjà ? Essayons :
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"error":"file_exists","reason":"The database could not be created, the file already exists."}
+</pre>
+
+<p>Nous obtenons une erreur ; voilà qui est pratique. Nous en apprenons aussi un peu plus sur la manière dont CouchDB fonctionne : il stocke chaque base de données dans un seul fichier. Très simple. Cela n’est pas sans conséquence, mais passons les détails pour le moment car nous explorons le système de stockage sous-jacent dans l’<a href="btree.html">Annexe F, La force des arbres-B</a>.
+
+<p>Créons une nouvelle base de données, cette fois avec l’option <code>-v</code> (pour verbeux) de <code>curl</code>. Cette option invite <code>curl</code> à nous montrer tous les détails de la requête et de la réponse :
+
+<pre>
+curl -vX PUT http://127.0.0.1:5984/albums-backup
+</pre>
+
+<p><code>curl</code> affiche :
+
+<pre>
+* About to connect() to 127.0.0.1 port 5984 (#0)
+*   Trying 127.0.0.1... connected
+* Connected to 127.0.0.1 (127.0.0.1) port 5984 (#0)
+&gt; PUT /albums-backup HTTP/1.1
+&gt; User-Agent: curl/7.16.3 (powerpc-apple-darwin9.0) libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
+&gt; Host: 127.0.0.1:5984
+&gt; Accept: */*
+&gt;
+&lt; HTTP/1.1 201 Created
+&lt; Server: CouchDB/0.9.0 (Erlang OTP/R12B)
+&lt; Date: Sun, 05 Jul 2009 22:48:28 GMT
+&lt; Content-Type: text/plain;charset=utf-8
+&lt; Content-Length: 12
+&lt; Cache-Control: must-revalidate
+&lt;
+{"ok":true}
+* Connection #0 to host 127.0.0.1 left intact
+* Closing connection #0
+</pre>
+
+<p>Quel bavard ! Expliquons ligne après ligne pour comprendre ce qu’il se passe et relevons ce qui est important. Quand vous aurez vu ce type d’affichage quelques fois, vous repérerez plus vite l’essentiel.
+
+<pre>
+* About to connect() to 127.0.0.1 port 5984 (#0)
+</pre>
+
+<p><code>curl</code> nous dit qu’il est sur le point d’établir la connexion <em>TCP</em> avec le serveur CouchDB que nous avons spécifié dans notre URI. Pas très important, sauf lors de la résolution de problèmes réseau.
+
+<pre>
+*   Trying 127.0.0.1... connected
+* Connected to 127.0.0.1 (127.0.0.1) port 5984 (#0)
+</pre>
+
+<p><code>curl</code> indique qu’il s’est bien connecté à CouchDB. Sauf pour des problèmes réseau, ce n’est pas important non plus.
+
+<p>Les lignes suivantes commencent toutes par les caractères <code>&gt;</code> et <code>&lt;</code>. <code>&gt;</code> signifie que la ligne a été envoyée à CouchDB (sans le <code>&gt;</code>) ; <code>&lt;</code> signifie que la ligne a été reçue par <code>curl</code>.
+
+<pre>
+&gt; PUT /albums-backup HTTP/1.1
+</pre>
+
+<p>Cela initialise la requête HTTP. Sa <em>méthode</em> [NdT : « Dans le protocole HTTP, une méthode est une commande spécifiant un type de requête, c'est-à-dire qu'elle demande au serveur d'effectuer une action. » Wikipédia ] est <code>PUT</code>, son <em>URI</em> est <code>/albums-backup</code> et la version du protocole HTTP est <code>HTTP/1.1</code>. Il existe aussi <code>HTTP/1.0</code>, qui peut s’avérer plus simple dans certains cas, mais pour des raisons pratiques, vous devriez utiliser <code>HTTP/1.1</code>.
+
+<p>Ensuite, nous voyons plusieurs <em>en-têtes</em>. Ils permettent d’adjoindre des informations à la requête.
+
+<pre>
+&gt; User-Agent: curl/7.16.3 (powerpc-apple-darwin9.0) libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
+</pre>
+
+<p>L’en-tête <code>User-Agent</code> indique à CouchDB quel client est utilisé pour envoyer la requête HTTP. Nous n’apprenons rien de nouveau : c’est <code>curl</code>. Cet en-tête est souvent utilisé pour différencier les clients avec lesquels des problèmes de compatibilités sont connus et pour lesquels la réponse devra être différente. Il aide aussi à déterminer la plateforme de l’utilisateur. Cette information peut être utilisée à des fins statistiques ou techniques. Pour CouchDB, l’en-tête <code>User-Agent</code> n’importe pas.
+
+<pre>
+&gt; Host: 127.0.0.1:5984
+</pre>
+
+<p>L’en-tête <code>Host</code> est requis par HTTP 1.1. Il indique l’origine de la requête.
+
+<pre>
+&gt; Accept: */*
+</pre>
+
+<p>L’en-tête <code>Accept</code> indique à CouchDB que <code>curl</code> accepte tous les types de médias. Nous verrons par la suite en quoi il est utile.
+
+<pre>
+&gt;
+</pre>
+
+<p>Une ligne vide indique que la partie des en-têtes de la requête est terminée et que la suite contient les données que nous envoyons au serveur. Dans ce cas, nous n’envoyons pas la moindre donnée, donc le reste de l’affichage de <em>curl</em> concerne la réponse HTTP.
+
+<pre>
+&lt; HTTP/1.1 201 Created
+</pre>
+
+<p>La première ligne de la réponse HTTP envoyée par CouchDB inclut la version du protocole HTTP (pour permettre le traitement de son format), un <em>code d’état</em> et un <em>message d’état</em>. Des requêtes différentes appellent des réponses différentes. Il en existe une ribambelle qui indique au client (<code>curl</code> dans notre cas) quel effet a eu la requête, que ce soit un succès ou un échec. La RFC 2616 (spécifiant HTTP 1.1) définit le comportement à avoir selon le code d’état. CouchDB se conforme parfaitement à cette RFC. 
+
+<p>Le code <em>201 Created</em> indique au client que la ressource qu’il a sollicitée a été créée. Aucune surprise ici, mais si vous vous souvenez du code d’erreur que nous avons eu quand nous avons tenté de recréer une base de données existante, vous savez qu’il aurait pu en être tout autrement. Réagir aux réponses en se basant sur le code d’état est une pratique courante. Par exemple, tous les codes supérieurs ou égaux à 400 signalent une erreur. Si vous vouliez simplifier votre logique de traitement et réagir immédiatement à une erreur, vous pourriez simplement vérifier si le code d’état est <code>&gt;= 400</code>.
+
+<pre>
+&lt; Server: CouchDB/0.10.1 (Erlang OTP/R13B)
+</pre>
+
+<p>L’en-tête <code>Server</code> est pratique pour les diagnostics. Il indique quelle version de CouchDB et quelle version sous-jacente d’Erlang sont utilisées. En général, vous pouvez ignorer cet en-tête, mais c’est bon à savoir si vous en avez besoin.
+
+<pre>
+&lt; Date: Sun, 05 Jul 2009 22:48:28 GMT
+</pre>
+
+<p>L’en-tête <code>Date</code> vous indique l’heure du serveur. Puisque les horloges du client et du serveur ne sont pas nécessairement synchronisées, cet en-tête est une simple information. Vous ne devriez pas bâtir d’applications sur ce critère !
+
+<pre>
+&lt; Content-Type: text/plain;charset=utf-8
+</pre>
+
+<p>L’en-tête <code>Content-Type</code> indique le type MIME du corps de la réponse HTTP ainsi que son jeu de caractères. Nous savons déjà que CouchDB renvoie des chaînes de caractères JSON. Le <code>Content-Type</code> approprié est donc <code>application/json</code>. Alors pourquoi voyons-nous <code>text/plain</code> ? C’est là que le pragmatisme l’emporte sur le purisme. Envoyer un en-tête avec <code>Content-Type</code> positionné à <code>application/json</code> à un navigateur va déclencher l’option de téléchargement plutôt que d’afficher le contenu. Puisqu’il est très utile de pouvoir tester CouchDB depuis un navigateur, CouchDB indique <code>text/plain</code>, ce qui fait que tous les navigateurs affichent le JSON comme un texte.
+
+<p>Il existe quelques greffons qui influent sur le comportement de votre navigateur vis-à-vis du JSON, mais ils ne sont pas installés par défaut.
+
+<p>Vous rappelez-vous de l’en-tête <code>Accept</code> qui était positionné à <code>\*/\* -&gt; */*</code> pour dire quel type MIME nous intéressait ? Si vous envoyez <code>Accept: application/json</code> dans votre requête, CouchDB sait que vous pouvez exploiter une réponse purement JSON avec le <code>Content-Type</code> adéquat ; il l’utilisera donc à la place de  <code>text/plain</code>.
+
+<pre>
+&lt; Content-Length: 12
+</pre>
+
+<p>L’en-tête <code>Content-Length</code> indique simplement combien d’octets composent le corps de la réponse.
+
+<pre>
+&lt; Cache-Control: must-revalidate
+</pre>
+
+<p>L’en-tête <code>Cache-Control</code> vous indique, à vous ou à tout serveur mandataire qui se trouverait sur le chemin du serveur CouchDB, que la réponse ne doit pas être stockée en antémémoire (<em>cached</em> en anglais).
+
+<pre>
+&lt;
+</pre>
+
+<p>Cette ligne vide sépare l’en-tête du corps du message.
+
+<pre>
+{"ok":true}
+</pre>
+
+<p>Nous avons déjà vu cela auparavant.
+
+<pre>
+* Connection #0 to host 127.0.0.1 left intact
+* Closing connection #0
+</pre>
+
+<p>Dans ces deux dernières lignes, <code>curl</code> nous indique qu’il a conservé la connexion TCP ouverte pendant un moment, mais qu’il l’a fermée après avoir reçu toute la réponse.
+
+<p>Dans les chapitres suivants, nous verrons quelques requêtes avec l’option <code>-v</code>, mais nous omettrons certains en-têtes décrits ici pour ne laisser que ceux qui sont utiles dans les cas abordés.
+
+<p>C’est bien beau de créer une base de données, mais comment la supprime-t-on ? Tout simplement en changeant la méthode HTTP :
+
+<pre>
+&gt; curl -vX DELETE http://127.0.0.1:5984/albums-backup
+</pre>
+
+<p>Ceci supprime la base de données. La requête va supprimer le fichier qui stocke le contenu de la base. Il n’y a pas de sécurité de type « Êtes-vous certain ? » ni de magie de type « Vider la corbeille » pour supprimer une base. Faites attention en utilisant cette commande. Vos données seront effacées sans aucune possibilité de retour-arrière si vous n’avez pas de sauvegarde.
+
+<p>Dans cette section, nous nous sommes penchés sur HTTP et avons posé les bases pour évoquer le reste de l’API CouchDB. Prochain arrêt : les documents !
+
+<h3 id="documents">Documents</h3>
+
+<p>Dans CouchDB, le document est la structure de données de base. L’idée derrière la notion de document est, aussi surprenant que cela puisse paraître, un document du monde réel, c’est-à-dire un morceau de papier tel qu’une facture, une recette ou une carte de visite. Nous savons déjà que CouchDB utilise le format JSON pour stocker les documents. Voyons maintenant comment ce stockage fonctionne à bas niveau.
+
+<p>Tout document dans CouchDB a un <em>ID</em> (identifiant). Cet identifiant est unique pour une base de données. Vous pouvez choisir l’ID qui vous convient, mais pour de meilleurs résultats, nous vous recommandons un UUID (ou GUID), c’est-à-dire un identifiant universel (ou global) unique [NdT : <em>Universally (or Globally) Unique IDentifier</em>]. Les UUID sont des nombres aléatoires avec une faible probabilité de collision et permettent d’en générer des milliers à la minute pour des millions d’années sans doublons. C’est un bon moyen de garantir que deux personnes indépendantes ne peuvent pas créer deux documents différents avec le même identifiant. Pourquoi devriez-vous vous préoccuper de ce que quelqu’un d’autre est en train de faire ? Tout d’abord, cette autre personne pourrait être vous par la suite (plus tard ou sur un autre ordinateur). Ensuite, le mécanisme de réplication de CouchDB vous permet de partager des documents avec autrui et recourir aux UUID garantit que ça va fonctionner. Bref ! Nous reviendrons sur ce sujet par la suite. Pour le moment, créons quelques documents :
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"title":"There is Nothing Left to Lose","artist":"Foo Fighters"}'
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"ok":true,"id":"6e1295ed6c29495e54cc05947f18c8af","rev":"1-2902191555"}
+</pre>
+
+<p>La commande <code>curl</code> peut apparaître complexe, alors expliquons-la. Tout d’abord, <code>-X PUT</code> dit à <code>curl</code> de forger une requête de type PUT. S’en suit une URL qui indique l’adresse IP et le port de votre instance de CouchDB. La ressource incluse dans l’URL (<code>/albums/6e1295ed6c29495e54cc05947f18c8af</code>) indique la position du document dans notre base de données <code>albums</code>. La suite alphanumérique barbare est notre UUID. Cet UUID est donc l’ID du document. Enfin, le paramètre <code>-d</code> ordonne à <code>curl</code> d’utiliser la suite comme corps de la requête PUT. La chaîne est une structure JSON simple incluant les attributs de titre et d’artiste avec leur valeur respective.
+
+<div class="aside note">
+
+<p>Si vous ne savez pas générer votre UUID, vous pouvez demander à CouchDB d’en générer un (en fait, c’est ce que nous venons de faire sans vous le montrer). Pour cela, envoyez une requête GET à <code>/_uuids</code> :
+
+<pre>
+curl -X GET http://127.0.0.1:5984/_uuids
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"uuids":["6e1295ed6c29495e54cc05947f18c8af"]}
+</pre>
+
+<p>Voilà un UUID. Si vous en voulez plus, ajoutez le paramètre <code>?count=10</code> à la requête HTTP et vous en obtiendrez 10. Bien sûr, vous pouvez préciser le nombre qui vous convient.
+
+</div>
+
+<p>Pour s’assurer que CouchDB ne nous ment pas en disant avoir sauvegardé notre document (il n’a pas pour habitude de mentir), tentez de le récupérer avec une requête GET :
+
+<pre>
+curl -X GET http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
+</pre>
+
+<p>Nous espérons que vous distinguez les différents éléments de la requête ici. Toute chose dans CouchDB a une adresse, une URI, et vous pouvez utiliser diverses méthodes HTTP pour agir sur ces URIs.
+
+<p>CouchDB répond :
+
+<pre>
+{"_id":"6e1295ed6c29495e54cc05947f18c8af","_rev":"1-2902191555","title":"There is Nothing Left to Lose","artist":"Foo Fighters"}
+</pre>
+
+<p>Cela ressemble beaucoup au document que nous avons soumis à CouchDB ; tant mieux ! Mais vous devriez aussi noter que CouchDB a jouté deux champs à votre structure JSON. Le premier est <code>_id</code> qui stocke l’UUID que nous avons spécifié. Nous connaissons toujours l’identifiant d’un document, ce qui est très pratique (si le champ est retourné par la vue). Le deuxième est <code>_rev</code> qui signifie <em>numéro de version</em> [NdT : <em>revision number</em> en anglais].
+
+<h4 id="revisions">Versions</h4>
+
+<p>Pour modifier un document dans CouchDB, vous n’allez pas lui dire de trouver tel document, de sélectionner tel champ et d’insérer telle valeur. Non, vous allez récupérer le document, modifier la structure JSON (ou l’équivalent dans votre langage de programmation) comme bon vous semble et sauvegarder le tout avec un nouveau numéro de version. Chaque modification est identifiée par une nouvelle valeur de <code>_rev</code>.
+
+<p>Pour mettre à jour ou supprimer un document, CouchDB exige que vous incluiez le champ <code>_rev</code> de la version concernée. Quand CouchDB accepte la modification, il génère un nouveau numéro de version. Ce mécanisme garantit que si quelqu’un d’autre a effectué un changement entre temps, vous devez récupérer la dernière version du document avant de pouvoir soumettre votre mise à jour. CouchDB n’acceptera pas votre requête autrement, puisque vous pourriez altérer ou effacer des données dont vous ignorez l’existence. En un mot comme en cent : celui qui modifie le document en premier a gagné. Voyons ce qui se passe si nous ne fournissons pas le champ <code>_rev</code> (ce qui revient à fournir un document obsolète) :
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"title":"There is Nothing Left to Lose","artist":"Foo Fighters","year":"1997"}'
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"error":"conflict","reason":"Document update conflict."}
+</pre>
+
+<p>Si vous voyez cela, ajoutez le dernier numéro de version à votre document dans la structure JSON :
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"_rev":"1-2902191555","title":"There is Nothing Left to Lose", "artist":"Foo Fighters","year":"1997"}'
+</pre>
+
+<p>Maintenant, vous comprenez pourquoi il était utile que CouchDB renvoie ce <code>_rev</code> quand nous avons soumis la première requête. CouchDB répond :
+
+<pre>
+{"ok":true,"id":"6e1295ed6c29495e54cc05947f18c8af","rev":"2-2739352689"}
+</pre>
+
+<p>CouchDB a accepté votre opération d’écriture et a aussi généré un nouveau numéro de version. Ce numéro correspond à l’empreinte MD5 du document sous sa forme transportable adjointe d’un préfixe <code>N-</code>, lequel indique le nombre de fois qu’un document a été mis à jour. C’est très utile pour la réplication. Référez-vous au <a href="conflicts.html">Chapitre 17, Gestion des conflits</a> pour de plus amples informations.
+
+<p>Il y a plusieurs raisons pour lesquelles CouchDB utilise ce système de gestion de version, aussi appelé <em>Multi-Version Concurrency Control (MVCC)</em>. Chacune est liée à l’autre et nous tenons l’occasion rêvée pour en expliquer certaines.
+
+<p>L’un des aspects du protocole HTTP que CouchDB exploite est qu’il est <em>sans états</em>. Qu’est-ce que cela veut dire ? Quand vous échangez avec CouchDB, vous devez <em>formuler des requêtes</em>. Pour ce faire, vous devez ouvrir une connexion réseau avec CouchDB, échanger des octets et fermer la connexion. C’est ce qui se passe à chaque fois que vous soumettez une requête. D’autres protocoles permettent d’ouvrir une connexion, d’échanger des octets, de conserver la connexion ouverte, d’échanger à nouveau des octets – qui peuvent dépendre de ceux que vous avez déjà reçus – puis, en fin de compte, fermer la connexion. Maintenir une connexion ouverte pour pouvoir gérer des opérations futures nécessite plus de travail de la part du serveur. Ce qui se fait habituellement, c’est que durant la « vie » d’une connexion, le client conserve une vue cohérente et statique des données du serveur. Aussi, gérer un grand nombre de connexions parallèles induit une charge de travail significative. De leur côté, les connexions HTTP sont traditionnellement courtes et fournir les mêmes garanties s’avère beaucoup plus facile. En conséquence, CouchDB peut gérer beaucoup plus de connexions concurrentes.
+
+<p>Une autre raison pour laquelle CouchDB utilise MVCC est que son modèle est conceptuellement plus simple et donc plus facile à programmer. CouchDB nécessite moins de code pour fonctionner, ce qui est toujours une bonne chose puisque le ratio de source d’erreur par ligne de code est constant.
+
+<p>Le système de version a aussi un impact positif sur les mécanismes de réplication et de stockage, mais nous y reviendrons plus tard dans le livre.
+
+<div class="aside warning">
+
+<p>Le mot de <em>version</em> [NdT : en anglais, <em>version or revision</em>] peut vous être familier – si vous programmez sans système de gestion de version, laissez tomber ce livre et apprenez à en utiliser un. Utiliser une nouvelle version lors d’une modification de document est semblable à un système de gestion de version, mais il y a une différence notable : CouchDB <em>ne garantit pas</em> que les anciennes versions sont conservées.
+
+</div>
+
+<h4 id="detail">Passer les documents à la loupe</h4>
+
+<p>Maintenant, regardons de plus près nos requêtes de création de document avec le paramètre <code>-v</code> de <code>curl</code> qui s’était avéré utile pour détailler l’API. C’est aussi une bonne occasion de créer des documents que nous pourrons réutiliser dans nos exemples à venir.
+
+<p>Ajoutons quelques-uns de nos albums de musique préférés. Récupérez un nouvel UUID à partir de la ressource <code>/_uuids</code>. Si vous ne vous souvenez plus comment faire, remontez de quelques pages.
+
+<pre>
+curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{"title":"Blackened Sky","artist":"Biffy Clyro","year":2002}'
+</pre>
+
+<div class="aside note">
+
+<p>Soit dit en passant, si vous en savez davantage sur votre album favori, n’hésitez pas à ajouter de nouvelles propriétés. Et ne vous inquiétez pas de connaître ces mêmes propriétés pour l’ensemble des albums, car le concept de documents sans squelette de CouchDB vous permet de stocker uniquement ce que vous connaissez. Après tout, vous devriez vous détendre et ne pas vous soucier de vos données.
+</div>
+
+<p>Maintenant, avec le paramètre <code>-v</code>, la réponse de CouchDB (tronquée pour ne laisser que ce qui nous importe), ressemble à cela :
+
+<pre>
+&gt; PUT /albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 HTTP/1.1
+&gt;
+&lt; HTTP/1.1 201 Created
+&lt; Location: http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0
+&lt; Etag: "1-2248288203"
+&lt;
+{"ok":true,"id":"70b50bfa0a4b3aed1f8aff9e92dc16a0","rev":"1-2248288203"}
+</pre>
+
+<p>Nous retrouvons le code d’état <code>201 Created</code> dans les en-têtes de la réponse, comme nous l’avons vu précédemment lors de la création d’une base de données. L’en-tête <code>Location</code> nous donne l’URI complète vers le nouveau document. Et il y a un nouvel en-tête. Dans la terminologie HTTP, un « Etag » identifie une version spécifique d’une ressource. Dans ce cas, cela identifie la version spécifique (la première) et notre nouveau document. Cela chante doux à vos oreilles ? Oui, conceptuellement, un « Etag » correspond au numéro de version du document dans CouchDB, et cela ne devrait pas vous paraître surprenant que CouchDB utilise ses numéros de versions comme « Etag ». Les « Etag » sont utiles pour les infrastructures d’antémémoire [NdT : <em>caching</em> en anglais]. Nous apprendrons à les utiliser dans le <a href="show.html">Chapitre 8, fonctions d’affichage</a>.
+
+<h5 id="attachments">Pièces jointes</h5>
+
+<p>Avec CouchDB, les documents peuvent avoir des pièces jointes tout comme un courriel le peut. Une pièce jointe est identifiée par un nom et spécifie son type MIME (ou <em>Content-Type</em>) ainsi que le nombre d’octets qui le compose. Les pièces jointes peuvent être de n’importe quel type de données. Il est plus facile de se représenter les pièces jointes comme des fichiers liés à un document. Ces fichiers peuvent être du texte, des images, des documents Word [NdT : plutôt Open Office ;)], de la musique ou des films. Créons-en un :
+
+<p>Les pièces jointes obtiennent leur propre URL où vous pouvez télécharger les données. Disons que vous voulez adjoindre la jaquette de l’album au document <code>6e1295ed6c29495e54cc05947f18c8af</code> (« There is Nothing Left to Lose »), et disons qu’elle se trouve dans un fichier <code>artwork.jpg</code> du répertoire courant :
+
+<pre>
+&gt; curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/ artwork.jpg?rev=2-2739352689 --data-binary @artwork.jpg -H "Content-Type: image/jpg"
+</pre>
+
+<p>Le paramètre <code>-d@</code> dit à <code>curl</code> de transmettre le contenu du fichier dans le corps de la requête HTTP. Nous utilisons le paramètre <code>-H</code> pour indiquer à CouchDB que nous envoyons un fichier JPEG. CouchDB va conserver cette information et enverra l’en-tête approprié quand nous récupérerons cette pièce jointe. Dans le cas d’une image JPEG, le navigateur va l’afficher plutôt que vous inviter à l’enregistrer sur votre disque. Cela s’avèrera utile par la suite. Notez aussi que vous devez fournir le numéro de version du document auquel vous attachez la pièce jointe, puisque joindre une pièce, c’est modifier le document.
+
+<p>Vous devriez maintenant voir la jaquette si vous pointez votre navigateur sur <code>http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg</code>.
+
+<p>Si vous rapatriez à nouveau le document, vous verrez un nouveau champ :
+
+<pre>
+curl http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
+</pre>
+
+<p>CouchDB répond :
+
+<pre>
+{"_id":"6e1295ed6c29495e54cc05947f18c8af","_rev":"3-131533518","title": "There is Nothing Left to Lose","artist":"Foo Fighters","year":"1997","_attachments":{"artwork.jpg":{"stub":true,"content_type":"image/jpg","length":52450}}}
+</pre>
+
+<p><code>_attachments</code> est une liste de clés et de valeurs où les valeurs sont des objets JSON contenant les métadonnées des pièces jointes. <code>stub=true</code> nous précise que l’entrée ne contient que les métadonnées. Si nous utilisions l’option HTTP <code>?attachments=true</code> dans notre requête, nous obtiendrions une chaîne encodée en base 64 contenant les données de la pièce jointe.
+
+<p>Nous aurons l’occasion de découvrir d’autres options de requêtes comme nous découvrirons d’autres fonctionnalités de CouchDB telles que la réplication que nous allons aborder maintenant.
+
+<h3 id="replication">Réplication</h3>
+
+<p>Le mécanisme de réplication de CouchDB permet de synchroniser des bases de données. Tout comme <code>rsync</code> synchronise deux répertoires locaux ou sur un réseau, la réplication synchronise deux bases locales ou distantes.
+
+<p>Dans une requête de type POST, vous indiquez à CouchDB la <em>source</em> et la <em>destination</em> [NdT : <em>target</em> dans le code] d’une réplication. CouchDB va trouver quels documents et quelles nouvelles versions se trouvent dans la <em>source</em> et sont absentes de la base de <em>destination</em> pour les transférer.
+
+<p>Nous nous attarderons davantage sur les détails de la réplication dans un autre chapitre ; ici, nous allons simplement vous montrer comment vous en servir.
+
+<p>En premier lieu, nous allons créer une base de données. Notez que CouchDB ne créera pas automatiquement la base de données de destination et renverra une erreur de réplication si elle n’existe pas (il en va de même pour la source, mais c’est une erreur plus difficile à commettre).
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/albums-replica
+</pre>
+
+<p>Désormais, nous pouvons utiliser la base <code>albums-replica</code> comme destination de la réplication :
+
+<pre>
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"albums-replica"}'
+</pre>
+
+<div class="aside note">
+
+<p>Dès la version 0.11, CouchDB accepte l’option <code>"create_target":true</code> dans la chaîne JSON envoyée en POST à l’URL <code>_replicate</code>. Il créera ainsi automatiquement la base de données destinatrice si elle n’existe pas.
+
+</div>
+
+<p>CouchDB répond (nous avons formaté la sortie pour la lire plus facilement) :
+
+<pre>
+{
+  "history": [
+    {
+      "start_last_seq": 0,
+      "missing_found": 2,
+      "docs_read": 2,
+      "end_last_seq": 5,
+      "missing_checked": 2,
+      "docs_written": 2,
+      "doc_write_failures": 0,
+      "end_time": "Sat, 11 Jul 2009 17:36:21 GMT",
+      "start_time": "Sat, 11 Jul 2009 17:36:20 GMT"
+    }
+  ],
+  "source_last_seq": 5,
+  "session_id": "924e75e914392343de89c99d29d06671",
+  "ok": true
+}
+</pre>
+
+<p>CouchDB conserve un <em>historique des sessions de réplication</em>. La réponse à une requête de réplication contient cet historique pour la <em>session de réplication</em>. Il est aussi important de noter que la connexion portant la requête de réplication demeurera <em>ouverte</em> jusqu’à ce que la réplication soit achevée. Si vous avez de nombreux documents, l’opération prendra du temps et vous n’obtiendrez pas de réponse tant que tous les documents ne seront pas répliqués. Un autre point important à relever est que le mécanisme de réplication réplique uniquement les modifications qui avaient eu lieu lors de la réception de la requête. Aussi, tout ajout ou modification ultérieure au démarrage de la réplication ne sera pas répliqué.
+
+<p>Nous attirons aussi votre attention sur le <code>"ok": true</code> à la fin qui nous signale que tout s’est bien passé. Si vous consultez la base <code>albums-replica</code>, vous devriez voir tous les documents que vous avez créés dans la base <code>albums</code>. Sympa, hein ?
+
+<p>Ce que vous venez de faire s’appelle une <em>réplication locale</em> dans la terminologie de CouchDB. Vous avez créé une copie locale de votre base de données. C’est pratique pour les sauvegardes ou pour conserver un instantané [NdT : en anglais, <em>snapshot</em>] de votre base à une date donnée ou dans un état que vous désirez pouvoir retrouver plus tard. Vous pouvez être intéressé par cette solution si vous développez une application et que vous voulez pouvoir revenir en arrière, à un état stable de votre code et de vos données.
+
+<p>Il y a d’autres types de réplication utiles dans d’autres cas. Les éléments <code>source</code> et <code>destination</code> de la requête de réplication sont en fait des liens (comme en HTML). Pour lors, nous nous sommes limités à des liens relatifs à notre instance de CouchDB (donc <em>locaux</em>). Vous pouvez aussi indiquer une base de données distante :
+
+<pre>
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"http://127.0.0.1:5984/albums-replica"}'
+</pre>
+
+<p>Utiliser une base <em>source</em> locale et une base <em>destinataire</em> distante est appelé une <em>réplication propulsée</em> [NdT : <em>pushed replication</em> en anglais]. Nous propulsons les changements vers un serveur distant.
+
+<div class="aside note">
+
+<p>Puisque nous n’avons pas encore de deuxième serveur CouchDB disponible pour le moment, nous allons simplement utiliser l’adresse complète (absolue) de notre serveur, mais vous devriez pouvoir faire de même avec un serveur distant.
+
+</div>
+
+<p>C’est parfait pour partager des modifications locales avec des serveurs distants ou des voisins.
+
+<p>Vous pouvez aussi utiliser une <em>source</em> distante et une <em>destination</em> locale pour faire une <em>réplication tractée</em>. C’est parfait pour récupérer les dernières mises à jour d’un serveur utilisé par d’autres.
+
+<pre>
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5984/albums-replica","target":"albums"}'
+</pre>
+
+<p>Enfin, vous pouvez exécuter une <em>réplication à distance</em>, ce qui s’avère utile pour les opérations de gestion :
+
+<pre>
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5984/albums","target":"http://127.0.0.1:5984/albums-replica"}'
+</pre>
+
+<div class="aside note">
+
+<p><strong>CouchDB et REST</strong>
+
+<p>CouchDB se vante d’avoir une <em>API qui adhère au modèle REST</em>, mais ces requêtes de réplication ne semblent pas être vraiment de type REST pour l’œil exercé. Qu’en est-il vraiment ? Si les parties de l’API liées à la base de données, aux documents et aux pièces jointes se conforment à REST, ce n’est pas le cas de toute l’API de CouchDB. L’API de réplication est un exemple parmi d’autres ; nous les verrons dans la suite de l’ouvrage.
+
+<p>Pourquoi mélangeons-nous les API typées REST ou non REST ? Est-ce que les développeurs sont trop faignants pour se conformer partout au REST ? Rappelez-vous que REST est un type d’architecture qui se prête à certaines architectures (comme la partie de l’API qui traite les documents), mais que ce n’est pas une panacée. Déclencher un évènement comme une réplication n’a pas de sens dans l’univers REST. Cela ressemble davantage à un appel de procédure distante. Et cette différence n’est en aucun cas problématique.
+
+<p>Nous croyons plutôt en l’adage qui veut utiliser le bon outil pour les bonnes tâches, et REST ne peut pas répondre à tous les besoins. Nous nous rassurons par les propos de Leonard Richardson et de Sam Ruby qui partagent ce point de vue dans <a href="http://oreilly.com/catalog/9780596529260"><em>RESTful Web Services</em></a> (publié par O’Reilly).
+
+</div>
+
+<h3 id="wrap">Résumé</h3>
+
+<p>Ce n’est toujours pas toute l’API de CouchDB, mais nous en avons vu l’essentiel en détail. Nous reviendrons sur les détails passés ici sous silence au fil des besoins. Pour l’instant, nous vous jugeons prêt à bâtir des applications avec CouchDB.
