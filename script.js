@@ -326,7 +326,14 @@ function track() {
     _gat._getTracker("UA-17867702-1")._trackPageview();
 }
 
+function access(evt){
+    prevNext=document.getElementsByTagName("link");
+    if(evt.keyCode==37){location=prevNext[1].href}
+    if(evt.keyCode==39){location=prevNext[2].href}
+}
+
 document.onready = function() {
+    document.documentElement.addEventListener("keypress", access, true)
     try {
         check_flag();
         raise_flag();
