@@ -333,7 +333,7 @@ function access(evt){
 }
 
 document.onready = function() {
-    document.documentElement.addEventListener("keypress", access, true)
+    document.documentElement.addEventListener("keydown", access, true)
     try {
         check_flag();
         raise_flag();
