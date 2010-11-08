@@ -12,148 +12,110 @@
 
 <h2 id="replication">Running CouchDB</h2>
 
-<p>This chapter explains how CouchDB behaves in production. It’ll detail runtime characteristics and what you can expect as you add more data or have CouchDB handle more requests.
+<p>This chapter explains how CouchDB 1.0 and 1.1 behave in production. It’ll detail runtime characteristics and what you can expect as you add more data or have CouchDB handle more requests. It will be updated as CouchDB progresses.
 
 <p>The chapter discusses different parts of CouchDB independently so you get an idea of what happens when and how. IT won’t however give you a complete picture of how CouchDB behaves in your specific use-case. There is no sure-fire way to predict that unless you try an run good enough tests or a live system and observe its behaviour. Looking at individual parts should give you enough of a hint of what to expect though.
 
+<p>In turn, we’ll be looking at:
 
-<h3>Database Operations</h3>
+<ul>
+  <li>Database Operations</li>
+  <li>View Operations</li>
+  <li>Show &amp; List Functions, Notification Filters</li>
+  <li>Replication &amp; Attachments</li>
+</ul>
 
-
-  O(m + log n)
-
-  Compaction
-  
-  Working set
-
-<h3>View Operations</h3>
-
-  Building
-
-  Querying
-
-  Erlang views vs query server views
-
-  View Concurrency
-
-<h3>Change Notifications &amp; Filters</h3>
+<p>CouchDB’s underlying storage system is based on a B-tree. See <a href="btree.html">Appendix F, The Power of B-trees</a> for a detailed explanation.
 
 
-  Filter
+<h3 id="database">Database Operations</h3>
 
-  Filter Concurrency
+<p>CouchDB’s databases are stored in a single file on disk. Each file includes a <em>by ID</em> and a <em>by sequence</em> index, as well as the actual documents as well as regions for attachments.
 
-  Erlang filter vs query server filter
+<p>For all three operations <em>search</em>, <em>insert</em> and <em>delete</em> a B-tree’s <a href="http://en.wikipedia.org/wiki/Time_complexity">time complexity</a> is <code>O(log<sub>2</sub> n)</code>. For readers without a computer science degree this means, CouchDB’s performance degrades logarithmic in proportion to the number of documents in a database.
 
-  Filtered Replication
+<p>Here’s a pretty graph to visualize this behaviour (ignore the numbers on the graph for now):
 
-  (future) Channels
+<div class="figure" id="figure/1">
 
+<img src="running/01.png">
 
-
-
-
-<!-- <p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access to data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
-
-<p>Replication is a one-off operation: you send an HTTP request to CouchDB that includes a <em>source</em> and a <em>target</em> database, and CouchDB will send the changes from the source to the target. That is all. Granted, calling something world-class and then only needing one sentence to explain it does seem odd. But part of the reason why CouchDB’s replication is so powerful lies in its simplicity.
-
-<p>Let’s see what replication looks like:
-
-<pre>
-POST /_replicate HTTP/1.1
-{"source":"database","target":"http://example.org/database"}
-</pre>
-
-<p>This call sends all the documents in the local database <code>database</code> to the remote database <code>http://example.org/database</code>. A database is considered “local” when it is on the same CouchDB instance you send the <code>POST /_replicate</code> HTTP request to. All other instances of CouchDB are “remote.”
-
-<p>If you want to send changes from the target to the source database, you just make the same HTTP requests, only with source and target database swapped. That is all.
-
-<pre>
-POST /_replicate HTTP/1.1
-{"source":"http://example.org/database","target":"database"}
-</pre>
-
-<p>A remote database is identified by the same URL you use to talk to it. CouchDB replication works over HTTP using the same mechanisms that are available to you. This example shows that replication is a <em>unidirectional</em> process. Documents are copied from one database to another and not automatically vice versa. If you want <em>bidirectional</em> replication, you need to trigger two replications with <em>source</em> and <em>target</em> swapped.
-
-<h3 id="magic">The Magic</h3>
-
-<p>When you ask CouchDB to replicate one database to another, it will go and compare the two databases to find out which documents on the source differ from the target and then submit a batch of the changed documents to the target until all changes are transferred. Changes include new documents, changed documents, and deleted documents. Documents that already exist on the target in the same revision are not transferred; only newer revisions are.
-
-<p>Databases in CouchDB have a <em>sequence number</em> that gets incremented every time the database is changed. CouchDB remembers what changes came with which sequence number. That way, CouchDB can answer questions like, “What changed in database A between sequence number 212 and now?” by returning a list of new and changed documents. Finding the differences between databases this way is an efficient operation. It also adds to the robustness of replication.
-
-<div class="aside note">
-
-<p>CouchDB views use the same mechanism when determining when a view needs updating and which documents to replicate. You can use this to build your own solutions as well.
+<p class="caption">Figure 1. O(log n)
 
 </div>
 
-<p>You can use replication on a single CouchDB instance to create snapshots of your databases to be able to test code changes without risking data loss or to be able to refer back to older states of your database. But replication gets really fun if you use two or more different computers, potentially geographically spread out.
+<p>The nature of the B-tree makes it shallow and wide. To get to a node in the B-tree, or to a document in CouchDB terms, only a few <em>inner nodes</em> of the B-tree must be visited <!-- Editorial Note, make active sentence.--> even if the tree contains many entries.
 
-<p>With different servers, potentially hundreds or thousands of miles apart, problems are bound to happen. Servers crash, network connections break off, things go wrong. When a replication process is interrupted, it leaves two replicating CouchDBs in an inconsistent state. Then, when the problems are gone and you trigger replication again, it continues where it left off.
+<p>Just as an example, a CouchDB B-tree with 13,000,000,000,000 documents only has a height of 5. That means, at most five disk lookup have to be made to get to a document. With upper nodes likely to be cached in the Operating system’s filesystem buffer, often only 1–2 disk lookups have to be made. This demonstrates that a B-tree is great for storing and retrieving large amounts of data.
 
-<h3 id="simple">Simple Replication with the Admin Interface</h3>
 
-<p>You can run replication from your web browser using Futon, CouchDB’s built-in administration interface. Start CouchDB and open your browser to <code>http://127.0.0.1:5984/_utils/</code>. On the righthand side, you will see a list of things to visit in Futon. Click on “Replication.”
+<h4 id="compaction">Compaction</h4>
 
-<p>Futon will show you an interface to start replication. You can specify a source and a target by either picking a database from the list of local databases or filling in the URL of a remote database.
+<p>CouchDB’s implementation for databases has one caveat: in order to never corrupt data, databases are append-only. Data that has once been written is never touched again. This (among a few other things <!-- TODO, define and link these things-->) ensures that CouchDB never loses or corrupts any data. This is a good thing, but as usual in computing, it comes with a trade-off.
 
-<p>Click on the Replicate button, wait a bit, and have a look at the lower half of the screen where CouchDB gives you some statistics about the replication run or, if an error occurred, an explanatory message.
+<p>Consider updating a document: you are providing a full new revision of the document and that revision is appended to the database file. Both indexes (by ID and by sequence) are update and the write is reported back to you as being successful. What happened to the old revision of the document? — Nothing. It’s still there, unreferenced. This is sustainable for a while, but not forever. To reclaim disk space eventually, CouchDB employs a process called <em>compaction</em>.
 
-<p>Congratulations—you ran your first replication.
+<p>Compaction walks through the database and copies the latest revisions of each document into a new database file. When done, it swaps out the old database file for the new one and deletes the old one. This procedure has a few consequences:
 
-<h3 id="detail">Replication in Detail</h3>
+<p>1. If a lot of writes go into a database, it can happen that compaction never catches up with the rate of new writes going in. Compaction will try to finish ten times before giving up. CouchDB will report this in the log file and you will have to monitor this and potentially stop writes for a brief moment for compaction to succeed. It is planned for the future that CouchDB auto-detects this condition and handles the pausing of writes itself, but it has not been decided yet how and when this is going to be implemented.
 
-<p>So far, we’ve skipped over the result from a replication request. Now is a good time to look at it in detail. Here’s a nicely formatted example:
+<p>2. You will require enough free space on your hard drive to be able to hold a full copy of your active data. Otherwise compaction will fill the drive with the compacted copy of the database and you’ll eventually run out of space. CouchDB won’t detect or report either condition so you will have to monitor disk space manually. In the future, CouchDB may allow creation of compacted copies in a directory different from the main database directory which could live on a different or temporary disk drive, but again, it has not been decided if and how to implement this. There are also other ways of improving this situation which are currently under active discussion.
 
-<pre>
-{
-  "ok": true,
-  "source_last_seq": 10,
-  "session_id": "c7a2bbbf9e4af774de3049eb86eaa447",
-  "history": [
-    {
-      "session_id": "c7a2bbbf9e4af774de3049eb86eaa447",
-      "start_time": "Mon, 24 Aug 2009 09:36:46 GMT",
-      "end_time": "Mon, 24 Aug 2009 09:36:47 GMT",
-      "start_last_seq": 0,
-      "end_last_seq": 1,
-      "recorded_seq": 1,
-      "missing_checked": 0,
-      "missing_found": 1,
-      "docs_read": 1,
-      "docs_written": 1,
-      "doc_write_failures": 0,
-    }
-  ]
-}
-</pre>
+<p>3. Filesystems operate on a block level. A block of disk space is read or written to. Commonly, a file system will place a block that has been accessed into its file system block cache. This is usually a Last Recently Used (LRU) cache since it is expected that blocks that have been accessed recently are most likely to be accessed soon again (which may or may not be true). When compacting all blocks of the new database file are placed in the file system block cache without being used at first (next to the ones that are used from the still-active database). This means during compaction more and more blocks that are not (yet) used end up in the file system cache. If the database is very active, it may be that it can still make good use of the file system cache but it may not have as much available as when compaction is not running. Now when compaction swaps the database files, the cached blocks from the new file are ready to be used by CouchDB and the blocks cached from the old file can be purged from the cache. If you are running performance benchmarks, you always need to measure a database while it is compacting to get a decent baseline. Consider the non-compaction time as a bonus where your database is a little faster than usual. Future optimizations in CouchDB may include avoiding caching blocks from the new database file to not impact performance. But then, when switching over, suddenly no actively cached blocks are in the file system cache which may cause a brief performance drop. Again, the hows and ifs have not been decided on yet.
 
-<p>The <code>"ok": true</code> part, similar to other responses, tells us everything went well. <code>source_last_seq</code> includes the source’s <code>update_seq</code> value that was considered by this replication. Each replication request is assigned a <code>session_id</code>, which is just a UUID; you can also talk about a <em>replication session</em> identified by this ID.
 
-<p>The next bit is the replication <em>history</em>. CouchDB maintains a list of history sessions for future reference. The history array is currently capped at 50 entries. Each unique replication trigger object (the JSON string that includes the source and target databases as well as potential options) gets its own history. Let’s see what a history entry is all about.
+<h4 id="working-set">The Working Set</h4>
 
-<p>The <code>session_id</code> is recorded here again for convenience. The start and end time for the replication session are recorded. The <code>_last_seq</code> denotes the <code>update_seq</code>s that were valid at the beginning and the end of the session. <code>recorded_seq</code> is the <code>update_seq</code> of the target again. It’s different from <code>end_last_seq</code> if a replication process dies in the middle and is restarted. <code>missing_checked</code> is the number of docs on the target that are already there and don’t need to be replicated. <code>missing_found</code> is the number of missing documents on the source.
+<p>A final note on performance testing: While all or most of a database fits in a system’s memory, you will get better performance as described above. The operating system will be able to cache all blocks of a database in memory making it multiple orders of magnitude faster to read data (writes still go to the hard disk).
 
-<p>The last three—<code>docs_read</code>, <code>docs_written</code>, and <code>doc_write_failures</code>—show how many documents we read from the source, wrote to the target, and how many failed. If all is well, <code>_read</code> and <code>_written</code> are identical and <code>doc_write_failures</code> is 0. If not, you know something went wrong during replication. Possible failures are a server crash on either side, a lost network connection, or a <code>validate_doc_update</code> function rejecting a document write.
+<p>Make sure you are running your benchmarks with enough data to saturate memory or you’ll get a nasty surprise when you expect your database to be as fast when memory is full.
 
-<p>One common scenario is triggering replication on nodes that have admin accounts enabled. Creating design documents is restricted to admins, and if the replication is triggered without admin credentials, writing the design documents during replication will fail and be recorded as <code>doc_write_failures</code>. If you have admins, be sure to include the credentials in the replication request:
+<h4 id="ssds">A Note on SSDs</h4>
 
-<pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@e127.0.0.1:5984/database"}'
-</pre>
+<p>Solid State Drives (SSDs) are a new technology for data storage. They allow for faster and lower latency reads and writes. Most importantly, they allow for faster random reads. A spinning drive will have a random access time of 6–10 milliseconds for any given block. SSDs don’t have that limitation and random reads are much faster (about 0.1 millisecond). CouchDB will make great use of this.
 
-<h3 id="continuous">Continuous Replication</h3>
+<p>SSDs generally allow higher throughput with sequential read and write requests, just like traditional spinning drives and all optimizations CouchDB has in place play nicely with spinning drives translate nicely to SSDs.
 
-<p>Now that you know how replication works under the hood, we share a neat little trick. When you add <code>"continuous":true</code> to the replication trigger object, CouchDB will not stop after replicating all missing documents from the source to the target. It will listen on CouchDB’s <code>_changes</code> API (see <a href="notifications.html">Chapter 20, Change Notifications</a>) and automatically replicate over any new docs as they come into the source to the target. In fact, they are not replicated right away; there’s a complex algorithm determining the ideal moment to replicate for maximum performance. The algorithm is complex and is fine-tuned every once in a while, and documenting it here wouldn’t make much sense.
 
-<pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}'
-</pre>
+<h3>View Operations</h3>
 
-<p>At the time of writing, CouchDB doesn’t remember continuous replications over a server restart. For the time being, you are required to trigger them again when you restart CouchDB. In the future, CouchDB will allow you to define permanent continuous replications that survive a server restart without you having to do anything.
+<p>Views are stored and accessed in the same way that databases are. All of the above applies to views, performance, compaction, everything.
 
-<h3 id="more">That’s It?</h3>
+<p>There’s another speciality that views have that databases don’t have: <em>view cleanup</em>. Views index files are named by the md5 hash of a view’s definition. That includes the map function, reduce function and view options. If you change a view, a new file with a new md5 hash will be created. The process of view compaction removes all view index files that are no longer used.
 
-<p>Replication is the foundation on which the following chapters build on. Make sure you have understood this chapter. If you don’t feel comfortable yet, just read it again and play around with the replication interface in Futon.
+<!-- TODO Link to API docs -->
 
-<p>We haven’t yet told you everything about replication. The next chapters show you how to manage replication conflicts (see <a href="conflicts.html">Chapter 17, Conflict Management</a>), how to use a set of synchronized CouchDB instances for load balancing (see <a href="balancing.html">Chapter 18, Load Balancing</a>), and how to build a cluster of CouchDBs that can handle more data or write requests than a single node (see <a href="clustering.html">Chapter 19, Clustering</a>). -->
+<p>Another difference is that views are not created or update as new documents are written to the database, but as they are queried. This means that if you have a lot of document inserts or updates between requests to a view, it can take some time before the new result is calculated.
+
+<p>CouchDB’s view system is modular to allow writing views in any language. The default is JavaScript. CouchDB optionally supports Erlang as a language built-in. There are <em>query servers</em> (the part that evaluates view functions) in many other languages (like Ruby and Python e.g.) that can be installed separately.
+
+<p>All views in a single design document are updated in one batch. For each design document that includes views that are updated, CouchDB maintains a single query server instance as a separate operating system process. That means the more design documents with views that are being requested you have, the more operating system process are spun up. This is true for all but Erlang views, which are executed in the main Erlang process that CouchDB also runs in.
+
+<h4 id="view-security">Security Considerations</h4>
+
+<p>JavaScript has been designed to be embedded in to other environments. Traditionally, that is the browser, but it has grown to be a general purpose embeddable language. JavaScript also doesn’t define APIs for I/O or other system programming tasks. That allows CouchDB to more or less trust arbitrary code that is executed. CouchDB poses a limit of 5 seconds per query server request, so even a deliberate infinite loop can’t hurt CouchDB too much.
+
+<p>Other languages don’t have all these properties and you need to be careful with allowing users to upload views or other functions. Take special care with Erlang views as they have full access to the CouchDB internals. This is the reason why they are disabled by default.
+
+
+<h3 id="shows-and-lists">Show &amp; List Functions, Notification Filters</h3>
+
+<p>The query server also handles executing <a href="show.html">Show</a> and <a href="transforming">List</a> functions as well as <a href="notifications.html#filters">notification filters</a>. If CouchDB already launched a query server and it is currently idle, the next request to a show or list or filter function will be handled by that query server. Further concurrent requests will either use other idle processes (there’s a pool <!-- TODO: find out about pool -->) or will cause to spawn new ones.
+
+<p>Be prepared that a busy server can spawn tens and maybe hundreds of query server processes when you make extensive use of views, shows, lists and filters.
+
+<p>One way to mitigate the process spawning issue is to write the most used functions in Erlang. It can handle thousands of parallel processes with ease.
+
+
+<h3>Replication &amp; Attachments</h3>
+
+<p>CouchDB’s <a href="replication.html">replication</a> system is very robust, but there are a few cases where it does not work as optimal as it could when it comes to replicating attachments.
+
+<p>First, for every document revision that needs to be replicated, CouchDB will always transfer all attachments. Even if the attachments already exist on the target in earlier revisions. This means CouchDB could avoid sending attachments when it detects they already exist on the target, but it doesn’t do that yet. However the groundwork to support this is already in CouchDB and an improved version of the replicator is in the works.
+
+<p>Second, if a replication request breaks of in the middle, it can be restarted, making it very resilient against unreliable networks. However, if replication breaks down while an attachment is being transferred, CouchDB will attempt to replicate the full attachment again the next time it is started. An optimization could include to store partial attachments on the target and allow resuming. Some but not all ground work to support this already exists in CouchDB, but it is not yet complete.
+
+<h3 id="wrapping-up">Wrapping Up</h3>
+
+<p>CouchDB, while stable and mature generally, has areas where it can be improved. This chapter documents CouchDB’s runtime behaviour and points out scenarios to watch out for.
+
