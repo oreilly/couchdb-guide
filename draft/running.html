@@ -91,6 +91,8 @@
 
 <p>All views in a single design document are updated in one batch. For each design document that includes views that are updated, CouchDB maintains a single query server instance as a separate operating system process. That means the more design documents with views that are being requested you have, the more operating system process are spun up. This is true for all but Erlang views, which are executed in the main Erlang process that CouchDB also runs in.
 
+<!-- grouped reduce -->
+
 <h4 id="view-security">Security Considerations</h4>
 
 <p>JavaScript has been designed to be embedded in to other environments. Traditionally, that is the browser, but it has grown to be a general purpose embeddable language. JavaScript also doesn’t define APIs for I/O or other system programming tasks. That allows CouchDB to more or less trust arbitrary code that is executed. CouchDB poses a limit of 5 seconds per query server request, so even a deliberate infinite loop can’t hurt CouchDB too much.
