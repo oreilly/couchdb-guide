@@ -20,8 +20,8 @@ var l10n = {
             information.",
         "footer": "A <a href='http://oreilly.com/'>O’Reilly</a> book\
             about <a href='http://couchdb.apache.org/'>CouchDB</a> by\
-            <a href='http://jchrisa.net/'>J. Chris Anderson</a>,\
-            <a href='http://jan.prima.de/'>Jan Lehnardt</a> and\
+            <a href='http://www.couchone.com/'>J. Chris Anderson</a>,\
+            <a href='http://www.couchone.com/'>Jan Lehnardt</a> and\
             <a href='http://nslater.org/'>Noah Slater</a>.",
         "home": "Home",
         "nextPage": "Next Page",
