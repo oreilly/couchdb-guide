@@ -129,7 +129,7 @@ curl -X GET $HOST/db/_changes?since=1
 "last_seq":2}
 </pre>
 
-<p>While we’re discussing options, use <code>style=all_docs</code> to get more revision and conflict information in the <code>changes</code> array for each result row. If you want to specify the default explicitly, the value is <code>main_only</code>.
+<p>While we’re discussing options, use <code>style=all_docs</code> to get more revision and conflict information in the <code>changes</code> array for each result row. If you want to specify the default explicitly, the value is <code>main_only</code>. If you only want a specific number of result rows, you can use the <code>limit=N</code> parameter, where <code>N</code> is the number of rows you like to retrieve.
 
 <h3 id="long">Long Polling</h3>
 
