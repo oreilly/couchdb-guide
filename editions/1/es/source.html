@@ -1,0 +1,263 @@
+<title>Installing from Source</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="windows.html">
+
+<link rel="next" href="json.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="source">Installing from Source</h2>
+
+<p>Generally speaking, you should avoid installing from source. Many operating systems provide package managers that will allow you to download and install CouchDB with a single command. These package managers usually take care of setting things up correctly, handling security, and making sure that the CouchDB database is started and stopped correctly by your system. The first few appendixes showed you how to install CouchDB packages for Unix-like, Mac OS X, and Windows operating systems. If you are unable to follow those instructions, or you need to install by hand for other reasons, this chapter is for you.
+
+<h3 id="dependencies">Dependencies</h3>
+
+<p>To build and install CouchDB, you will need to install a collection of other software that CouchDB depends on. Without this software properly installed on your system, CouchDB will refuse to work. You’ll need to download and install the following:
+
+<ul>
+
+<li><a href="http://erlang.org/">Erlang OTP</a> (&gt;=R12B)</li>
+
+<li><a href="http://icu.sourceforge.net/">ICU</a></li>
+
+<li><a href="http://www.openssl.org/">OpenSSL</a></li>
+
+<li><a href="http://www.mozilla.org/js/spidermonkey/">Mozilla SpiderMonkey</a></li>
+
+<li><a href="http://curl.haxx.se/libcurl/">libcurl</a></li>
+
+<li><a href="http://www.gnu.org/software/make/">GNU Make</a></li>
+
+<li><a href="http://gcc.gnu.org/">GNU Compiler Collection</a></li>
+
+</ul>
+
+<p>It is recommended that you install Erlang OTP R12B-5 or above if possible.
+
+<p>Each of these software packages should provide custom installation instructions, either on the website or in the archive you download. If you’re lucky, however, you may be able to use a package manager to install these dependencies.
+
+<h4 id="debian">Debian-Based (Including Ubuntu) Systems</h4>
+
+<p>You can install the dependencies by running:
+
+<pre>
+apt-get install build-essential erlang libicu-dev libmozjs-dev libcurl4-openssl-dev
+</pre>
+
+<p>If you get an error about any of these packages, be sure to check for the current version offered by your distribution. It may be the case that a newer version has been released and the package name has been changed. For example, you can search for the newest ICU package by running:
+
+<pre>
+apt-cache search libicu
+</pre>
+
+<p>Select and install the highest version from the list available.
+
+<h4 id="mac">Mac OS X</h4>
+
+<p>You will need to install the Xcode Tools metapackage by running:
+
+<pre>
+open /Applications/Installers/Xcode\ Tools/XcodeTools.mpkg
+</pre>
+
+<p>If this is unavailable on your system, you will need to install it from your Mac OS X installation CD. Alternatively, you can <a href="http://developer.apple.com/TOOLS/Xcode/">download a copy</a>.
+
+<p>You can then install the other dependencies using MacPorts by running:
+
+<pre>
+port install icu erlang spidermonkey curl
+</pre>
+
+<p>See <a href="mac.html">Appendix B, Installing on Mac OS X</a> for more details.
+
+<h3 id="installing">Installing</h3>
+
+<p>Once you have installed all of the dependencies, you should download a copy of the <a href="http://couchdb.apache.org/downloads.html">CouchDB source</a>. This should give you an archive that you’ll need to unpack. Open up a terminal and change directory to your newly unpacked archive.
+
+<p>Configure the source by running:
+
+<pre>
+./configure
+</pre>
+
+<p>We’re going to be installing CouchDB into <code>/usr/local</code>, which is the default location for user-installed software. A ton of options are available for this command, and you can customize everything from the installation location, such as your home directory, to the location of your Erlang or SpiderMonkey installation.
+
+<p>To see what’s available, you can run:
+
+<pre>
+./configure --help
+</pre>
+
+<p>Generally, you can ignore this step if you didn’t get any errors the first time you ran it. You’ll only need to pass extra options if your setup is a bit weird and the script is having trouble finding one of the dependencies you installed in the last section.
+
+<p>If everything was successful, you should see the following message:
+
+<pre>
+You have configured Apache CouchDB, time to relax.
+</pre>
+
+<p>Relax.
+
+<p>Build and install the source by running:
+
+<pre>
+make &amp;&amp; sudo make install
+</pre>
+
+<p>If you changed the installation location to somewhere temporary, you may not want to use the <code>sudo</code> command here. If you are having problems running <code>make</code>, you may want to try running <code>gmake</code> if it is available on your system. More options can be found by reading the <code>INSTALL</code> file.
+
+<h3 id="security">Security Considerations</h3>
+
+<p>It is not advisable to run the CouchDB server as the super user. If the CouchDB server is compromised by an attacker while it is being run by a super user, the attacker will get super user access to your entire system. That’s not what we want!
+
+<p>We strongly recommend that you create a specific user for CouchDB. This user should have as few privileges on your system as possible, preferably the bare minimum needed to run the CouchDB server, read the configuration files, and write to the data and log directories.
+
+<p>You can use whatever tool your system provides to create a new <code>couchdb</code> user.
+
+<p>On many Unix-like systems you can run:
+
+<pre>
+adduser --system --home /usr/local/var/lib/couchdb --no-create-home --shell /bin/bash --group --gecos "CouchDB" couchdb
+</pre>
+
+<p>Mac OS X provides the standard Accounts option from the System Preferences application, or you can use the Workgroup Manager application, which can be downloaded as part of the <a href="http://www.apple.com/support/downloads/serveradmintools1047.html">Server Admin Tools</a>.
+
+<p>You should make sure that the <code>couchdb</code> user has a working login shell. You can test this by logging into a terminal as the <code>couchdb</code> user. You should also make sure to set the home directory to <code>/usr/local/var/lib/couchdb</code>, which is the CouchDB database directory.
+
+<p>Change the ownership of the CouchDB directories by running:
+
+<pre>
+chown -R couchdb:couchdb /usr/local/etc/couchdb
+chown -R couchdb:couchdb /usr/local/var/lib/couchdb
+chown -R couchdb:couchdb /usr/local/var/log/couchdb
+chown -R couchdb:couchdb /usr/local/var/run/couchdb
+</pre>
+
+<p>Change the permission of the CouchDB directories by running:
+
+<pre>
+chmod -R 0770 /usr/local/etc/couchdb
+chmod -R 0770 /usr/local/var/lib/couchdb
+chmod -R 0770 /usr/local/var/log/couchdb
+chmod -R 0770 /usr/local/var/run/couchdb
+</pre>
+
+<p>This isn’t the final word in securing your CouchDB setup. If you’re deploying CouchDB on the Web, or any place where untrusted parties can access your sever, it behooves you to research the recommended security measures for your operating system and take any additional steps needed. Keep in mind the network security adage that the only way to properly secure a computer system is to unplug it from the network.
+
+<h3 id="manually">Running Manually</h3>
+
+<p>You can start the CouchDB server by running:
+
+<pre>
+sudo -i -u couchdb couchdb -b
+</pre>
+
+<p>This uses the <code>sudo</code> command to run the <code>couchdb</code> command as the <code>couchdb</code> user.
+
+<p>When CouchDB starts, it should eventually display the following message:
+
+<pre>
+Apache CouchDB has started, time to relax.
+</pre>
+
+<p>Relax.
+
+<p>To check that everything has worked, point your web browser to:
+
+<pre>
+http://127.0.0.1:5984/_utils/index.html
+</pre>
+
+<p>This is Futon, the CouchDB web administration console. We covered the basics of Futon in our early chapters. Once you have it loaded, you should select and run the CouchDB Test Suite from the righthand menu. This will make sure that everything is behaving as expected, and it may save you some serious headaches if things turn out to be a bit wonky.
+
+<h3 id="daemon">Running As a Daemon</h3>
+
+<p>Once you’ve got CouchDB running nicely, you’ll probably want to run it as daemon. A daemon is a software application that runs continually in the background, waiting to handle requests. This is how most production database servers run, and you can configure CouchDB to run like this, too.
+
+<p>When you run CouchDB as a daemon, it logs to a number of files that you’ll want to clean up from time to time. Letting your log files fill up a disk is a good way to break your server! Some operating systems come with software that does this for you, and it is important for you to research your options and take the necessary steps to make sure that this doesn’t become a problem. CouchDB ships with a <code>logrotate</code> configuration that may be useful.
+
+<h4 id="init">SysV/BSD-Style Systems</h4>
+
+<p>Depending on your operating system, the <code>couchdb</code> daemon script could be installed into a directory called <code>init.d</code> (for SysV-style systems) or <code>rc.d</code> (for BSD-style systems) under the <code>/usr/local/etc</code> directory. The following examples use <code>[init.d|rc.d]</code> to indicate this choice, and you must replace it with your actual directory before running any of these commands.
+
+<p>You can start the CouchDB daemon by running:
+
+<pre>
+sudo /usr/local/etc/[init.d|rc.d]/couchdb start
+</pre>
+
+<p>You can stop the CouchDB daemon by running:
+
+<pre>
+sudo /usr/local/etc/[init.d|rc.d]/couchdb stop
+</pre>
+
+<p>You can get the status of the CouchDB daemon by running:
+
+<pre>
+sudo /usr/local/etc/[init.d|rc.d]/couchdb status
+</pre>
+
+<p>If you want to configure how the daemon script works, you will find a bunch of options you can edit in the <code>/usr/local/etc/default/couchdb</code> file.
+
+<p>If you want to run the script without the <code>sudo</code> command, you will need to remove the <code>COUCHDB_USER</code> setting from this file.
+
+<p>Your operating system will probably provide a way to control the CouchDB daemon automatically, starting and stopping it as a system service. To do this, you will need to copy the daemon script into your system <code>/etc/[init.d|rc.d]</code> directory, and run a command such as:
+
+<pre>
+sudo update-rc.d couchdb defaults
+</pre>
+
+<p>Consult your system documentation for more information.
+
+<h4 id="launchd">Mac OS X</h4>
+
+<p>You can use the <code>launchd</code> system to control the CouchDB daemon.
+
+<p>You can load the <code>launchd</code> configuration by running:
+
+<pre>
+sudo launchctl load /usr/local/Library/LaunchDaemons/org.apache.couchdb.plist
+</pre>
+
+<p>You can unload the <code>launchd</code> configuration by running:
+
+<pre>
+sudo launchctl unload /usr/local/Library/LaunchDaemons/org.apache.couchdb.plist
+</pre>
+
+<p>You can start the CouchDB daemon by running:
+
+<pre>
+sudo launchctl start org.apache.couchdb
+</pre>
+
+<p>You can stop the CouchDB daemon by running:
+
+<pre>
+sudo launchctl stop org.apache.couchdb
+</pre>
+
+<p>The <code>launchd</code> system can control the CouchDB daemon automatically, starting and stopping it as a system service. To do this, you will need to copy the plist file into your system <code>/Library/LaunchDaemons</code> directory.
+
+<p>Consult the <code>launchd</code> documentation for more information.
+
+<h3 id="troubleshooting">Troubleshooting</h3>
+
+<p>Software being software, you can count on something going wrong every now and then. No need to panic; CouchDB has a great community full of people who will be able to answer your questions and help you get started. Here are a few resources to help you on your way:
+
+<ul>
+
+<li>If you’re getting a weird error message, see the <a href="http://wiki.apache.org/couchdb/Error_messages">Error Messages wiki page</a>.</li>
+
+<li>For general troubleshooting, try out the <a href="http://wiki.apache.org/couchdb/Troubleshooting">Troubleshooting steps</a>.</li>
+
+<li>For other general support, you should visit the <a href="http://couchdb.apache.org/community/lists.html">mailing lists</a>.</li>
+
+</ul>
+
+<p>Don’t forget to use your favorite search engine when diagnosing problems. If you look around a bit, you’re likely to find something. It’s very possible that a bunch of other people have had exactly the same problem as you and a solution has been posted somewhere on the Web. Good luck, and remember to relax!

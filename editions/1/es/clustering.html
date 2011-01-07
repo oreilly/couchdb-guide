@@ -1,0 +1,117 @@
+<title>Clustering</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="balancing.html">
+
+<link rel="next" href="notifications.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="clustering">Clustering</h2>
+
+<p>OK, you’ve made it this far. I’m assuming you more or less understand what CouchDB is and how the application API works. Maybe you’ve deployed an application or two, and now you’re dealing with enough traffic that you need to think about scaling. “Scaling” is an imprecise word, but in this chapter we’ll be dealing with the aspect of putting together a partitioned or sharded cluster that will have to grow at an increasing rate over time from day one.
+
+<p>We’ll look at request and response dispatch in a CouchDB cluster with stable nodes. Then we’ll cover how to add redundant hot-failover twin nodes, so you don’t have to worry about losing machines. In a large cluster, you should plan for 5–10% of your machines to experience some sort of failure or reduced performance, so cluster design must prevent node failures from affecting reliability. Finally, we’ll look at adjusting cluster layout dynamically by splitting or merging nodes using replication.
+
+<h3 id="lounge">Introducing CouchDB Lounge</h3>
+
+<p><a href="http://tilgovi.github.com/couchdb-lounge/">CouchDB Lounge</a> is a proxy-based partitioning and clustering application, originally developed for <a href="http://www.meebo.com">Meebo</a>, a web-based instant messaging service. Lounge comes with two major components: one that handles simple GET and PUT requests for documents, and another that distributes view requests.
+
+<p>The <em>dumbproxy</em> handles simple requests for anything that isn’t a CouchDB view. This comes as a module for <a href="http://nginx.net/">nginx</a>, a high-performance reverse HTTP proxy. Because of the way reverse HTTP proxies work, this automatically allows configurable security, encryption, load distribution, compression, and, of course, aggressive caching of your database resources.
+
+<p>The <em>smartproxy</em> handles only CouchDB view requests, and dispatches them to all the other nodes in the cluster so as to distribute the work, making view performance a function of the cluster’s cumulative processing power. This comes as a daemon for Twisted, a popular and high-performance event-driven network programming framework for Python.
+
+<h3 id="hashing">Consistent Hashing</h3>
+
+<p>CouchDB’s storage model uses unique IDs to save and retrieve documents. Sitting at the core of Lounge is a simple method of hashing your document IDs. Lounge then uses the first few characters of this hash to determine which shard to dispatch the request to. You can configure this behavior by writing a <em>shard map</em> for Lounge, which is just a simple text configuration file.
+
+<p>Because Lounge allocates a portion of the hash (known as a keyspace) to each node, you can add as many nodes as you like. Because the hash function produces hexidecimal strings that bare no apparent relation to your DocIDs, and because we dispatch requests based on the first few characters, we ensure that all nodes see roughly equal load. And because the hash function is consistent, Lounge will take any arbitrary DocID from an HTTP request URI and point it to the same node each time.
+
+<p>This idea of splitting a collection of shards based on a keyspace is commonly illustrated as a ring, with the hash wrapped around the outside. Each tic mark designates the boundaries in the keyspace between two partitions. The hash function maps from document IDs to positions on the ring. The ring is continuous so that you can always add more nodes by splitting a single partition into pieces. With four physical servers, you allocate the keyspace into 16 independent partitions by distributing them across the servers like so:
+
+<div>
+
+<table>
+
+<tbody>
+
+<tr><td>A</td><td>0,1,2,3</td></tr>
+
+<tr><td>B</td><td>4,5,6,7</td></tr>
+
+<tr><td>C</td><td>8,9,a,b</td></tr>
+
+<tr><td>D</td><td>c,d,e,f</td></tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<p>If the hash of your DocID starts with <code>0</code>, it would be dispatched to shard <code>A</code>. Similarly for <code>1</code>, <code>2</code>, or <code>3</code>. Whereas, if the hash started with <code>c</code>, <code>d</code>, <code>e</code>, or <code>f</code>, it would be dispatched to shard <code>D</code>. As a full example, the hash <code>71db329b58378c8fa8876f0ec04c72e5</code> is mapped to the node <code>B</code>, database <code>7</code> in the table just shown. This could map to <code>http://B.couches.local/db-7/</code> on your backend cluster. In this way, the hash table is just a mapping from hashes to backend database URIs. Don’t worry if this all sounds very complex; all you have to do is provide a mapping of shards to nodes and Lounge will build the hash ring appropriately—so no need to get your hands dirty if you don’t want to.
+
+<p>To frame the same concept with web architecture, because CouchDB uses HTTP, the proxy can partition documents according to the request URL, without inspecting the body. This is a core principle behind REST and is one of the many benefits using HTTP affords us. In practice, this is accomplished by running the hash function against the request URI and comparing the result to find the portion of the keyspace allocated. Lounge then looks up the associated shard for the hash in a configuration table, forwarding the HTTP request to the backend CouchDB server.
+
+<p>Consistent hashing is a simple way to ensure that you can always find the documents you saved, while balancing storage load evenly across partitions. Because the hash function is simple (it is based on CRC32), you are free to implement your own HTTP intermediaries or clients that can similarly resolve requests to the correct physical location of your data.
+
+<h4 id="storage">Redundant Storage</h4>
+
+<p>Consistent hashing solves the problem of how to break up a single logical database evenly across a set of partitions, which can then be distributed across multiple servers. It does not address the problem of how to ensure that data you’ve stored is safe from loss due to hardware or software failure. If you are serious about your data, you can’t consider it saved until you have at least two copies of it, preferably in different geographical locations.
+
+<p>CouchDB replication makes maintaining hot-failover redundant slaves or load-balanced multi-master databases relatively painless. The specifics of how to manage replication are covered in <a href="replication.html">Chapter 16, Replication</a>. What is important in this context is to understand that maintaining redundant copies is orthogonal to the harder task of ensuring that the cluster consistently chooses the same partition for a particular document ID.
+
+<p>For data safety, you’ll want to have at least two or three copies of everything. However, if you encapsulate redundancy, the higher layers of the cluster can treat each partition as a single unit and let the logical partitions themselves manage redundancy and failover.
+
+<h4 id="proxies">Redundant Proxies</h4>
+
+<p>Just as we can’t accept the possibility of hardware failure leading to data loss, we’ll need to run multiple instances of the proxy nodes to avoid the chance that a proxy node crash could leave portions of the cluster unavailable. By running redundant proxy instances, and load balancing across them, we can increase cluster throughput as well as reliability.
+
+<h4 id="merging">View Merging</h4>
+
+<p>Consistent hashing leaves documents on the proper node, but documents can still <code>emit()</code> any key. The point of incremental MapReduce is to bring the function to the data, so we shoudn’t redistribute the emitted keys; instead, we send the queries to the CouchDB nodes via HTTP proxy, and merge the results using the Twisted Python Smartproxy.
+
+<p>Smartproxy sends each view request to every node, so it needs to merge the responses before returning them to the client. Thankfully, this operation is not resource-intensive, as merging can be done in constant memory space no matter how many rows are returned. The Smartproxy receives the first row from each cluster node and compares them. We sort the nodes according to their row key using CouchDB’s collation rules. Smartproxy pops the top row from the first sorted node and returns it to the client.
+
+<p>This process can be repeated as long as the clients continue to send rows, but if a limit is imposed by the client, Smartproxy must end the response early, discarding any extra rows sent by the nodes.
+
+<p>This layout is simple and loosely coupled. It has the advantage that it’s simple, which helps in understanding topology and diagnosing failures. There is work underway to move the behavior to Erlang, which ought to make managing dynamic clusters possible as well as let us integrate cluster control into the CouchDB runtime.
+
+<h3 id="growing">Growing the Cluster</h3>
+
+<p>Using CouchDB at web scale likely requires CouchDB clusters that can be scaled dynamically. Growing sites must continuously add more storage capacity, so we need a strategy to increase the size of our cluster without taking it down. Some workloads can result in temporary growth in data size, in which case we’ll also need a process for shrinking the cluster without an interruption in service.
+
+<p>In this section, we’ll see how we can use CouchDB’s replication filters to split one database into several partitions, and how to use that technique to grow the cluster without downtime. There are simple steps you can take to avoid partitioning databases while growing the cluster.
+
+<p><em>Oversharding</em> is a technique where you partition the cluster so that there are multiple shards on each physical machine. Moving a partition from one machine to another is simpler than splitting it into smaller partitions, as the configuration map of the cluster used by the proxy only needs to change to point to shards at their new homes, rather than adding new logical shards. It’s also less resource-intensive to move a partition than to split it into many.
+
+<p>One question we need to answer is, “How much should we overshard?” The answer depends on your application and deployment, but there are some forces that push us in one direction over another. If we get the number of shards right, we’ll end up with a cluster that can grow optimally.
+
+<p>In <a href="#merging">the section called “View Merging”</a>, we discussed how merges can be accomplished in constant space, no matter the number of rows returned. The memory space and network resources required to merge views, as well as to map from document IDs to partitions, does, however, grow linearly with the number of partitions under a given proxy. For this reason, we’ll want to limit the number of partitions for each proxy. However, we can’t accept an upper limit on cluster size. The solution is to use a tree of proxies, where the root proxy partitions to some number of intermediate proxies, which then proxy to database nodes.
+
+<p>The factors that come into play when deciding how many partitions each proxy should manage are: the storage available to each individual server node, the projected growth rate of the data, the network and memory resources available to proxies, and the acceptable latency for requests against the cluster.
+
+<p>Assuming a conservative 64 shards per proxy, and 1 TB of data storage per node (including room for compaction, these nodes will need roughly 2 TB of drive space), we can see that with a single proxy in front of CouchDB data nodes, we’ll be able to store at maximum 64 TB of data (on 128 or perhaps 192 server nodes, depending on the level of redundancy required by the system) before we have to increase the number of partitions.
+
+<p>By replacing database nodes with another proxy, and repartitioning each of the 64 partitions into another 64 partitions, we end up with 4,096 partitions and a tree depth of 2. Just as the initial system can hold 64 partitions on just a few nodes, we can transition to the 2-layer tree without needing thousands of machines. If we assume each proxy must be run on its own node, and that at first database nodes can hold 16 partitions, we’ll see that we need 65 proxies and 256 database machines (not including redundancy factors, which should typically multiply the cluster size by two or three times). To get started with a cluster that can grow smoothly from 64 TB to 4 PB, we can begin with roughly 600 to 1,000 server nodes, adding new ones as data size grows and we move partitions to other machines.
+
+<p>We’ve seen that even a cluster with a depth of 2 can hold a vast amount of data. Basic arithmetic shows us that by applying the same process to create a cluster with three layers of proxies, we can manage 262 petabytes on thousands of machines. Conservative estimates for the latency introduced by each layer is about 100 ms, so even without performance tuning we should see overall response times of 300 ms even with a tree depth of 3, and we should be able to manage queries over exabyte datasets in less than a second.
+
+<p>By using oversharding and iteratively replacing full shards (database nodes that host only one partition) with proxy nodes that point to another set of oversharded partitions, we can grow the cluster to very large sizes while incurring a minimum of latency.
+
+<p>Now we need to look at the mechanics of the two processes that allow the cluster to grow: moving a partition from an overcrowded node to an empty node, and splitting a large partition into many subpartitions. Moving partitions is simpler, which is why it makes sense to use it when possible, running the more resource-intensive repartition process only when partitions get large enough that only one or two can fit on each database server.
+
+<h4 id="moving">Moving Partitions</h4>
+
+<p>As we mentioned earlier, each partition is made up of <em>N</em> redundant CouchDB databases, each stored on different physical servers. To keep things easy to conceptualize, any operations should be applied to all redundant copies automatically. For the sake of discussion, we’ll just talk about the abstract partition, but be aware that the redundant nodes will all be the same size and so should require the same operations during cluster growth.
+
+<p>The simplest way to move a partition from one node to another is to create an empty database on the target node and use CouchDB replication to fill the new node with data from the old node. When the new copy of the partition is up-to-date with the original, the proxy node can be reconfigured to point to the new machine. Once the proxy points to the new partition location, one final round of replication will bring it up-to-date, and the old partition can be retired, freeing space on the original machine.
+
+<p>Another method for moving partition databases is to rsync the files on disk from the old node to the new one. Depending on how recently the partition was compacted, this should result in efficient, low-CPU initialization of a new node. Replication can then be used to bring the rsynced file up-to-date. See more about rsync and replication in <a href="replication.html">Chapter 16, Replication</a>.
+
+<h4 id="splitting">Splitting Partitions</h4>
+
+<p>The last major thing we need to run a CouchDB cluster is the capability to split an oversized partition into smaller pieces. In <a href="replication.html">Chapter 16, Replication</a>, we discussed how to do continuous replication using the <code>_changes API</code>. The <code>_changes API</code> can use filters (see <a href="notifications.html">Chapter 20, Change Notifications</a>), and replication can be configured to use a filter function to replicate only a subset of a total database. Splitting partitions is accomplished by creating the target partitions and configuring them with the range of hash keys they are interested in. They then apply filtered replication to the source partition database, requesting only documents that meet their hash criteria. The result is multiple partial copies of the source database, so that each new partition has an equal share of the data. In total, they have a complete copy of the original data. Once the replication is complete and the new partitions have also brought their redundant backups up-to-date, a proxy for the new set of partitions is brought online and the top-level proxy is pointed at it instead of the old partition. Just like with moving a partition, we should do one final round of replication after the old partition is no longer reachable by the cluster, so that any last second updates are not lost. Once that is done, we can retire the old partition so that its hardware can be reused elsewhere in the cluster.
