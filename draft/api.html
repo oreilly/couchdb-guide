@@ -140,7 +140,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &gt; User-Agent: curl/7.16.3 (powerpc-apple-darwin9.0) libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3
 </pre>
 
-<p>The <code>User-Agent</code> header tell CouchDB which piece of client software is doing the HTTP request. We don’t learn anything new: it’s <code>curl</code>. This header is often useful in web development when there are known errors in client implementations that a server might want to prepare the response for. It also helps to determine which platform a user is on. This information can be used for technical and statistical reasons. For CouchDB, the <code>User-Agent</code> header is irrelevant.
+<p>The <code>User-Agent</code> header tells CouchDB which piece of client software is doing the HTTP request. We don’t learn anything new: it’s <code>curl</code>. This header is often useful in web development when there are known errors in client implementations that a server might want to prepare the response for. It also helps to determine which platform a user is on. This information can be used for technical and statistical reasons. For CouchDB, the <code>User-Agent</code> header is irrelevant.
 
 <pre>
 &gt; Host: 127.0.0.1:5984
