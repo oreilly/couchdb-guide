@@ -1,4 +1,4 @@
-<title>Finding Your Data with Views</title>
+<title>Daten finden mit Views</title>
 
 <meta charset="utf-8">
 
@@ -10,27 +10,26 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="views">Finding Your Data with Views</h2>
+<h2 id="views">Daten finden mit Views</h2>
 
-<p>Views are useful for many purposes:
+<p>Views sind in verschiedenen Situationen nützlich:
 
 <ul>
+<li>Zum Filtern der Dokumente in der Datenbank um die Dokumente zu finden, die für einen bestimmten Zweck relevant sind.</li>
 
-<li>Filtering the documents in your database to find those relevant to a particular process.</li>
+<li>Um Daten aus Dokumenten zu extrahieren und sie in einer bestimmten Reihenfolge zu präsentieren.</li>
 
-<li>Extracting data from your documents and presenting it in a specific order.</li>
+<li>Zum Aufbau von Indizes um Dokumente aufgrund von beliebigen Werten oder ihrer Struktur zu finden.</li>
 
-<li>Building efficient indexes to find documents by any value or structure that resides in them.</li>
+<li>Zum Nutzen dieser Indizes um Beziehungen zwischen Dokumenten darzustellen.</li>
 
-<li>Use these indexes to represent relationships among documents.</li>
-
-<li>Finally, with views you can make all sorts of calculations on the data in your documents. For example, a view can answer the question of what your company’s spending was in the last week, month, or year.</li>
+<li>Letztendlich kann man mit Views verschiedene Berechnungen auf den Daten in den Dokumenten durchführen. Beispielsweise kann eine View die Ausgaben ihrer Firma in der letzten Woche, im letzten Monat oder im letzten Jahr berechnen.</li>
 
 </ul>
 
-<h3 id="what">What Is a View?</h3>
+<h3 id="what">Was ist eine View?</h3>
 
-<p>Let’s go through the different use cases. First is extracting data that you might need for a special purpose in a specific order. For a front page, we want a list of blog post titles sorted by date. We’ll work with a set of example documents as we walk through how views work:
+<p>Schauen wir uns die verschiedenen Szenarien etwas genauer an. Als erstes betrachten wir den Fall, indem Daten extrahiert und in eine bestimmte Reihenfolge gebracht werden müssen. Für eine Blogseite beispielsweise benötigen wir die Überschriften der Blog Postings sortiert nach Datum. Im Folgenden werden wir mit einigen Beispieldokumenten arbeinit, um zu zeigen wie Views funktionieren.
 
 <pre>
 {
@@ -61,7 +60,7 @@
 }
 </pre>
 
-<p>Three will do for the example. Note that the documents are sorted by <code>"_id"</code>, which is how they are stored in the database. Now we define a view. <a href="tour.html">Chapter 3, Getting Started</a> showed you how to create a view in Futon, the CouchDB administration client. Bear with us without an explanation while we show you some code:
+<p>Drei reichen für das Beispiel aus. Achten sie darauf, dass die Dokumente nach <code>"_id"</code> sortiert sind - so wie sie auch in der Datenbank gespeichert sind. Nun legen wir eine View an. In <a href="tour.html">Kapitel 3: Der Anfang</a> wurde gezeigt, wie man eine View in Futon, dem CouchDB Admin UI anlegt. Fangen wir zunächst mit etwas Code an:
 
 <pre>
 function(doc) {
@@ -71,15 +70,15 @@ function(doc) {
 }
 </pre>
 
-<p>This is a <em>map function</em>, and it is written in JavaScript. If you are not familiar with JavaScript but have used C or any other C-like language such as Java, PHP, or C#, this should look familiar. It is a simple function definition.
+<p>Das ist eine <em>Map Funktion</em>, die in JavaScript geschrieben ist. Falls sie wenig oder keine Erfahrung mit JavaScript, dafür aber mit C oder C-ähnlichen Sprachen wie Java, PHP oder C# haben, sollte das vertraut aussehen. Es ist eine einfache Funktionsdefintion.
 
-<p>You provide CouchDB with view functions as strings stored inside the <code>views</code> field of a design document. You don’t run it yourself. Instead, when you <em>query your view</em>, CouchDB takes the source code and runs it for you on every document in the database your view was defined in. You <em>query your view</em> to retrieve the <em>view result</em>.
+<p>Views werden in CouchDB als Strings im <code>views</code> Attribut eines Design Dokuments gespeichert. Man führt sie nicht selber aus, sondern wenn man die View <em>abfragt</em>, liest CouchDB den Source Code und führt ihn für jedes Dokument in der Datenbank, in der die View angelegt wurde, aus. Durch das <em>Abfragen</em> der View erhält man die <em>View Ergebnismenge</em>.
 
-<p>All map functions have a single parameter <code>doc</code>. This is a single document in the database. Our map function checks whether our document has a <code>date</code> and a <code>title</code> attribute—luckily, all of our documents have them—and then calls the built-in <code>emit()</code> function with these two attributes as arguments.
+<p>Alle Map Funktionen haben nur einen Parameter <code>doc</code>. Er enthält ein einzelnes Dokument der Datenbank. Unsere Map Funktion prüft, ob das Dokument ein <code>date</code> und ein <code>title</code> Attribut besitzt, was bei all unseren Dokumenten der Fall ist. Anschließend ruft die Map Funktion die eingebaute <code>emit()</code> Funtion mit diesen beiden Attributen als Argumenten auf.
 
-<p>The <code>emit()</code> function always takes two arguments: the first is <code>key</code>, and the second is <code>value</code>. The <code>emit(key, value)</code> function creates an entry in our <em>view result</em>. One more thing: the <code>emit()</code> function can be called multiple times in the map function to create multiple entries in the view results from a single document, but we are not doing that yet.
+<p>Die <code>emit()</code> Funktion erwartet immer zwei Argumente: Zunächst den <code>key</code> (Schlüssel) und anschließend den <code>value</code> (Wert). Die <code>emit(key,value)</code> Funktion erzeugt einen Eintrag in der <code>View Ergebnismenge</code>. Man kann die <code>emit()</code> Funktion auch mehrfach in einer Map Funktion aufrufen, um mehrere Einträge in der Ergebnismenge zu erzeugen, doch darauf kommen wir später noch zurück.
 
-<p>CouchDB takes whatever you pass into the <code>emit()</code> function and puts it into a list (see <a href="#table/1">Table 1, “View results”</a>). Each row in that list includes the <code>key</code> and <code>value</code>. More importantly, the list is sorted by <code>key</code> (by <code>doc.date</code> in our case). The most important feature of a view result is that it is sorted by <code>key</code>. We will come back to that over and over again to do neat things. Stay tuned.
+<p>CouchDB nimmt jeden Wert, den man der <code>emit()</code> Funktion übergibt und speichert ihn in einer Liste (siehe auch <a href="#table/1">Tabelle 1: “View Ergebnismenge”</a>). Jede Zeile in dieser Liste enthält einen <em>Schlüssel</em> und einen <em>Wert</em>. Was noch wichtiger ist: die Liste ist nach dem <em>Schlüssel</em> aufsteigend sortiert (in unserem Fall <code>doc.date</code>). Das ist die wichtigste Eigenschaft einer View. Ihr Ergebnis ist nach dem <em>Schlüssel</em> sortiert. Darauf werden wir immer wieder zurückkommen um noch andere nette Dinge zu tun. 
 
 <div class="figure" id="table/1">
 
@@ -103,7 +102,7 @@ function(doc) {
 
 </table>
 
-<p class="caption">Table 1. View results
+<p class="caption">Tabelle 1: View Ergebnismenge
 
 </div>
 
