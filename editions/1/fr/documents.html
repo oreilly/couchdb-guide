@@ -1,4 +1,4 @@
-<title>Storing Documents</title>
+<title>Stockage des documents</title>
 
 <meta charset="utf-8">
 
@@ -10,71 +10,71 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="documents">Storing Documents</h2>
+<h2 id="documents">Stockage des documents</h2>
 
-<p><em>Documents</em> are CouchDB’s central data structure. To best understand and use CouchDB, you need to <em>think in documents</em>. This chapter walks you though the lifecycle of designing and saving a document. We’ll follow up by reading documents and aggregating and querying them with views. In the next section, you’ll see how CouchDB can also transform documents into other formats.
+<p>Au cœur de CouchDB se trouve une structure de données appelée <em>document</em>. Pour mieux comprendre et utiliser CouchDB, vous devez <em>penser documents</em>. Ce chapitre vous guide à travers le cycle de vie des documents : de leur conception à leurs sauvegardes, nous passerons par leur consultation, leur agrégation et leur parcours au moyen des vues. Dans la section qui va suivre, vous verrez aussi comment CouchDB peut publier un document dans un autre format.
 
-<p>Documents are self-contained units of data. You might have heard the term <em>record</em> to describe something similar. Your data is usually made up of small native types such as integers and strings. Documents are the first level of abstraction over these native types. They provide some structure and logically group the primitive data. The height of a person might be encoded as an integer (<code>176</code>), but this integer is usually part of a larger structure that contains a label (<code>"height": 176</code>) and related data (<code>{"name":"Chris", "height": 176}</code>).
+<p>Les documents forment un ensemble de données autonomes. Vous avez peut-être déjà entendu parler du mot « tuple » pour indiquer quelque chose de semblable. Vos données sont souvent composées de types de données natifs tels que les entiers ou les chaînes de caractères. Les documents sont alors le premier niveau d’abstraction au-dessus de ces types de données natifs. Ils apportent une structure et regroupent de manière logique les éléments primitifs. Par exemple, la taille d’une personne peut être codée en tant qu’entier (<code>176</code>), mais cet entier fait souvent partie d’une structure plus vaste qui contient une étiquette (<code>"taille": 176</code>) et une donnée liée (<code>{"nom":"Chris", "taille": 176}</code>).
 
-<p>How many data items you put into your documents depends on your application and a bit on how you want to use views (later), but generally, a document roughly corresponds to an object instance in your programming language. Are you running an online shop? You will have <em>items</em> and <em>sales</em> and <em>comments</em> for your items. They all make good candidates for objects and, subsequently, documents.
+<p>Le nombre d’éléments que vous stockez dans un document dépend avant tout de votre application, et aussi de la manière dont vous comptez utiliser les vues par la suite. En règle générale, un document correspond à peu de choses près à l’instance de l’objet correspondant dans votre langage de programmation. Dans le cas d’une boutique en ligne, vous aurez des <em>objets</em>, des <em>ventes</em> et des <em>commentaires</em> pour vos marchandises. Ce sont des candidats potentiels pour devenir des objets et, par conséquent, des documents.
 
-<p>Documents differ subtly from garden-variety objects in that they usually have authors and CRUD operations (create, read, update, delete). Document-based software (like the word processors and spreadsheets of yore) builds its storage model around saving documents so that authors get back what they created. Similarly, in a CouchDB application you may find yourself giving greater leeway to the presentation layer. If, instead of adding timestamps to your data in a controller, you allow the user to control them, you get draft status and the ability to publish articles in the future for free (by viewing published documents using an <code>endkey</code> of <em>now</em>).
+<p>Les documents se différencient subtilement des objets traditionnels, car ils appartiennent à des auteurs et permettent les opérations CRUD (pour <em>Create, Read, Update, Delete</em>, respectivement créer, lire, modifier, supprimer). Les logiciels de traitement de documents (comme votre logiciel de traitement de texte et votre tableur) ont conçu leur modèle de persistance des données autour du concept de document, ce qui permet aux auteurs de retrouver ce qu’ils ont écrit. De la même manière, dans une application CouchDB, vous pouvez vous réserver des marges de manœuvre vis-à-vis de la couche de présentation. Si, au lieu d’adjoindre automatiquement des estampilles temporelles (<em>timestamps</em> en anglais) à vos données, vous permettez à l’utilisateur de les saisir, vous obtenez par là même la possibilité de créer des brouillons qui ne seront publiés qu’une fois la date saisie atteinte. Pour cela, il suffit que votre vue utilise une <code>endkey</code> positionnée à <code>now</code> ; et cela ne vous a rien coûté !
 
-<p>Validation functions are available so that you don’t have to worry about bad data causing errors in your system. Often in document-based software, the client application edits and manipulates the data, saving it back. As long as you give the user the document she asked you to save, she’ll be happy.
+<p>Les fonctions de validation sont là pour vous éviter d’avoir à vous soucier de l’impact de données erronées. Dans la plupart des cas, un logiciel gérant des documents laisse le soin à l’application de modifier et de manipuler les données avant de les sauvegarder à nouveau. Tant que vous donnez à l’utilisateur le document qu’il vous a demandé de sauvegarder, il sera content.
 
-<p>Say your users can comment on the item (“lovely book”); you have the option to store the comments as an array, on the item document. This makes it trivial to find the item’s comments, but, as they say, “it doesn’t scale.” A popular item could have tens of comments, or even hundreds or more.
+<p>Prenons le cas suivant : vous permettez à vos utilisateurs de rédiger un commentaire sur l’objet « livre sympathique ». Vous avez la possibilité de stocker ces commentaires dans un tableau au sein même du document de cet objet. Il est ainsi très simple de retrouver les commentaires de l’objet, mais, comme on dit, ça ne résiste pas au passage à l’échelle. En effet, un objet populaire peut avoir des dizaines, des centaines, voire des milliers de commentaires.
 
-<p>Instead of storing a list on the item document, in this case it may be better to model comments into a collection of documents. There are patterns for accessing collections, which CouchDB makes easy. You likely want to show only 10 or 20 at a time and provide <em>previous</em> and <em>next</em> links. By handling comments as individual entities, you can group them with views. A group could be the entire collection or slices of 10 or 20, sorted by the item they apply to so that it’s easy to grab the set you need.
+<p>Aussi, plutôt que de stocker une liste de commentaires au sein même de l’objet, il serait ici préférable de les regrouper dans un recueil (en anglais, <em>collection</em>). CouchDB vous permet de parcourir aisément des recueils. Il est probable que vous désiriez n’en montrer qu’une dizaine ou une vingtaine à la fois et vouliez disposer de boutons « précédents » et « suivants ». En stockant individuellement les commentaires, vous pouvez les regrouper à l’aide des vues. Un groupe pourrait alors contenir tous les commentaires – ou des tranches de dix ou vingt –, le tout trié par rapport à l’objet auquel ils sont liés pour qu’il soit aisé de trouver le sous-ensemble dont vous avez besoin.
 
-<p>A rule of thumb: break up into documents everything that you will be handling separately in your application. Items are single, and comments are single, but you don’t need to break them into smaller pieces. Views are a convenient way to group your documents in meaningful ways.
+<p>Par conséquent, une règle de base consiste à diviser en documents ce que vous gérerez individuellement dans votre application. Les objets sont unitaires, les commentaires sont unitaires, mais vous n’avez pas besoin de les redécouper. Les vues permettent de regrouper facilement vos documents de la manière qui vous intéresse.
 
-<p>Let’s go through building our example application to show you in practice how to work with documents.
+<p>Il est temps de concevoir notre application d’exemple pour vous montrer ce qu’il en est dans la pratique.
 
-<h3 id="format">JSON Document Format</h3>
+<h3 id="format">Format de document JSON</h3>
 
-<p>The first step in designing any application (once you know what the program is for and have the user interaction nailed down) is deciding on the format it will use to represent and store data. Our example blog is written in JavaScript. A few lines back we said documents roughly represent your data objects. In this case, there is a an exact correspondence. CouchDB borrowed the JSON data format from JavaScript; this allows us to use documents directly as native objects when programming. This is really convenient and leads to fewer problems down the road (if you ever worked with an ORM system, you might know what we are hinting at).
+<p>La première étape dans la conception de toute application, une fois que vous savez ce qu’est le programme et avez déterminé les interactions homme-machine, est de définir le format dans lequel vos données seront représentées et stockées. Notre blogue d’exemple est écrit en JavaScript. Un peu avant, nous avons dit que les documents représentent à peu près vos objets dans le langage que vous utilisez. Dans le cas présent, la correspondance est exacte. En effet, CouchDB a emprunté le format de données JSON à JavaScript ; ce qui nous permet d’exploiter les documents comme des objets natifs. C’est très pratique et nous évitent bien des problèmes. Si vous avez déjà travaillé avec un <em>ORM</em> (<em>Object-Relational Mapping</em>, Correspondance objet-relationnel), vous voyez quels soucis nous évoquons.
 
-<p>Let’s draft a JSON format for blog posts. We know we’ll need each post to have an author, a title, and a body. We know we’d like to use document IDs to find documents so that URLs are search engine–friendly, and we’d also like to list them by creation date.
+<p>Concevons une structure JSON pour les articles du blogue. Nous savons que nous aurons besoin, pour chaque article, d’un auteur, d’un titre et d’un corps. Nous savons aussi que nous voulons utiliser l’identifiant du document pour le retrouver et ainsi faire plaisir aux moteurs de recherche. Et nous voudrions pouvoir les trier par date de rédaction.
 
-<p>It should be pretty straightforward to see how JSON works. Curly braces (<code>{}</code>) wrap objects, and objects are key/value lists. Keys are strings that are wrapped in double quotes (<code>""</code>). Finally, a value is a string, an integer, an object, or an array (<code>[]</code>). Keys and values are separated by a colon (<code>:</code>), and multiple keys and values by comma (<code>,</code>). That’s it. For a complete description of the JSON format, see <a href="json.html">Appendix E, JSON Primer</a>.
+<p>Il devrait vous être facile de comprendrez comment JSON fonctionne. Les accolades (<code>{}</code>) cernent les objets, et ceux-ci sont des listes clé/valeur. Les clés sont formées par des chaînes de caractères qui sont délimitées par des guillemets doubles et droits (<code>""</code>). Enfin, une valeur peut être une chaîne, un entier, un objet ou un tableau (<code>[]</code>). Les clés sont séparées des valeurs par deux-points (<code>:</code>) et les couples clé/valeurs sont séparés par une virgule (<code>,</code>). C’est tout. Pour une description complète du format JSON, référez-vous à l’<a href="json.html">Annexe E, Introduction au JSON</a>.
 
-<p><a href="#figure/1">Figure 1, “The JSON post format”</a> shows a document that meets our requirements. The cool thing is we just made it up on the spot. We didn’t go and define a schema, and we didn’t define how things should look. We just created a document with whatever we needed. Now, requirements for objects change all the time during the development of an application. Coming up with a different document that meets new, evolved needs is just as easy.
+<p>La <a href="#figure/1">Figure 1, La structure JSON d’un article</a> illustre un document qui se conforme à nos exigences. Ce qui est bien, c’est que nous l’avons construit tout de suite ; c’est-à-dire que nous n’avons pas eu besoin de définir de schéma ni de préciser à quoi cela devait ressembler. Nous avons simplement créé un document contenant ce dont nous avons besoin. Et puisque les besoins liés au contenu des documents changent tout au long du processus de développement, il est aussi simple de stocker un nouveau document avec tous les champs correspondants au nouveau besoin.
 
 <div class="figure" id="figure/1">
 
 <img src="documents/01.png">
 
-<p class="caption">Figure 1. The JSON post format
+<p class="caption">Figure 1. La structure JSON d’un article
 
 </div>
 
 <blockquote>
 
-<p>Do I really look like a guy with a plan? You know what I am? I’m a dog chasing cars. I wouldn’t know what to do with one if I caught it. You know, I just do things. The mob has plans, the cops have plans, Gordon’s got plans. You know, they’re schemers. Schemers trying to control their little worlds. I’m not a schemer. I try to show the schemers how pathetic their attempts to control things really are.
+<p>Ai-je la tête de quelqu’un qui a un plan ? Savez-vous ce que je suis ? Je suis un chien qui court après les voitures. Je ne saurais qu’en faire si jamais j’en attrapais une. Vous savez, je fais juste les choses. Le malin fait des plans, les policiers font des plans, Gordon fait des plans. Vous savez, ce sont des stratèges. Les stratèges tentent de contrôler leurs petits univers. Pour ma part, je ne suis pas un stratège. Je tente de démontrer aux stratèges combien leurs tentatives de contrôler les choses sont pathétiques.
 
-<p class="attribution">&mdash;The Joker, <em>The Dark Knight</em>
+<p class="attribution">&mdash;Joker, <em>The Dark Knight : le chevalier noir</em>
 
 </blockquote>
 
-<p>Let’s examine the document in a little more detail. The first two members (<code>_id</code> and <code>_rev</code>) are for CouchDB’s housekeeping and act as identification for a particular <em>instance</em> of a document. <code>_id</code> is easy: if I store something in CouchDB, it creates the <code>_id</code> and returns it to me. I can use the <code>_id</code> to build the URL where I can get my something back.
+<p>Attardons-nous un peu sur le document. Les deux premiers attributs (<code>_id</code> et <code>_rev</code>) sont là pour CouchDB et pour identifier une <em>instance</em> donnée du document. Pour <code>_id</code>, c’est facile : si je stocke quelque chose dans CouchDB, cela crée l’identifiant <code>_id</code> et me l’envoie dans la réponse. Je peux ensuite utiliser cet <code>_id</code> dans une URL qui m’enverra le document.
 
 <div class="aside note">
 
-<p>Your document’s <code>_id</code> defines the URL the document can be found under. Say you have a database <code>movies</code>. All documents can be found somewhere under the URL <code>/movies</code>, but where exactly?
+<p>L’identifiant de votre document définit l’URL à laquelle le document pourra être récupéré par la suite. Si vous avez une base de données <code>movies</code>, tous les documents peuvent être trouvés sous l’URL <code>/movies</code>, mais où précisément ?
 
-<p>If you store a document with the <code>_id</code> <code>Jabberwocky</code> (<code>{"_id":"Jabberwocky"}</code>) into your <code>movies</code> database, it will be available under the URL <code>/movies/Jabberwocky</code>. So if you send a GET request to <code>/movies/Jabberwocky</code>, you will get back the JSON that makes up your document (<code>{"_id":"Jabberwocky"}</code>).
+<p>Si vous stockez un document qui a pour <code>_id</code> <code>Jabberwocky</code> (<code>{"_id":"Jabberwocky"}</code>) dans votre base de données <code>movies</code>, il sera accessible par l’URL <code>/movies/Jabberwocky</code>. Donc, si vous envoyez une requête GET à <code>/movies/Jabberwocky</code>, vous récupérerez la structure JSON qui forme votre document (<code>{"_id":"Jabberwocky"}</code>).
 
 </div>
 
-<p>The <code>_rev</code> (or <em>revision ID</em>) describes a version of a document. Each change creates a new document version (that again is self-contained) and updates the <code>_rev</code>. This becomes useful because, when saving a document, you must provide an up-to-date <code>_rev</code> so that CouchDB knows you’ve been working against the latest document version.
+<p>Le <em>numéro de version</em> <code>_rev</code> indique la version d’un document. Toute modification génère un nouveau numéro de version (inclus dans le document) et met à jour le champ <code>_rev</code>. C’est utile, car, quand vous sauvegardez un document, vous devez fournir un numéro de version à jour pour que CouchDB sache que vous avez travaillé sur la dernière version en date du document.
 
-<p>We touched on this in <a href="consistency.html">Chapter 2, Eventual Consistency</a>. The revision ID acts as a gatekeeper for writes to a document in CouchDB’s MVCC system. A document is a shared resource; many clients can read and write them at the same time. To make sure two writing clients don’t step on each other’s feet, each client must provide what it believes is the latest revision ID of a document along with the proposed changes. If the on-disk revision ID matches the provided <code>_rev</code>, CouchDB will accept the change. If it doesn’t, the update will be rejected. The client should read the latest version, integrate the changes, and try saving again.
+<p>Nous en avons parlé dans le <a href="consistency.html">Chapitre 2, Cohérence finale</a>. Le numéro de version agit comme un garde-fou pour les opérations d’écriture dans le contexte du système MVCC de CouchDB. Un document est une ressource partagée : plusieurs clients peuvent y lire et écrire au même moment. Pour garantir que deux écritures concurrentes ne vont pas interférer, chaque client doit fournir au serveur le numéro de version sur lequel s’appuient les changements. Si ce numéro correspond à celui stocké sur le disque, alors CouchDB acceptera la modification. Dans le cas contraire, la mise à jour sera rejetée. Le client doit alors récupérer la dernière version, y intégrer les modifications et sauvegarder à nouveau.
 
-<p>This mechanism ensures two things: a client can only overwrite a version it knows, and it can’t trip over changes made by other clients. This works without CouchDB having to manage explicit <em>locks</em> on any document. This ensures that no client has to wait for another client to complete any work. Updates are serialized, so CouchDB will never attempt to write documents faster than your disk can spin, and it also means that two mutually conflicting writes can’t be written at the same time.
+<p>Ce mécanisme garantit deux choses : un client peut modifier uniquement une version qu’il connaît et ne peut pas interférer avec les modifications apportées par un tiers. Cela fonctionne sans que CouchDB ait à gérer de son côté le moindre <em>verrou</em>. On garantit ainsi qu’aucun client n’a à attendre qu’un autre client termine sa transaction. En outre, les mises à jour sont placées dans une queue, ce qui confère deux avantages : CouchDB ne tentera pas d’écrire plus vite que votre disque ; CouchDB ne pourra pas engager deux opérations d’écritures conflictuelles au même instant.
 
-<h3 id="data">Beyond _id and _rev: Your Document Data</h3>
+<h3 id="data">Après _id et _rev : les données de votre document</h3>
 
-<p>Now that you thoroughly understand the role of <code>_id</code> and <code>_rev</code> on a document, let’s look at everything else we’re storing.
+<p>Maintenant que vous comprenez le rôle des attributs <code>_id</code> et <code>_rev</code>, regardons ce le reste.
 
 <pre>
 {
@@ -83,20 +83,20 @@
   "type":"post",
 </pre>
 
-<p>The first thing is the type of the document. Note that this is an application-level parameter, not anything particular to CouchDB. The type is just an arbitrarily named key/value pair as far as CouchDB is concerned. For us, as we’re adding blog posts to Sofa, it has a little deeper meaning. Sofa uses the <code>type</code> field to determine which validations to apply. It can then rely on documents of that type being valid in the views and the user interface. This removes the need to check for every field and nested JSON value before using it. This is purely by convention, and you can make up your own or infer the type of a document by its structure (“has an array with three elements”—a.k.a. <em>duck typing</em>). We just thought this was easy to follow and hope you agree.
+<p>La première chose que l’on trouve est le type de document. Notez qu’il s’agit d’un paramètre de niveau applicatif et qu’il n’a aucun impact sur CouchDB. En effet, de son point de vue, le type consiste simplement en un couple clé/valeur arbitraire. De notre point de vue, comme nous ajoutons des articles de blogue à Sofa, cela n’a guère plus de sens. En revanche, pour Sofa, le champ <code>type</code> détermine les fonctions de validations auxquelles le document doit être soumis. Il peut alors être certain que les documents de ce type, s’ils sont enregistrés dans Sofa, sont formatés correctement et peuvent être exploités par les vues et par l’interface utilisateur. De cette manière, l’on évite d’avoir à vérifier la présence des champs avant de les utiliser. C’est une approche purement conventionnelle, aussi pouvez-vous définir la vôtre ou déduire le type de document en fonction de sa structure (par ex., « contient un tableau avec trois cellules », ce qui est connu sous l’appellation anglaise de <em>duck typing</em> [NdT : le typage du canard fait référence à cette expression de James W. Riley : « si cela ressemble à un canard, nage comme un canard, cancane comme un canard, alors c’est probablement un canard »]). Nous espérons que cette explication vous convient.
 
 <pre>
   "author":"jchris",
   "title":"Hello Sofa",
 </pre>
 
-<p>The <code>author</code> and <code>title</code> fields are set when the post is created. The <code>title</code> field can be changed, but the <code>author</code> field is locked by the validation function for security. Only the author may edit the post.
+<p>Les champs <code>author</code> et <code>title</code> sont définis quand l’article est créé. Le champ <code>title</code> field peut être modifié, mais le champ <code>author</code> est verrouillé par la fonction de validation pour des raisons de sécurité. Seul l’auteur d’un article peut l’éditer.
 
 <pre>
   "tags":["example","blog post","json"],
 </pre>
 
-<p>Sofa’s tag system just stores them as an array on the document. This kind of denormalization is a particularly good fit for CouchDB.
+<p>Le système de tag de Sofa se contente de les stocker dans un tableau au sein du document. Ce genre de dénormalisation [NdT : au sens des bases de données] est une bonne approche avec CouchDB.
 
 <pre>
   "format":"markdown",
@@ -104,22 +104,22 @@
   "html":"&lt;p&gt;the html text&lt;/p&gt;",
 </pre>
 
-<p>Blog posts are composed in the <a href="http://daringfireball.net/projects/markdown/">Markdown HTML format</a> to make them easy to author. The Markdown format as typed by the user is stored in the <code>body</code> field. Before the blog post is saved, Sofa converts it to HTML in the client’s browser. There is an interface for previewing the Markdown conversion, so you can be sure it will display as you like.
+<p>Les articles de blogue sont rédigés au <a href="http://daringfireball.net/projects/markdown/">format HTML Markdown</a> pour faciliter la vie de l’auteur. Le format Markdown, tel que saisi par l’utilisateur, est stocké dans le champ <code>body</code>. Juste avant que l’article soit sauvegardé, Sofa utilise le navigateur du client pour convertir ce champ en HTML. Il existe une fenêtre de prévisualisation du résultat de la conversion. De cette manière, vous pouvez vous assurer que le rendu correspond à ce vos vœux.
 
 <pre>
   "created_at":"2009/05/25 06:10:40 +0000"
 }
 </pre>
 
-<p>The <code>created_at</code> field is used to order blog posts in the Atom feed and on the HTML index page.
+<p>Le champ <code>created_at</code> est utilisé pour trier les articles dans le flux Atom et sur la page d’accueil HTML.
 
-<h3 id="edit">The Edit Page</h3>
+<h3 id="edit">La page d’édition</h3>
 
-<p>The first page we need to build in order to get one of these blog entries into our post is the interface for creating and editing posts.
+<p>La première page que nous devons créer pour obtenir un article dans notre blogue est celle qui permet de les créer et de les éditer.
 
-<p>Editing is more complex than just rendering posts for visitors to read, but that means once you’ve read this chapter, you’ll have seen most of the techniques we touch on in the other chapters.
+<p>L’édition est plus complexe que le simple affichage d’un article, ce qui signifie qu’à la fin de chapitre, vous aurez vu les techniques principales auxquelles nous recourrons par la suite.
 
-<p>The first thing to look at is the <em>show function</em> used to render the HTML page. If you haven’t already, read <a href="show.html">Chapter 8, Show Functions</a> to learn about the details of the API. We’ll just look at this code in the context of Sofa, so you can see how it all fits together.
+<p>La première chose à regarder est la <em>fonction d’affichage</em> (en anglais, <em>show function</em>) utilisée pour générer une page HTML. Si ce n’est déjà fait, consultez le <a href="show.html">Chapitre 8, Fonctions d’affichage</a> pour assimiler les détails de l’API. Nous regarderons ici le code dans le contexte de Sofa, ce qui illustre comment les briques s’assemblent parfaitement.
 
 <pre>
 function(doc, req) {
@@ -129,10 +129,10 @@ function(doc, req) {
   // !code vendor/couchapp/template.js
 </pre>
 
-<p>Sofa’s edit page show function is very straightforward. In the previous section, we showed the important templates and libraries we’ll use. The important line is the <code>!json</code> macro, which loads the <code>edit.html</code> template from the <code>templates</code> directory. These macros are run by CouchApp, as Sofa is being deployed to CouchDB. For more information about the macros, see <a href="formats.html">Chapter 13, Showing Documents in Custom Formats</a>.
+<p>La fonction d’affichage de la page d’édition de Sofa est assez simple. Dans la section précédente, nous avons montré l’importance des patrons et des bibliothèques que nous utilisons. La ligne importante est la macro <code>!json</code> qui charge le modèle de document <code>edit.html</code> qui se trouve dans le répertoire <code>templates</code>. Ces macros sont exécutées par CouchApp lorsque Sofa est déployé sur CouchDB. Pour plus d’informations sur les macros, référez-vous au <a href="formats.html">Chapitre 13, Afficher des documents dans des formats particuliers</a>.
 
 <pre>
-  // we only show html
+  // nous ne montrons que l’HTML
   return template(templates.edit, {
     doc : doc,
     docid : toJSON((doc &amp;&amp; doc._id) || null),
@@ -143,15 +143,15 @@ function(doc, req) {
 }
 </pre>
 
-<p>The rest of the function is simple. We’re just rendering the HTML template with data culled from the document. In the case where the document does not yet exist, we make sure to set the <code>docid</code> to <code>null</code>. This allows us to use the same template both for creating new blog posts as well as editing existing ones.
+<p>Le reste de la fonction est simple. Nous remplissons le modèle de document avec les données extraites du document CouchDB. Si ce document n’existe pas, nous nous assurons de positionner <code>docid</code> à <code>null</code>. Cela nous permet d’utiliser le même modèle de document pour la création et l’édition d’articles.
 
-<h4 id="scaffold">The HTML Scaffold</h4>
+<h4 id="scaffold">La couche HTML</h4>
 
-<p>The only missing piece of this puzzle is the HTML that it takes to save a document like this.
+<p>La seule pièce manquante à l’échiquier est le code HTML nécessaire à sauvegarder un tel document.
 
-<p>In your browser, visit <code>http://127.0.0.1:5984/blog/_design/sofa/_show/edit</code> and, using your text editor, open the source file <code>templates/edit.html</code> (or view source in your browser). Everything is ready to go; all we have to do is wire up CouchDB using in-page JavaScript. See <a href="#figure/2">Figure 2, “HTML listing for edit.html”</a>.
+<p>Utilisez votre navigateur pour vous rendre sur <code>http://127.0.0.1:5984/blog/_design/sofa/_show/edit</code> et, avec votre éditeur de texte, ouvrez le code source du fichier <code>templates/edit.html</code> (ou consultez-le dans votre navigateur). Tout est paré ; la seule chose qui reste à faire est de relier le navigateur à CouchDB grâce au JavaScript. Reportez-vous à la <a href="#figure/2">Figure 2, Code HTML de edit.html</a>.
 
-<p>Just like any web application, the important part of the HTML is the form for accepting edits. The edit form captures a few basic data items: the post title, the body (in Markdown format), and any tags the author would like to apply.
+<p>Comme pour toute application web, la partie importante du code HTML est le formulaire qui permet de saisir les éditions. Ce formulaire permet de renseigner les informations basiques : le titre de l’article, le corps (au format Markdown), et les tags que l’auteur veut accoler au document.
 
 <pre>
 &lt;!-- form to create a Post --&gt;
@@ -167,32 +167,32 @@ function(doc, req) {
 &lt;/form&gt;
 </pre>
 
-<p>We start with just a raw HTML document, containing a normal HTML form. We use JavaScript to convert user input into a JSON document and save it to CouchDB. In the spirit of focusing on CouchDB, we won’t dwell on the JavaScript here. It’s a combination of Sofa-specific application code, CouchApp’s JavaScript helpers, and jQuery for interface elements. The basic story is that it watches for the user to click “Save,” and then applies some callbacks to the document before sending it to CouchDB.
+<p>Nous commençons avec un document HTML brut contenant un formulaire HTML. Nous utilisons ensuite JavaScript pour transcrire les données saisies par l’utilisateur en un document JSON et le sauvegarder dans CouchDB. Puisque nous nous intéressons à CouchDB, nous n’allons pas détailler le JavaScript ici. C’est un mélange de code applicatif propre à Sofa, d’assistants fournis par CouchApp et de jQuery pour la partie interface. Le principe, c’est que le navigateur capture le clic sur le bouton « Save » et applique des traitements avant d’envoyer le document résultant à CouchDB.
 
 <div class="figure" id="figure/2">
 
 <img src="documents/02.png">
 
-<p class="caption">Figure 2. HTML listing for edit.html
+<p class="caption">Figure 2. Code HTML de edit.html
 
 </div>
 
-<h3 id="saving">Saving a Document</h3>
+<h3 id="saving">Sauvegarder un document</h3>
 
-<p>The JavaScript that drives blog post creation and editing centers around the HTML form from <a href="#figure/2">Figure 2, “HTML listing for edit.html”</a>. The CouchApp jQuery plug-in provides some abstraction, so we don’t have to concern ourselves with the details of how the form is converted to a JSON document when the user hits the submit button. <code>$.CouchApp</code> also ensures that the user is logged in and makes her information available to the application. See <a href="#figure/3">Figure 3, “JavaScript callbacks for edit.html”</a>.
+<p>Le code JavaScript qui gère la création et l’édition d’un article se concentre autour du formulaire HTML, comme l’indique la <a href="#figure/2">Figure 2, Code HTML de edit.html</a>. Le greffon jQuery CouchApp permet quelques abstractions pour que nous puissions nous concentrer uniquement sur la manière dont le formulaire est transcrit en un document JSON lorsque l’utilisateur le soumet. <code>$.CouchApp</code> garantit aussi que l’utilisateur est authentifié et fournit les données de l’utilisateur à l’application. Référez-vous à la <a href="#figure/3">Figure 3, Délégations JavaScript pour edit.html</a>.
 
 <pre>
 $.CouchApp(function(app) {
   app.loggedInNow(function(login) {
 </pre>
 
-<p>The first thing we do is ask the CouchApp library to make sure the user is logged in. Assuming the answer is yes, we’ll proceed to set up the page as an editor. This means we apply a JavaScript event handler to the form and specify callbacks we’d like to run on the document, both when it is loaded and when it saved.
+<p>La première chose que nous faisons consiste à interroger la bibliothèque CouchApp pour nous assurer que l’utilisateur est authentifié. En considérant que la réponse est positive, nous affichons la page qui correspond à un éditeur. Cela signifie que nous adjoignons un gestionnaire d’évènement au formulaire et spécifions les fonctions auxquelles sera délégué le traitement du document, à la fois quand il sera chargé et quand il sera sauvegardé [NdT : une référence vers une fonction assurant une délégation est appelée <em>callback function</em> en anglais].
 
 <div class="figure" id="figure/3">
 
 <img src="documents/03.png">
 
-<p class="caption">Figure 3. JavaScript callbacks for edit.html
+<p class="caption">Figure 3. Figure 3, Délégations JavaScript pour edit.html
 
 </div>
 
@@ -203,7 +203,7 @@ $.CouchApp(function(app) {
     var B = new Blog(app);
 </pre>
 
-<p>Now that we know the user is logged in, we can render his username at the top of the page. The variable <code>B</code> is just a shortcut to some of the Sofa-specific blog rendering code. It contains methods for converting blog post bodies from Markdown to HTML, as well as a few other odds and ends. We pulled these functions into <code>blog.js</code> so we could keep them out of the way of main code.
+<p>Désormais, nous savons que l’utilisateur est connecté, aussi pouvons-nous afficher son nom d’utilisateur en haut de la page. La variable <code>B</code> est un raccourci vers un générateur de code propre à Sofa. Il contient des fonctions permettant, parmi d’autres choses, de convertir le corps de l’article du format Markdown à HTML. Nous avons placé ces fonctions dans le fichier <code>blog.js</code> afin d’éviter de les avoir dans le code principal.
 
 <pre>
     var postForm = app.docForm("form#new-post", {
@@ -216,7 +216,7 @@ $.CouchApp(function(app) {
       },
 </pre>
 
-<p>CouchApp’s <code>app.docForm()</code> helper is a function to set up and maintain a correspondence between a CouchDB document and an HTML form. Let’s look at the first three arguments passed to it by Sofa. The <code>id</code> argument tells <code>docForm()</code> where to save the document. This can be null in the case of a new document. We set <code>fields</code> to an array of form elements that will correspond directly to JSON fields in the CouchDB document. Finally, the <code>template</code> argument is given a JavaScript object that will be used as the starting point, in the case of a new document. In this case, we ensure that the document has a type equal to “post,” and that the default format is Markdown. We also set the author to be the login name of the current user.
+<p>L'assistant <code>app.docForm()</code> de CouchApp est une fonction permettant de définir la correspondance entre un document CouchDB et le formulaire HTML. Examinons les trois premiers arguments qui lui sont passés par Sofa. Tout d'abord, l'argument <code>id</code> indique à <code>docForm()</code> où sauvegarder le document ; dans le cas d'un nouveau document, il est positionné à « null ». En deuxième lieu, <code>fields</code> reçoit un tableau contenant les éléments du formulaire qui ont une correspondance directe avec les champs JSON du document CouchDB. Enfin, l'argument <code>template</code> reçoit un objet JavaScript qui sera utilisé comme point de départ dans le cas d'un nouveau document. Dans le cas présent, nous nous assurons que le type du document est « post » et que le format par défaut est « markdown ». Nous définissons aussi l'auteur pour qu'il corresponde au nom d'utilisateur de la session courante.
 
 <pre>
       onLoad : function(doc) {
@@ -238,7 +238,7 @@ $.CouchApp(function(app) {
         $('label[for=body]').append(' &lt;em&gt;with '+(doc.format||'html')+'&lt;/em&gt;');
 </pre>
 
-<p>The <code>onLoad</code> callback is run when the document is loaded from CouchDB. It is useful for decorating the document before passing it to the form, or for setting up other user interface elements. In this case, we check to see if the document already has an ID. If it does, that means it’s been saved, so we create a button for deleting it and set up the callback to the delete function. It may look like a lot of code, but it’s pretty standard for Ajax applications. If there is one criticism to make of this section, it’s that the logic for creating the delete button could be moved to the <code>blog.js</code> file so we can keep more user-interface details out of the main flow.
+<p>La fonction déléguée <code>onLoad</code> est exécutée lorsque le document est chargé depuis CouchDB. Elle permet de mettre en forme le document avant de l'insérer dans le formulaire, ou encore d'agir sur d'autres éléments de l'interface utilisateur. Dans notre exemple, nous vérifions que le document possède déjà un identifiant. Si c'est le cas, cela signifie qu'il a déjà été sauvegardé. Aussi, nous pouvons ajouter un bouton pour le supprimer et y adjoignons une fonction déléguée pour traiter le clic. Tout cela semble exiger beaucoup de code, mais c'est, à la vérité, quelque chose de tout à fait traditionnel dans les applications Ajax. S'il y avait une critique à formuler à l'issue de cette section, ce serait de n'avoir pas déporté la logique liée à la création du bouton dans le fichier <code>blog.js</code> de manière à écarter les détails d'interface du code principal.
 
 <pre>
       },
@@ -260,7 +260,7 @@ $.CouchApp(function(app) {
       },
 </pre>
 
-<p>The <code>beforeSave()</code> callback to <code>docForm</code> is run after the user clicks the submit button. In Sofa’s case, it manages setting the blog post’s timestamp, transforming the title into an acceptable document ID (for prettier URLs), and processing the document tags from a string into an array. It also runs the Markdown-to-HTML conversion in the browser so that once the document is saved, the rest of the application has direct access to the HTML.
+<p>La fonction <code>beforeSave()</code> délègue à <code>docForm</code> le traitement suivant le clic sur le bouton de soumission. Dans le cas de Sofa, cette fonction positionne l'estampille temporelle (<em>timestamp</em> en anglais), dérive du titre un identifiant de document acceptable (pour obtenir de belles URL) et transforme la chaîne de caractères contenant les tags en un tableau. Elle se charge aussi de la conversion du format Markdown vers le format HTML de sorte qu'une fois le document sauvegardé, l'application accède directement à la forme HTML.
 
 <pre>
       success : function(resp) {
@@ -270,9 +270,9 @@ $.CouchApp(function(app) {
     });
 </pre>
 
-<p>The last callback we use in Sofa is the <code>success</code> callback. It is fired when the document is successfully saved. In our case, we use it to flash a message to the user that lets her know she’s succeeded, as well as to add a link to the blog post so that when you create a blog post for the first time, you can click through to see its permalink page.
+<p>La dernière fonction déléguée de Sofa se nomme <code>success</code>. On l'appelle dès que le document a été sauvegardé. Dans notre exemple, nous l'utilisons pour faire apparaître un message spontané à l'utilisateur qui lui indique le succès de l'opération ainsi qu'un lien pour consulter son article. De cette manière, lors de la création du document, vous pouvez immédiatement naviguer et obtenir le lien permanent vers l'article.
 
-<p>That’s it for the <code>docForm()</code> callbacks.
+<p>C'en est fait des fonctions déléguées utilisées dans <code>docForm()</code> !
 
 <pre>
     $("#preview").click(function() {
@@ -284,7 +284,7 @@ $.CouchApp(function(app) {
     });
 </pre>
 
-<p>Sofa has a function to preview blog posts before saving them. Since this doesn’t affect how the document is saved, the code that watches for events from the “preview” button is not applied within the <code>docForm()</code> callbacks.
+<p>Sofa dispose d'une fonctionnalité permettant d'avoir un aperçu des articles avant de les sauvegarder. Puisque cette dernière n'affecte pas la manière dont le document est sauvegardé, le code qui guette les évènements survenant sur le bouton « preview » n'est pas inclut dans <code>docForm()</code>.
 
 <pre>
   }, function() {
@@ -293,18 +293,18 @@ $.CouchApp(function(app) {
 });
 </pre>
 
-<p>The last bit of code here is triggered when the user is not logged in. All it does is redirect him to the account page so that he can log in and try editing again.
+<p>Le dernier fragment de code ci-dessus est déclenché lorsque l'utilisateur n'est pas authentifié. Il se contente de rediriger l'utilisateur vers la page de connexion de sorte qu'il puisse s'identifier et tenter à nouveau d'éditer un article.
 
 <h4 id="validation">Validation</h4>
 
-<p>Hopefully, you can see how the previous code will send a JSON document to CouchDB when the user clicks save. That’s great for creating a user interface, but it does nothing to protect the database from unwanted updates. This is where validation functions come into play. With a proper validation function, even a determined hacker cannot get unwanted documents into your database. Let’s look at how Sofa’s works. For more on validation functions, see <a href="validation.html">Chapter 7, Validation Functions</a>.
+<p>Désormais, vous savez comment le code précédent envoie un document JSON à CouchDB lorsque l'utilisateur clique sur « save ». Si c'est bien pratique pour créer une interface homme-machine, cela ne protège pas le moins du monde la base de données de mises à jour intempestives. C'est alors que la fonction de validation entre en scène. En effet, avec une fonction de validation adéquate, même un pirate opiniâtre ne pourra injecter de documents indésirés dans votre base. Regardons comment Sofa s'y prend. Pour plus de détails sur les fonctions de validation, référez-vous au <a href="validation.html">Chapitre 7, Fonctions de validation</a>.
 
 <pre>
 function (newDoc, oldDoc, userCtx) {
   // !code lib/validate.js
 </pre>
 
-<p>This line imports a library from Sofa that makes the rest of the function much more readable. It is just a wrapper around the basic ability to mark requests as either <code>forbidden</code> or <code>unauthorized</code>. In this chapter, we’ve concentrated on the business logic of the validation function. Just be aware that unless you use Sofa’s <code>validate.js</code>, you’ll need to work with the more primitive logic that the library abstracts.
+<p>Cette ligne importe une bibliothèque de Sofa qui rend la suite bien plus lisible. En fait, c'est une simple classe enveloppante permettant de marquer une requête comme interdite (<code>forbidden</code>) ou non autorisée (<code>unauthorized</code>). Dans ce chapitre, nous nous sommes concentrés sur la fonction de validation, aussi notez bien qu'à défaut d'utiliser <code>validate.js</code> de Sofa, vous devrez travailler avec la logique plus primitive que fournit la bibliothèque.
 
 <pre>
   unchanged("type");
@@ -312,13 +312,13 @@ function (newDoc, oldDoc, userCtx) {
   unchanged("created_at");
 </pre>
 
-<p>These lines do just what they say. If the document’s <code>type</code>, <code>author</code>, or <code>created_at</code> fields are changed, they throw an error saying the update is forbidden. Note that these lines make no assumptions about the content of these fields. They merely state that updates must not change the content from one revision of the document to the next.
+<p>Ces lignes font simplement ce qu'elles disent. Si les champs <code>type</code>, <code>author</code> ou <code>created_at</code> ont été altérés, une erreur est générée indiquant que la mise à jour est interdite. Notez que ces fonctions ne traitent pas le contenu de ces champs : elles stipulent que leur valeur ne doit pas changer d'une révision à l'autre.
 
 <pre>
   if (newDoc.created_at) dateFormat("created_at");
 </pre>
 
-<p>The <code>dateFormat</code> helper makes sure that the date (if one is provided) is in the format that Sofa’s views expect.
+<p>L'assistant <code>dateFormat</code> garantit que la date, si elle est fournie, l'est au format attendu par les vues de Sofa.
 
 <pre>
   // docs with authors can only be saved by their author
@@ -328,14 +328,14 @@ function (newDoc, oldDoc, userCtx) {
   }
 </pre>
 
-<p>If the person saving the document is an admin, let the edit proceed. Otherwise, make certain that the author and the person saving the document are the same. This ensures that authors may edit only their own posts.
+<p>Si celui qui sauvegarde un document est un administrateur, l'édition peut se faire. Dans le cas contraire, assurons-nous que l'auteur de l'article et celui qui l'édite présentement sont une seule et même personne. De cette manière, nous garantissons qu'un auteur peut modifier uniquement ses articles.
 
 <pre>
   // authors and admins can always delete
   if (newDoc._deleted) return true;
 </pre>
 
-<p>The next block of code will check the validity of various types of documents. However, deletions will normally not be valid according to those specifications, because their content is just <code>_deleted: true</code>, so we short-circut the validation function here.
+<p>Le bloc ci-dessous vérifie la validité des différents types de documents. Toutefois, comme les suppressions passent le contenu à <code>_deleted: true</code>, les critères ne pourront être satisfaits en cas de suppression ; c'est pourquoi les instructions sont court-circuitées par la condition ci-dessus.
 
 <pre>
   if (newDoc.type == 'post') {
@@ -345,24 +345,26 @@ function (newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>Finally, we have the validation for the actual post document itself. Here we require the fields that are particular to the post document. Because we’ve validated that they are present, we can count on them in views and user interface code.
+<p>Au final, nous obtenons la fonction de validation d'un article. Dans celle-ci, nous exigeons la présence de certains champs, ce qui nous assure qu'ils seront là quand nous construirons nos vues et notre interface graphique.
 
-<h4 id="first">Save Your First Post</h4>
+<h4 id="first">Publiez votre premier article</h4>
 
-<p>Let’s see how this all works together! Fill out the form with some practice data, and hit “save” to see a success response.
+<p>Voyons comment tout cela s'emboîte ! Remplissez le formulaire avec quelques données de test et cliquez sur « save » pour obtenir la confirmation de la publication.
 
-<p><a href="#figure/4">Figure 4, “JSON over HTTP to save the blog post”</a> shows how JavaScript has used HTTP to <em>PUT</em> the document to a URL constructed of the database name plus the document ID. It also shows how the document is just sent as a JSON string in the body of the PUT request. If you were to <em>GET</em> the document URL, you’d see the same set of JSON data, with the addition of the <code>_rev</code> parameter as applied by CouchDB.
+<p>La <a href="#figure/4">figure 4, JSON encapsulé dans HTTP pour sauvegarder l'article</a> montre la manière dont JavaScript a utilisé HTTP pour pousser (<em>PUT</em>) le document vers l'URL constituée du nom de la base de données et de l'identifiant du document. Elle illustre aussi la forme JSON du document envoyé dans le corps de la requête PUT. Si vous tentiez de récupérer ce document en forgeant une requête de type GET sur l'URL, vous verriez le même ensemble de données JSON avec, en plus, le champ <code>_rev</code> ajouté par CouchDB.
+
 
 <div class="figure" id="figure/4">
 
 <img src="documents/04.png">
 
-<p class="caption">Figure 4. JSON over HTTP to save the blog post
+<p class="caption">Figure 4. JSON encapsulé dans HTTP pour sauvegarder l'article
 
 </div>
 
-<p>To see the JSON version of the document you’ve saved, you can also browse to it in Futon. Visit <em>http://127.0.0.1:5984/_utils/database.html?blog/_all_docs</em> and you should see a document with an ID corresponding to the one you just saved. Click it to see what Sofa is sending to CouchDB.
+<p>Vous pouvez aussi obtenir la version JSON du document que vous venez de sauvegarder à l'aide de Futon. Allez sur <em>http://127.0.0.1:5984/_utils/database.html?blog/_all_docs</em> et vous devriez voir un document avec un identifiant correspondant à celui de votre article. Cliquez dessus pour voir ce que Sofa a envoyé à CouchDB.
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Conclusion</h3>
 
-<p>We’ve covered how to design JSON formats for your application, how to enforce those designs with validation functions, and the basics of how documents are saved. In the next chapter, we’ll show how to load documents from CouchDB and display them in the browser.
+<p>Nous avons expliqué comment définir les formats JSON pour votre application, comment garantir le respect de ceux-ci à l'aide des fonctions de validation, et avons vu les principes des mécanismes de sauvegarde des documents. Dans le prochain chapitre, nous verrons comment extraire des documents de CouchDB et les afficher dans le navigateur.
+

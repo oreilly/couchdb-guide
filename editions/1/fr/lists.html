@@ -1,4 +1,4 @@
-<title>Viewing Lists of Blog Posts</title>
+<title>Lister les articles</title>
 
 <meta charset="utf-8">
 
@@ -10,34 +10,34 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="lists">Viewing Lists of Blog Posts</h2>
+<h2 id="lists">Lister les articles</h2>
 
-<p>The last few chapters dealt with getting data into and out of CouchDB. You learned how to model your data into documents and retrieve it via the HTTP API. In this chapter, we’ll look at the views used to power Sofa’s index page, and the list function that renders those views as HTML or XML, depending on the client’s request.
+<p>Les derniers chapitres visaient à insérer et extraire des données de CouchDB. Vous avez appris à modéliser vos données dans des documents et à les récupérer à l’aide de l’API HTTP. Dans ce chapitre, nous verrons comment utiliser le mécanisme de vues pour générer la page d’accueil de Sofa. Nous verrons aussi comment la fonction de listage génère la représentation HTML ou XML en fonction de la demande du client.
 
-<p>Now that we’ve successfully created a blog post and rendered it as HTML, we’ll be building the front page where visitors will land when they’ve found your blog. This page will have a list of the 10 most recent blog posts, with titles and short summaries. The first step is to write the MapReduce query that constructs the index used by CouchDB at query time to find blog posts based on when they were written.
+<p>Puisque nous avons désormais créé un article de blogue et que nous pouvons l’afficher au format HTML, nous allons nous attaquer à la page d’accueil ; là où débarquent nos visiteurs. Cette page exhibera la liste des dix derniers articles publiés, avec leur titre et un bref résumé. La première étape consiste à écrire la fonction MapReduce qui construit l’index exploité par CouchDB lors de la requête pour y trouver les articles selon leur date de publication.
 
-<p>In <a href="views.html">Chapter 6, Finding Your Data with Views</a>, we noted that reduce isn’t needed for many common queries. For the index page, we’re only interested in an ordering of the posts by date, so we don’t need to use a reduce function, as the map function alone is enough to order the posts by date.
+<p>À l’occasion du <a href="views.html">chapitre 6, <em>Trouver vos données à l’aide des vues</em></a>, nous avons souligné que nous pouvions nous passer de la fonction d’agrégation (<em>reduce</em> en anglais) pour les requêtes basiques. Or, pour notre page d’accueil, nous voulons simplement trier les articles par date de publication ; nous n’avons donc pas besoin de cette fonction : la fonction de subdivision (<em>map</em> en anglais) y parvient seule.
 
-<h3 id="map">Map of Recent Blog Posts</h3>
+<h3 id="map">Fonction de subdivision pour obtenir les articles récents</h3>
 
-<p>You’re now ready to write the map function that builds a list of all blog posts. The goals for this view are simple: sort all blog posts by date.
+<p>Vous êtes ainsi paré à rédiger la fonction d’agrégation qui bâtit la liste de tous les articles. L’objectif de cette vue est simple : trier ces articles par date de publication.
 
-<p>Here is the source code for the view function. I’ll call out the important bits as we encounter them.
+<p>Ci-dessous se trouve le code source de la fonction d’affichage. Nous nous arrêterons sur les points essentiels.
 
 <pre>
 function(doc) {
   if (doc.type == "post") {
 </pre>
 
-<p>The first thing we do is ensure that the document we’re dealing with is a post. We don’t want comments or anything other than blog posts getting on the front page. The expression <code>doc.type == "post"</code> evaluates to true for posts but no other kind of document. In <a href="validation.html">Chapter 7, Validation Functions</a>, we saw that the validation function gives us certain guarantees about posts, designed to make us comfortable about putting them on the front page of our blog.
+<p>La première chose consiste à s’assurer que le document que nous traitons est un article. En effet, nous ne voulons pas que les commentaires se retrouvent en page d’accueil. La condition <code>doc.type == "post"</code> est vraie uniquement pour les articles. Dans le <a href="validation.html">chapitre 7, <em>Fonctions de validation</em></a>, nous avons vu que la fonction de validation nous garantit une certaine structure d’un article dans le but de nous aider à les afficher sur la page d’accueil.
 
 <pre>
     var summary = (doc.html.replace(/&lt;(.|\n)*?&gt;/g, '').substring(0,350) + '...');
 </pre>
 
-<p>This line shortens the blog post’s HTML (generated from Markdown before saving) and strips out most tags and images, at least well enough to keep them from showing up on the index page, for brevity.
+<p>Cette ligne tronque le code HTML de l’article (transcrit du format Markdown avant d’être sauvegardé) et élimine la plupart des tags et des images ; du moins, il l’épure suffisamment pour un affichage convenable sur notre page d’accueil.
 
-<p>The next section is the crux of the view. We’re emitting for each document a key (<code>doc.created_at</code>) and a value. The key is used for sorting, so that we can pull out all the posts in a particular date range efficiently.
+<p>La section suivante est le passage clé de la vue. Nous émettons, pour chaque document, une clé (<code>doc.created_at</code>) et une valeur. La clé est utilisée pour le tri et générée de sorte à pouvoir extraire rapidement les articles correspondants à une époque donnée.
 
 <pre>
     emit(doc.created_at, {
@@ -48,14 +48,14 @@ function(doc) {
     });
 </pre>
 
-<p>The value we’ve emitted is a JavaScript object, which copies some fields from the document (but not all), and the summary string we’ve just generated. It’s preferable to avoid emitting entire documents. As a general rule, you want to keep your views as lean as possible. Only emit data you plan to use in your application. In this case we emit the summary (for the index page), the HTML (for the Atom feed), the blog post title, and its author.
+<p>La valeur que nous avons émise est un objet JavaScript qui contient une partie des champs du document ainsi que le résumé que nous venons de générer. Il vaut mieux éviter d’émettre l’intégralité du document. Nous vous recommandons de garder vos vues aussi légères que possible. Aussi, n’émettez que les données que vous comptez utiliser dans votre application. Dans note cas, nous émettons le résumé (pour la page d’accueil), le code HTML (pour le flux Atom), le titre de l’article et son auteur.
 
 <pre>
   }
 };
 </pre>
 
-<p>You should be able to follow the definition of the previous map function just fine by now. The <code>emit()</code> call creates an entry for each blog post document in our view’s result set. We’ll call the view <code>recent-posts</code>. Our design document looks like this now:
+<p>Vous devriez maintenant être à même de comprendre cette fonction de subdivision (<em>map</em> en anglais). L’appel à <code>emit()</code> crée une entrée dans la vue pour chaque article. Nous nommons cette vue <code>recent-posts</code>.
 
 <pre>
 {
@@ -71,39 +71,39 @@ function(doc) {
 }
 </pre>
 
-<p>CouchApp manages aggregating the filesystem files into our JSON design document, so we can edit our view in a file called <code>views/recent-posts/map.js</code>. Once the map function is stored on the design document, our view is ready to be queried for the latest 10 posts. Again, this looks very similar to displaying a single post. The only real difference now is that we get back an array of JSON objects instead of just a single JSON object.
+<p>CouchApp se charge de fusionner vos fichiers locaux en un seul <em>design document</em> JSON, ce qui nous permet d’écrire notre vue dans le fichier <code>views/recent-posts/map.js</code>. Une fois que la fonction d’agrégation est intégrée au <em>design document</em>, notre vue est prête à l’emploi : nous pourrons y récupérer les dix derniers articles. Bien sûr, cela ressemble beaucoup à l’affiche d’un unique article. La seule différence notable est que nous obtenons désormais un tableau d’objets JSON au lieu d’un seul objet JSON.
 
-<p>The GET request to the URI is:
+<p>La requête GET vers l’URI est :
 
 <pre>
 /blog/_design/sofa/_view/recent-posts
 </pre>
 
-<p>A view defined in the document <code>/database/_design/designdocname</code> in the <code>views</code> field ends up being callable under <code>/database/_design/designdocname/_view/viewname</code>.
+<p>Une vue décrite dans le document <code>/database/_design/designdocname</code> dans le champ <code>views</code> peut être appelée à l’adresse <code>/database/_design/designdocname/_view/viewname</code>.
 
-<p>You can pass in HTTP query arguments to customize your view query. In this case, we pass in:
+<p>Vous pouvez passer des arguments à votre requête HTTP. Dans notre cas :
 
 <pre>
 descending: true, limit: 5
 </pre>
 
-<p>This gets the latest post first and only the first five posts in all.
+<p>De cette manière, nous obtenons les cinq derniers articles.
 
-<p>The actual view request URL is:
+<p>L’URL est donc la suivante :
 
 <pre>
 /blog/_design/sofa/_view/recent-posts?descending=true&amp;limit=5
 </pre>
 
-<h3 id="rendering">Rendering the View as HTML Using a List Function</h3>
+<h3 id="rendering">Bâtir la page HTML correspondant à la vue à l’aide d’une fonction de listage</h3>
 
-<p>The <code>_list</code> function was covered in detail in <a href="design.html">Chapter 5, Design Documents</a>. In our example application, we’ll use a JavaScript list function to render a view of recent blog posts as both XML and HTML formats. CouchDB’s JavaScript view server also ships with the ability to respond appropriately to HTTP content negotiation and Accept headers.
+<p>La fonction <code>_list</code> a été détaillée dans le <a href="design.html">Chapitre 5, <em>Design Documents</em></a>. Dans notre cas, nous utiliserons une fonction de listage JavaScript pour générer les formes HTML et XML à partir de la vue relatant les articles récents. Le serveur de vues JavaScript livré avec CouchDB est capable de baser sa réponse sur le résultat de la négociation HTTP et sur le contenu de l’en-tête <code>Accept</code>.
 
-<p>The essence of the <code>_list</code> API is a function that is fed one row at a time and sends the response back one chunk at a time.
+<p>La fonction <code>_list</code> de l’API reçoit un enregistrement à la fois et envoie le résultat de la transcription au navigateur par paquet.
 
-<h4 id="function">Sofa’s List Function</h4>
+<h4 id="function">La fonction de listage de Sofa</h4>
 
-<p>Let’s take a look at Sofa’s list function. This is a rather long listing, and it introduces a few new concepts, so we’ll take it slow and be sure to cover everything of interest.
+<p>Penchons-nous sur la fonction de listage de Sofa. C’est une fonction assez longue qui introduit de nouveaux concepts. Aussi, nous avancerons lentement pour nous assurer de détailler les éléments d’importance.
 
 <pre>
 function(head, req) {
@@ -115,22 +115,22 @@ function(head, req) {
   // !code lib/atom.js
 </pre>
 
-<p>The top of the function declares the arguments <code>head</code> and <code>req</code>. Our function does not use <code>head</code>, just <code>req</code>, which contains information about the request such as the headers sent by the client and a representation of the query string as sent by the client. The first lines of the function are CouchApp macros that pull in code and data from elsewhere in the design document. As we’ve described in more detail in <a href="managing.html">Chapter 11, Managing Design Documents</a>, these macros allow us to work with short, readable functions that pull in library code from elsewhere in the design document. Our list function uses the CouchApp JavaScript helpers for generating URLs (<code>path.js</code>), for working with date objects (<code>date.js</code>), and the template function we’re using to render HTML.
+<p>La définition de la fonction déclare attendre deux arguments, <code>head</code> et <code>req</code>. Nous n’utilisons pas <code>head</code>, mais uniquement <code>req</code>. Ce dernier qualifie la requête du client et détient ses en-têtes ainsi que la chaîne décrivant la ressource demandée (<em>query string</em> dans le jargon anglais). Les premières lignes de la fonction sont des macros CouchApp qui injectent du code et des données à partir d’autres fichiers du <em>design document</em>. Celles-ci ont été décrites dans le <a href="managing.html">Chapitre 11, Gestion des <em>design documents</em></a> et permettent, en résumé, de conserver un code clair. Notre fonction de listage exploite les assistants JavaScript CouchApp pour la génération des URL (<code>path.js</code>), pour la gestion des dates (<code>date.js</code>) et pour l’exploitation des modèles de documents permettant de générer le code HTML.
 
 <pre>
   var indexPath = listPath('index','recent-posts',{descending:true, limit:5});
   var feedPath = listPath('index','recent-posts',{descending:true, limit:5, format:"atom"});
 </pre>
 
-<p>The next two lines of the function generate URLs used to link to the index page itself, as well as the XML Atom feed version of it. The <code>listPath</code> function is defined in <code>path.js</code>—the upshot is that it knows how to link to lists generated by the same design document it is run from.
+<p>Les deux lignes suivantes permettent de générer les URL vers la page d’accueil et vers le flux Atom correspondant. La fonction <code>listPath</code> se trouve définie dans <code>path.js</code> ; elle sait comment générer les liens vers les listes gérées par le <em>design document</em> qui l’appelle.
 
-<p>The next section of the function is responsible for rendering the HTML output of the blog. Refer to <a href="show.html">Chapter 8, Show Functions</a> for details about the API we use here. In short, clients can describe the format(s) they prefer in the HTTP Accept header, or in a <code>format</code> query parameter. On the server, we declare which formats we provide, as well as assign each format a priority. In cases where the client accepts multiple formats, the first declared format is returned. It is not uncommon for browsers to accept a wide range of formats, so take care to put HTML at the top of the list, or else you can end up with browsers receiving alternate formats when they expect HTML.
+<p>Le bloc suivant produit le code HTML destiné au blogue. Reportez-vous au <a href="show.html">Chapitre 8, Fonctions d’affichage</a> pour le détail de l’API exploitée ici. En bref, les clients peuvent indiquer le format qu’ils préfèrent dans l’en-tête HTTP <code>Accept</code> ou par le paramètre <code>format</code> positionné dans la requête. Sur le serveur, nous indiquons quels sont les formats que nous pouvons fournir et leur associons un ordre de priorité. Ainsi, si le client accepte plusieurs formats, le premier qui a été indiqué est choisi. À noter qu’il n’est pas rare que les navigateurs déclarent accepter de nombreux formats, aussi veillez à placer le HTML au sommet des priorités. À défaut, vous pourriez envoyer du XML à un navigateur s’attendant à recevoir du HTML.
 
 <pre>
   provides("html", function() {
 </pre>
 
-<p>The <code>provides</code> function takes two arguments: the name of the format (which is keyed to a list of default MIME types) and a function to execute when rendering that format. Note that when using <code>provides</code>, all <code>send</code> and <code>getRow</code> calls must happen within the render function. Now let’s look at how the HTML is actually generated.
+<p>La fonction <code>provides</code> nécessite deux arguments : le nom du format (parmi une liste de types MIME connus) et une fonction chargée de produire le format correspondant. Notez bien que tous les appels à <code>send</code> et <code>getRow</code> doivent se faire dans la fonction <code>provides</code>. Bref, regardons comment le code HTML est effectivement généré :
 
 <pre>
     send(template(templates.index.head, {
@@ -142,9 +142,9 @@ function(head, req) {
     }));
 </pre>
 
-<p>The first thing we see is a template being run with an object that contains the blog title and a few relative URLs. The template function used by Sofa is fairly simple; it just replaces some parts of the template string with passed in values. In this case, the template string is stored in the variable <code>templates.index.head</code>, which was imported using a CouchApp macro at the top of the function. The second argument to the template function are the values that will be inserted into the template; in this case, <code>title</code>, <code>feedPath</code>, <code>newPostPath</code>, <code>index</code>, and <code>assets</code>. We’ll look at the template itself later in this chapter. For now, it’s sufficient to know that the template stored in <code>templates.index.head</code> renders the topmost portion of the HTML page, which does not change regardless of the contents of our recent posts view.
+<p>La première chose que nous observons est l’appel au moteur de patronage en lui donnant le nom du blogue et quelques URL relatives. La fonction de patronage utilisée par Sofa est assez simple : elle substitue les variables prépositionnées par les valeurs qui lui sont communiquées. Ici, le patron est stocké dans la variable <code>templates.index.head</code> qui a été importée par la macro CouchApp du début. Le deuxième argument transmis à la fonction de patronage contient toutes les valeurs à insérer dans le patron, soit <code>title</code>, <code>feedPath</code>, <code>newPostPath</code>, <code>index</code>, et <code>assets</code>. Nous reviendrons plus tard sur le patron en lui-même. Pour lors, il suffit de savoir qu’il est stocké dans la variable <code>templates.index.head</code> et qu’il génère la partie supérieure de la page HTML, laquelle ne dépend pas du contenu de la vue comportant les articles récents.
 
-<p>Now that we have rendered the top of the page, it’s time to loop over the blog posts, rendering them one at a time. The first thing we do is declare our variables and our loop:
+<p>Maintenant que l’en-tête de la page est généré, il est temps d’itérer sur les articles pour les publier un à un. Tout d’abord, déclarons nos variables et notre boucle :
 
 <pre>
     var row, key;
@@ -153,7 +153,7 @@ function(head, req) {
       key = row.key;
 </pre>
 
-<p>The <code>row</code> variable is used to store each JSON view row as it is sent to our function. The <code>key</code> variable plays a different role. Because we don’t know ahead of time which of our rows will be the last row to be processed, we keep the key available in its own variable, to be used after all rows are rendered, to generate the link to the next page of results.
+<p>La variable <code>row</code> stocke chaque enregistrement (tuple) JSON de la vue tel qu’il est transmis à notre fonction. Quant à la variable <code>key</code>, nous la conservons jusqu’à la dernière itération où elle servira à produire le lien vers la page suivante.
 
 <pre>
 send(template(templates.index.row, {
@@ -165,9 +165,9 @@ send(template(templates.index.row, {
 }
 </pre>
 
-<p>Now that we have the row and its key safely stored, we use the template engine again for rendering. This time we use the template stored in <code>templates.index.row</code>, with a data item that includes the blog post title, a URL for its page, the summary of the blog post we generated in our map view, and the date the post was created.
+<p>Puisque nous avons stocké le tuple et sa clé, nous pouvons appeler le moteur de patronage pour produire le code correspondant. Cette fois-ci, le patron se trouve dans <code>templates.index.row</code> et attend l’intitulé de l’article, l’URL de sa page, son résumé (que nous avons généré avec notre fonction de subdivision en créant la vue) et sa date de publication.
 
-<p>Once all the blog posts included in the view result have been listed, we’re ready to close the list and finish rendering the page. The last string does not need to be sent to the client using <code>send()</code>, but it can be returned from the HTML function. Aside from that minor detail, rendering the tail template should be familiar by now.
+<p>Une fois que nous avons traité l’ensemble des articles devant être inclus dans notre liste, nous pouvons la clôturer et achever la production de la page. La dernière chaîne de caractères n’a pas besoin d’être envoyée au client par la fonction <code>send()</code> : elle peut être retournée par notre fonction. Mis à part ce détail, la production du bas de page devrait vous être familière.
 
 <pre>
     return template(templates.index.tail, {
@@ -177,20 +177,20 @@ send(template(templates.index.row, {
   });
 </pre>
 
-<p>Once the tail has been returned, we close the HTML generating function. If we didn’t care to offer an Atom feed of our blog, we’d be done here. But we know most readers are going to be accessing the blog through a feed reader or some kind of syndication, so an Atom feed is crucial.
+<p>Une fois que le bas de page a été retourné, nous fermons la fonction de génération du code HTML. Si nous ne désirions pas fournir un flux Atom, nous aurions fini ici. Toutefois, nous savons pertinemment que la plupart de nos lecteurs accèderont au blogue par un agrégateur de flux, aussi cette fonctionnalité est vitale.
 
 <pre>
   provides("atom", function() {
 </pre>
 
-<p>The Atom generation function is defined in just the same way as the HTML generation function—by being passed to <code>provides()</code> with a label describing the format it outputs. The general pattern of the Atom function is the same as the HTML function: output the first section of the feed, then output the feed entries, and finally close the feed.
+<p>La fonction de génération du flux Atom est définie de la même manière que son homologue HTML : nous recourrons à la fonction <code>provides()</code> avec la clé du type MIME. La structure de la fonction Atom est identique à la précédente : un en-tête, une boucle pour les articles et un bas de page.
 
 <pre>
     // we load the first row to find the most recent change date
     var row = getRow();
 </pre>
 
-<p>One difference is that for the Atom feed, we need to know when it was last changed. This will normally be the time at which the first item in the feed was changed, so we load the first row before outputting any data to the client (other than HTTP headers, which are set when the <code>provides</code> function picks the format). Now that we have the first row, we can use the date from it to set the Atom feed’s last-updated field.
+<p>La différence avec la fonction HTML est que, dans le cas de l’Atom, il est nécessaire de connaître la date de dernière modification du blogue. Cette information devrait correspondre au premier tuple de notre liste. Aussi, nous le chargeons sans l’afficher, avant que toute donnée soit envoyée au client (à l’exception des en-têtes HTTP définis quand la fonction <code>provides</code> capture le format), et l’utilisons pour remplir le champ <code>last-updated</code>.
 
 <pre>
     // generate the feed header
@@ -202,14 +202,14 @@ send(template(templates.index.row, {
     });
 </pre>
 
-<p>The <code>Atom.header</code> function is defined in <code>lib/atom.js</code>, which was imported by CouchApp at the top of our function. This library uses JavaScript’s E4X extension to generate feed XML.
+<p>La fonction <code>Atom.header</code> est définie dans <code>lib/atom.js</code>, qui a été importée par les premières lignes de notre fonction. Cette bibliothèque exploite l’extension JavaScript E4X pour générer le flux XML.
 
 <pre>
     // send the header to the client
     send(feedHeader);
 </pre>
 
-<p>Once the feed header has been generated, sending it to the client uses the familiar <code>send()</code> call. Now that we’re done with the header, we’ll generate each Atom entry, based on a row in the view. We use a slightly different loop format in this case than in the HTML case, as we’ve already loaded the first row in order to use its timestamp in the feed header.
+<p>Puisque les en-têtes du flux ont été générés, nous les envoyons au client à l’aide de la fonction <code>send()</code>. C’en est alors fini des en-têtes et nous pouvons produire chaque élément du flux à partir d’un tuple de la vue. Nous utilisons ici une boucle légèrement différente de celle de tantôt puisque nous avons déjà chargé le premier enregistrement pour générer les en-têtes.
 
 <pre>
     // loop over all rows
@@ -217,7 +217,7 @@ send(template(templates.index.row, {
       do {
 </pre>
 
-<p>The JavaScript <code>do</code>/<code>while</code> loop is similar to the <code>while</code> loop used in the HTML function, except that it’s guaranteed to run at least once, as it evaluates the conditional statement after each iteration. This means we can output an entry for the row we’ve already loaded, before calling <code>getRow()</code> to load the next entry.
+<p>La boucle JavaScript <code>do</code>/<code>while</code> ressemble à la boucle <code>while</code> utilisée par la fonction HTML, à la différence notable qu’elle sera exécutée au moins une fois. Ceci car le test de la condition d’itération se fait après avoir exécuté le corps de la boucle. Nous pouvons ainsi générer l’entrée correspondant à l’article que nous avons chargé en mémoire au début avant d’appeler la fonction <code>getRow()</code> pour charger le suivant.
 
 <pre>
         // generate the entry for this row
@@ -235,14 +235,14 @@ send(template(templates.index.row, {
         send(feedEntry);
 </pre>
 
-<p>Rendering the entries also uses the Atom library in <code>atom.js</code>. The big difference between the Atom entries and the list items in HTML, is that for our HTML screen we only output the summary of the entry text, but for the Atom entries we output the entire entry. By changing the value of <code>content</code> from <code>row.value.html</code> to <code>row.value.summary</code>, you could change the Atom feed to only include shortened post summaries, forcing subscribers to click through to the actual post to read it.
+<p>La génération des éléments exploite aussi la bibliothèque Atom définie dans <code>atom.js</code>. Il y a une différence notable entre les éléments d’une liste HTML et ceux d’un flux Atom. Dans le premier cas, nous n’affichons que le résumé de l’article tandis que, dans le second, nous produisons l’ensemble de l’article. En substituant, pour <code>content</code>, <code>row.value.html</code> à <code>row.value.summary</code>, vous pourriez publier uniquement le résumé, ce qui aurait pour effet de contraindre vos visiteurs à cliquer sur l’article pour le consulter.
 
 <pre>
       } while (row = getRow());
     }
 </pre>
 
-<p>As we mentioned earlier, this loop construct puts the loop condition at the end of the loop, so here is where we load the next row of the loop.
+<p>Comme nous l’avons expliqué plus tôt, ce type de boucle repousse l’évaluation de la condition d’itération à la fin de la boucle, d’où il suit que le prochain tuple n’est chargé qu’à la fin de la boucle.
 
 <pre>
     // close the loop after all rows are rendered
@@ -251,18 +251,19 @@ send(template(templates.index.row, {
 };
 </pre>
 
-<p>Once all rows have been looped over, we end the feed by returning the closing XML tag to the client as the last chunk of data.
+<p>Une fois que tous les enregistrements ont été parcourus, nous clôturons le flux en fermant la balise XML et en l’envoyant au client.
 
-<h4 id="final">The Final Result</h4>
+<h4 id="final">Le résultat</h4>
 
-<p><a href="#figure/1">Figure 1, “The rendered index page”</a> shows the final result.
+<p>La <a href="#figure/1">Figure 1, <em>La page d’accueil ainsi générée</em></a> illustre le résultat.
 
 <div class="figure" id="figure/1">
 
 <img src="lists/01.png">
 
-<p class="caption">Figure 1. The rendered index page
+<p class="caption">Figure 1. La page d’accueil ainsi générée
 
 </div>
 
-<p>This is our final list of blog posts. That wasn’t too hard, was it? We now have the front page of the blog, we know how to query single documents as well as views, and we know how to pass arguments to views.
+<p>Ceci est notre liste des articles du blogue. Ce n’est pas si difficile, n’est-ce pas ? Nous avons désormais la page d’accueil, savons récupérer un seul document tout comme toute une vue et nous avons comment transmettre des arguments aux vues.
+

@@ -1,4 +1,4 @@
-<title>Load Balancing</title>
+<title>Équilibrage de charge</title>
 
 <meta charset="utf-8">
 
@@ -10,32 +10,32 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="balancing">Load Balancing</h2>
+<h2 id="balancing">Équilibrage de charge</h2>
 
-<p>Jill is woken up at 4:30 a.m. by her mobile phone. She receives text message after text message, one every minute. Finally, Joe calls. Joe is furious, and Jill has trouble understanding what Joe is saying. In fact, Jill has a hard time figuring out why Joe would call her in the middle of the night. Then she remembers: Joe is running an online shop selling sports gear on one of her servers, and he is furious because the server went down and now his customers in New Zealand are angry because they can’t get to the online shop.
+<p>Julie est réveillée à 4 h 30 par son téléphone portable. Elle reçoit texto sur texto au rythme d’un par minute. Finalement, Éric appelle. Il est furieux et Julie a du mal à comprendre ce qu’il dit. En fait, Julie a du mal à comprendre pourquoi Éric voudrait l’appeler en pleine nuit. Puis elle se souvient. Éric est le propriétaire d’un site de commerce en ligne. Il vend des vêtements de sport et est hébergé sur un de ses serveurs. Il est furieux, car le serveur s’est arrêté et ses clients Néo-Zélandais sont en colère, car ils ne peuvent pas accéder au site web.
 
-<p>This is a typical scenario, and you have probably seen many variations of it, being in the role of Jill, Joe, or both. If you are Jill, you want to sleep at night, and if you are Joe, you want your customers to buy from you whenever it pleases them.
+<p>Voilà un scénario typique, et vous en avez sans doute déjà rencontré des variations, en étant soit dans le rôle de Julie soit dans celui d’Éric, ou les deux. Dans le premier cas, vous voulez passer des nuits tranquilles ; dans le second, vous voulez permettre à vos clients de passer commande quand ils le désirent.
 
-<h3 id="backup">Having a Backup</h3>
+<h3 id="backup">Disposer d’une sauvegarde</h3>
 
-<p>The problems persist: computers fail, and in many ways. There are hardware problems, power outages, bugs in the operating system or application software, etc. Only CouchDB doesn’t have any bugs. (Well, of course, that’s not true. All software has bugs, with the possible exception of things written by Daniel J. Bernstein and Donald Knuth.)
+<p>Les problèmes persistent : les ordinateurs faillissent, et ce d’innombrables façons. Il y a les problèmes matériels, les pertes de courant, les bogues dans les systèmes d’exploitation ou dans les applications, etc. Seul CouchDB n’a pas de bogues. (Oui, enfin, bien sûr, c’est faux : tous les logiciels ont des bogues, sauf peut-être les choses écrites par Daniel J. Bernstein et Donald Knuth.)
 
-<p>Whatever the cause is, you want to make sure that the service you are providing (in Jill and Joe’s case, the database for an online store) is resilient against failure. The road to resilience is a road of finding and removing single points of failure. A server’s power supply can fail. To keep the server from turning off during such an event, most come with at least two power supplies. To take this further, you could get a server where everything is duplicated (or more), but that would be a highly specialized (and expensive) piece of hardware. It is much cheaper to get two similar servers where the one can take over if the other has a problem. However, you need to make sure both servers have the same set of data in order to switch them without a user noticing.
+<p>Quelle qu’en soit la cause, vous voulez vous assurer que le service que vous fournissez (dans le cas de Julie et Éric, c’est la base de données d’un site de commerce en ligne) résiste aux pannes. Le chemin vers la résistance aux pannes est un chemin qui consiste à localiser les points uniques de défaillance et les ôter. L’alimentation d’un serveur peut défaillir. Pour éviter que la machine s’éteigne, la plupart sont livrés avec deux alimentations. En poussant ce raisonnement, vous pourriez avoir un serveur où tout est doublé (voire triplé, ou plus encore), mais ce serait là une pièce très spécialisée et par conséquent cher. Il est beaucoup plus économique de posséder deux serveurs similaires dans une configuration où l’un peut prendre le relais de l’autre. Toutefois, cela exige qu’ils détiennent les mêmes données pour pouvoir basculer de l’un à l’autre sans que l’utilisateur s’en rende compte.
 
-<p>Removing all single points of failure will give you a highly available or a fault-tolerant system. The order of tolerance is restrained only by your budget. If you can’t afford to lose a customer’s shopping cart in any event, you need to store it on at least two servers in at least two far apart geographical locations.
+<p>S’affranchir de tous les points individuels de défaillance vous permettra d’obtenir un système à haute disponibilité ou résistant aux défaillances. Le niveau de résistance n’est restreint que par votre budget. Si vous ne pouvez pas vous permettre de perde le panier d’un client, quelle que soit la circonstance, vous devez au minimum disposer de deux serveurs hébergés dans des endroits différents, si possible loin l’un de l’autre.
 
 <div class="aside note">
 
-<p>Amazon does this for the <a href="http://www.amazon.com">Amazon.com</a> website. If one data center is the victim of an earthquake, a user will still be able to shop.
+<p>C’est ce que fait Amazon pour le site web <a href="http://www.amazon.com">Amazon.com</a>. Si un centre de données est touché par un tremblement de terre, l’utilisateur sera toujours capable de passer commande.
 
-<p>It is likely, though, that Amazon’s problems are not your problems and that you will have a whole set of new problems when your data center goes away. But you still want to be able to live through a server failure.
+<p>Il est toutefois raisonnable de penser que les problèmes d’Amazon ne sont pas les vôtres et que vous aurez bien des problèmes quand votre centre de données s’effondrera. Mais vous désirez quand même survivre à la perte d’un serveur.
 
 </div>
 
-<p>Before we dive into setting up a highly available CouchDB system, let’s look at another situation. Joe calls Jill during regular business hours and relays his customers’ complaints that loading the online shop takes “forever.” Jill takes a quick look at the server and concludes that this is a lucky problem to have, leaving Joe puzzled. Jill explains that Joe’s shop is suddenly attracting many more users who are buying things. Joe chimes in, “I got a great review on that blog. That’s where they must be coming from.” A quick referrer check reveals that indeed many of the new customers are coming from a single site. The blog post already includes comments from unhappy customers voicing their frustration with the slow site. Joe wants to make his customers happy and asks Jill what to do. Jill advises that they set up a second server that can take half of the load of the current server, making sure all requests get answered in a reasonable amount of time. Joe agrees, and Jill begins to set things up.
+<p>Avant de rentrer dans les détails quant à la mise en place d’un système CouchDB à haute disponibilité, examinons une autre situation. Éric appelle Julie durant les heures d’ouverture et lui fait part de la colère de ses clients, car ceux-ci trouvent que le site web est trop lent à s’afficher. Julie jette un œil aux serveurs et constate que c’est un heureux problème. Éric en reste coi, et Julie lui explique que son commerce attire soudainement un grand nombre de clients désireux d’acheter ses produits. Éric y ajoute son grain de sel : « j’ai eu une excellente note sur ce blogue et ils doivent venir de là. » Une vérification rapide des référents indique en effet que la majorité des clients proviennent d’un seul site. Les commentaires de l’article du blogue contiennent déjà des avis négatifs de clients trouvant le site trop lent. Éric veut contenter ses clients et demande conseil à Julie qui l’invite à installer un autre serveur. Celui-ci pourrait absorber la moitié de la charge et résorber le problème de lenteur. Éric donne son accord et Julie installe la nouvelle machine.
 
-<p>The solution to the outlined problem looks a lot like the earlier one for providing a fault-tolerant setup: install a second server and synchronize all data. The difference is that with fault tolerance, the second server just sits there and waits for the first one to fail. In the server-overload case, a second server helps answer all incoming requests. This case is not fault-tolerant: if one server crashes, the other will get all the requests and will likely break down, or at least provide very slow service, either of which is not acceptable.
+<p>La solution à ce problème ressemble beaucoup au précédent visant à obtenir un système résistant aux pannes : il faut installer un second serveur et synchroniser les données. La différence tient au fait que, dans le cadre de la résistance aux pannes, le deuxième serveur attend que le premier s’effondre, tandis que dans le deuxième cas, le serveur absorbe la moitié de la charge. Ce dernier cas n’est pas résistant aux pannes : si un serveur s’arrête, l’autre subira toute la charge et il est probable qu’il s’effondre à son tour, ou du moins qu’il réponde lentement aux requêtes. Ces deux éventualités sont inacceptables.
 
-<p>Keep in mind that although the solutions look similar, high availability and fault tolerance are not the same. We’ll get back to the second scenario later on, but first we will take a look at how to set up a fault-tolerant CouchDB system.
+<p>Gardez à l’esprit que si les deux solutions se ressemblent, il ne faut pas confondre haute disponibilité et résistance aux pannes. Nous reviendrons plus tard sur le deuxième scénario. Pour l’instant, penchons-nous sur la mise en œuvre d’un système CouchDB résistant aux pannes.
 
-<p>We already gave it away in the previous chapters: the solution to synchronizing servers is replication.
+<p>Nous avons déjà apporté la réponse dans les chapitres précédents : la solution pour synchroniser les serveurs est de les répliquer.

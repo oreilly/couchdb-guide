@@ -1,4 +1,4 @@
-<title>Showing Documents in Custom Formats</title>
+<title>Afficher des documents dans des formats particuliers</title>
 
 <meta charset="utf-8">
 
@@ -10,27 +10,27 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="formats">Showing Documents in Custom Formats</h2>
+<h2 id="formats">Afficher des documents dans des formats particuliers</h2>
 
-<p>CouchDB’s show functions are a RESTful API inspired by a similar feature in Lotus Notes. In a nutshell, they allow you to serve documents to clients, in any format you choose.
+<p>Les fonctions d’affichage de CouchDB forment un API <em>RESTful</em> qui trouve son inspiration dans une fonction similaire offerte par <em>Lotus Notes</em>. En bref, elles vous permettent de fournir le document à vos clients dans le format que vous désirez.
 
-<p>A show function builds an HTTP response with any Content-Type, based on a stored JSON document. For Sofa, we’ll use them to show the blog post permalink pages. This will ensure that these pages are indexable by search engines, as well as make the pages more accessible. Sofa’s show function displays each blog post as an HTML page, with links to stylesheets and other assets, which are stored as attachments to Sofa’s design document.
+<p>Une fonction d’affichage forge une réponse HTTP avec n’importe quel <em>Content-Type</em> et basée sur un document JSON stocké. Dans le cadre de Sofa, nous les utiliserons pour afficher les articles du blogue à partir de leur lien permanent. De cette manière, nous garantissons que ces pages pourront être indexées par les moteurs de recherche et plus facilement accessibles. La fonction d’affichage de Sofa affiche chaque article dans une page HTML qui lui est propre, avec des liens vers les feuilles de style et autres ressources, lesquelles sont des pièces jointes du <em>design document<em>.
 
-<p>Hey, this is great—we’ve rendered a blog post! See <a href="#figure/1">Figure 1, “A rendered post”</a>.
+<p>Et voilà ! Fantastique ! Nous venons d’afficher un article du blogue ! Voyez vous-même la <a href="#figure/1">figure 1, Un article affiché</a>.
 
 <div class="figure" id="figure/1">
 
 <img src="formats/01.png">
 
-<p class="caption">Figure 1. A rendered post
+<p class="caption">Figure 1. Un article affiché
 
 </div>
 
-<p>The complete show function and template will render a static, cacheable resource that does not depend on details about the current user or anything else aside from the requested document and Content-Type. Generating HTML from a show function will not cause any side effects in the database, which has positive implications for building simple scalable applications.
+<p>La fonction d’affichage combinée à son patron (<em>template</em> en anglais) génèrera une page statique susceptible d’être conservée par les mécanismes d’antémémoire (en anglais, <em>cacheable</em>) et qui ne dépendra aucunement du contexte de la session. Elle se basera uniquement sur le document et le <em>Content-Type</em> demandés. La génération de code HTML dans la fonction d’affichage n’affecte pas le contenu de la base de données, ce qui en fait un atout pour la conception d’applications simples et résistantes au passage à l’échelle.
 
-<h3 id="rendering">Rendering Documents with Show Functions</h3>
+<h3 id="rendering">Utiliser les fonctions d’affichage</h3>
 
-<p>Let’s look at the source code. The first thing we’ll see is the JavaScript function body, which is very simple—it simply runs a template function to generate the HTML page. Let’s break it down:
+<p>Examinons le code source. Le premier élément sur lequel nous nous arrêtons est le corps de la fonction JavaScript, lequel est très simple : il appelle une fonction de patronage pour générer la page HTML. Entrons tout de même dans les détails :
 
 <pre>
 function(doc, req) {
@@ -40,9 +40,9 @@ function(doc, req) {
   // !code vendor/couchapp/path.js
 </pre>
 
-<p>We’re familiar with the <code>!code</code> and <code>!json</code> macros from <a href="documents.html">Chapter 12, Storing Documents</a>. In this case, we’re using them to import a template and some metadata about the blog (as JSON data), as well as to include link and template rendering functions as inline code.
+<p>Nous reconnaissons les macros <code>!code</code> et <code>!json</code> abordées dans le <a href="documents.html">chapitre 12, <em>Stockage des documents</em></a>. Présentement, elles servent à importer un patron et quelques métadonnées décrivant le blogue (sous forme de données JSON). Elles importent aussi les liens et les fonctions de transcription.
 
-<p>Next, we render the template:
+<p>Ensuite, nous exploitons le patron :
 
 <pre>
   return template(templates.post, {
@@ -53,7 +53,7 @@ function(doc, req) {
     author : doc.author,
 </pre>
 
-<p>The blog post title, HTML body, author, and date are taken from the document, with the blog’s title included from its JSON value. The next three calls all use the <code>path.js</code> library to generate links based on the request path. This ensures that links within the application are correct.
+<p>L’intitulé de l’article, le corps HTML, l’auteur et la date de publication sont extraits du document conjointement avec le nom du blogue. Les trois instructions suivantes exploitent la bibliothèque <code>path.js</code> pour générer des liens en fonction du chemin indiqué dans la requête. Cela garantit qu’ils désigneront une ressource existante au sein de l’application.
 
 <pre>
     assets : assetPath(),
@@ -63,15 +63,15 @@ function(doc, req) {
 }
 </pre>
 
-<p>So we’ve seen that the function body itself just calculates some values (based on the document, the request, and some deployment specifics, like the name of the database) to send to the template for rendering. The real action is in the HTML template. Let’s take a look.
+<p>Nous avons donc vu que le corps de la fonction, en lui-même, ne fait que calculer quelques valeurs (basées sur le document, la requête et quelques données spécifiques au déploiement tel que le nom de la base de données) pour les communiquer à une fonction chargée de les injecter dans le patron. Par conséquent, le cœur de l’action se trouve dans le patron HTML que nous nous proposons d’examiner.
 
-<h4 id="template">The Post Page Template</h4>
+<h4 id="template">Le patron de la page de présentation d’un article</h4>
 
-<p>The template defines the output HTML, with the exception of a few tags that are replaced with dynamic content. In Sofa’s case, the dynamic tags look like <code>&lt;%= replace_me %&gt;</code>, which is a common templating tag delimiter.
+<p>Le patron définit le format HTML publié, à l’exception de quelques tags qui sont substitués par du contenu dynamique. Dans le cas de Sofa, ces éléments dynamiques ressemblent à <code>&lt;%= replace_me %&gt;</code>, ce qui correspond à un délimiteur de tag classique.
 
-<p>The template engine used by Sofa is adapted from John Resig’s blog post, <a href="http://ejohn.org/blog/javascript-micro-templating/">“JavaScript Micro-Templating”</a>. It was chosen as the simplest one that worked in the server-side context without modification. Using a different template engine would be a simple exercise.
+<p>Le moteur de rendu de patron utilisé par Sofa a été adapté à partir de l’article de blogue de John Resig intitulé <a href="http://ejohn.org/blog/javascript-micro-templating/"><em>JavaScript Micro-Templating</em></a>. Il a été sélectionné car c’est le plus moteur le plus simple qui fonctionnait sans modification en étant exploité côté serveur. Recourir à un autre moteur de rendu serait un simple exercice.
 
-<p>Let’s look at the template string. Remember that it is included in the JavaScript using the CouchApp <code>!json</code> macro, so that CouchApp can handle escaping it and including it to be used by the templating engine.
+<p>Examinons la chaîne de caractères composant le patron. Rappelez-vous qu’il est inclus dans le code JavaScript par la macro CouchApp <code>!json</code> et que CouchApp s’occupe de le préparer en vue de son utilisation par le moteur (notamment en échappant les caractères spéciaux).
 
 <pre>
 &lt;!DOCTYPE html&gt;
@@ -80,13 +80,13 @@ function(doc, req) {
     &lt;title&gt;&lt;%= title %&gt; : &lt;%= blogName %&gt;&lt;/title&gt;
 </pre>
 
-<p>This is the first time we’ve seen a template tag in action—the blog post title, as well as the name of the blog as defined in <code>blog.json</code> are both used to craft the HTML <code>&lt;title&gt;</code> tag.
+<p>C’est la première fois que nous observons un tag dans son contexte. Le titre de l’article ainsi que le nom du blogue (tel que défini dans <code>blog.json</code>) sont ici utilisés pour forger le tag HTML <code>&lt;title&gt;</code>.
 
 <pre>
     &lt;link rel="stylesheet" href="../../screen.css" type="text/css"&gt;
 </pre>
 
-<p>Because show functions are served from within the design document path, we can link to attachments on the design document using relative URIs. Here we’re linking to <code>screen.css</code>, a file stored in the <code>_attachments</code> folder of the Sofa source directory.
+<p>Puisque les fonctions d’affichage sont appelées par le <em>design document</em>, elles bénéficient de son contexte, ce qui permet de pointer vers les pièces jointes avec des URI relatifs. Ici, nous faisons référence à <code>screen.css</code>, lequel fichier se trouve dans le répertoire <code>_attachments</code> à la racine du dossier contenant le code source de Sofa.
 
 <pre>
   &lt;/head&gt;
@@ -96,7 +96,7 @@ function(doc, req) {
       &lt;h2&gt;&lt;a href="&lt;%= index %&gt;"&gt;&lt;%= blogName %&gt;&lt;/a&gt;&lt;/h2&gt;
 </pre>
 
-<p>Again, we’re seeing template tags used to replace content. In this case, we link to the edit page for this post, as well as to the index page of the blog.
+<p>De nouveau, des tags sont destinés à être remplacés par le contenu dynamique correspondant. Dans ce cas, nous pointons vers la page d’édition de l’article courant ainsi que vers la page d’accueil du blogue.
 
 <pre>
     &lt;/div&gt;
@@ -106,7 +106,7 @@ function(doc, req) {
         &lt;span class="date"&gt;&lt;%= date %&gt;&lt;/span&gt;
 </pre>
 
-<p>The post title is used for the <code>&lt;h1&gt;</code> tag, and the date is rendered in a special tag with a class of <code>date</code>. See <a href="#dates">the section called “Dynamic Dates”</a> for an explanation of why we output static dates in the HTML instead of rendering a user-friendly string like “3 days ago” to describe the date.
+<p>L’intitulé de l’article est utilisé pour le tag <code>&lt;h1&gt;</code> et la date est insérée dans un tag particulier de classe <code>date</code>. Référez-vous à la section <a href="#dates"><em>États dynamiques</em></a> pour une explication sur la raison qui nous pousse à écrire une date statique en lieu et place d’un format plus lisible par l’utilisateur comme, par exemple, « il y a trois jours ».
 
 <pre>
         &lt;div class="body"&gt;&lt;%= post %&gt;&lt;/div&gt;
@@ -116,13 +116,13 @@ function(doc, req) {
 &lt;/html&gt;
 </pre>
 
-<p>In the close of the template, we render the post HTML (as converted from Markdown and saved from the author’s browser).
+<p>Dans la fermeture du patron, nous transcrivons le contenu de l’article au format HTML (rappelez-vous, c’est le fruit de la traduction du format Markdown et il fut sauvegardé à partir du navigateur de l’auteur).
 
-<h3 id="dates">Dynamic Dates</h3>
+<h3 id="dates">États dynamiques</h3>
 
-<p>When running CouchDB behind a caching proxy, this means each show function should have to be rendered only once per updated document. However, it also explains why the timestamp looks like <code>2008/12/25 23:27:17 +0000</code> instead of “9 days ago.”
+<p>Lorsque CouchDB est abrité par un serveur mandataire assurant une fonction d’antémémoire (<em>caching proxy</em> en anglais), chaque fonction d’affichage ne devrait être appelée qu’une seule fois par mise à jour du document. Cela explique notamment notre préférence pour la date <code>2008/12/25 23:27:17 +0000</code> au lieu d’« il y a neuf jours ».
 
-<p>It also means that for presentation items that depend on the current time, or the identity of the browsing user, we’ll need to use client-side JavaScript to make dynamic changes to the final HTML.
+<p>Cela signifie aussi que pour les éléments de présentation qui dépendent de la date actuelle, ou de l’identité de la personne qui navigue sur la page, nous aurons besoin de nous appuyer sur du code JavaScript côté client afin d’apporter les modifications de manière dynamique.
 
 <pre>
     $('.date').each(function() {
@@ -130,4 +130,5 @@ function(doc, req) {
     });
 </pre>
 
-<p>We include this detail about the browser-side JavaScript implementation not to teach you about Ajax, but because it epitomizes the kind of thinking that makes sense when you are presenting documents to client applications. CouchDB should provide the most useful format for the document, as requested by the client. But when it comes time to integrate information from other queries or bring the display up-to-date with other web services, by asking the client’s application to do the lifting, you move computing cycles and memory costs from CouchDB to the client. Since there are typically many more clients than CouchDBs, pushing the load back to the clients means each CouchDB can serve more users.
+<p>Nous insérons ici ce détail de l’implémentation JavaScript du côté du navigateur non pour parler d’Ajax, mais pour démontrer l’approche la plus sensée dans le cadre de la présentation d’un document à une application client. En effet, CouchDB devrait fournir le format le plus utile pour exploiter le document, tel que le client le demande. C’est ainsi que vous épargnez des cycles processeurs et de la mémoire sur le serveur : en laissant le soin des dernières retouches de style au navigateur client. Cela s’avère tout particulièrement utile quand vous devez intégrer des données en provenance d’autres requêtes ou quand vous voulez afficher des informations synchronisées avec d’autres services web. Puisqu’il y a normalement un plus grand nombre de clients que de serveurs CouchDB, ce déport de charge vous permet de satisfaire un plus grand nombre de clients avec la même infrastructure.
+

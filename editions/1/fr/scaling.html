@@ -1,4 +1,4 @@
-<title>Scaling Basics</title>
+<title>Principes de dimensionnement</title>
 
 <meta charset="utf-8">
 
@@ -10,60 +10,62 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="scaling">Scaling Basics</h2>
+<h2 id="scaling">Principes de dimensionnement</h2>
 
-<p>Scaling is an overloaded term. Finding a discrete definition is tricky. Everyone and her grandmother have their own idea of what scaling means. Most definitions are valid, but they can be contradicting. To make things even worse, there are a lot of misconceptions about scaling. To really define it, one needs a scalpel to find out the important bits.
+<p><em>Note de traduction : les Anglais utilisent le terme « scaling » pour la notion de passage à l’échelle et de dimensionnement. Précisons que la problématique dite de passage à l’échelle se présente, en informatique, quand un système donné doit accueillir une charge (une utilisation) très importante. Le système doit alors croître pour fournir le même service à de plus en plus de monde, avec la même qualité (disponibilité, délai, fonctionnalités offertes). Qu’il s’agisse du dimensionnement d’origine, des dimensions à un instant donné, ou de la capacité à croître ou à décroître (à passer à l’échelle), le terme « scaling » (et ses dérivés « scaled, scalable, scalability ») est employé. Certains commentaires ci-après traduits font référence au flou suscité par l’usage d’un même terme.</em></p>
 
-<p>First, scaling doesn’t refer to a specific technique or technology; scaling, or <em>scalability</em>, is an attribute of a specific architecture. What is being <em>scaled</em> varies for nearly every project.
+<p>Passage à l’échelle et dimensionnement sont des termes fourre-tout ; leur faire correspondre une définition précise est difficile. Tout un chacun, du petit frère au chat de la grand-mère, en a sa propre conception. La plupart des définitions sont valables, mais certaines peuvent se contredire. Pis encore ! le terme véhicule des idées fausses. Aussi, pour définir le véritable sens de ces notions, il faut passer le tout à la loupe et extraire, avec une minutie d’horloger, les éléments essentiels.
+
+<p>En premier lieu, le dimensionnement n’implique pas une technique ou technologie particulière. Le passage à l’échelle, ou la capacité à le faire, est une caractéristique d’une architecture donnée. Ce qui est à dimensionner dépend de chaque projet.
 
 <blockquote>
 
-<p>Scaling is specialization.
+<p>Passer à l’échelle, c’est se spécialiser.
 
-<p class="attribution">&mdash;Joe Stump, Lead Architect of Digg.com and SimpleGeo.com
+<p class="attribution">&mdash;Joe Stump, Architecte en chef de Digg.com et SimpleGeo.com
 
 </blockquote>
 
-<p>Joe’s quote is the one that we find to be the most accurate description of scaling. It is also wishy-washy, but that is the nature of scaling. An example: a website like Facebook.com— with a whole lot of users and data associated with those users and with more and more users coming in every day—might want to scale over user data that typically lives in a database. In contrast, Flickr.com at its core is like Facebook with users and data for users, but in Flickr’s case, the data that grows fastest is images uploaded by users. These images do not necessarily live in a database, so scaling image storage is Flickr’s path to growth.
+<p>À travers cette expression, nous pensons que Joe a donné la description la plus fidèle de ce qu’est le passage à l’échelle. Pour autant, elle est insipide, ce qui est inhérent à la notion de dimensionnement. Prenons un exemple. Un site web tel que Facebook.com, avec un très grand nombre d’utilisateurs et de données qui leur sont associés, qui en enregistre chaque jour davantage, voudrait passer à l’échelle les données des utilisateurs qui résident classiquement dans une base de données. À l’opposé, Flickr.com, qui à la base a le même problème que Facebook avec des utilisateurs et des données, voit l’espace occupé par les données (les images) s’accroître bien plus rapidement que le nombre d’utilisateurs. En conséquence, comme les images ne sont pas nécessairement stockées dans des bases de données, le passage à l’échelle du stockage des images est clé pour la croissance de Flickr.
 
 <div class="aside note">
 
-<p>It is common to think of scaling as <em>scaling out</em>. This is shortsighted. Scaling can also mean <em>scaling in</em>—that is, being able to use fewer computers when demand declines. More on that later.
+<p>Quand on parle de passage à l’échelle, on pense souvent à l’<em>accroissement</em>. C’est un raccourci néfaste. Le passage à l’échelle engendre aussi le <em>décroissement</em>, c’est-à-dire la capacité à utiliser un nombre réduit de machines lorsque la demande diminue. Nous y reviendrons.
 
 </div>
 
-<p>These are just two services. There are a lot more, and every one has different things they want to scale. CouchDB is a database; we are not going to cover every aspect of scaling any system. We concentrate on the bits that are interesting to you, the CouchDB user. We have identified three general properties that you can scale with CouchDB:
+<p>Ce ne sont que deux exemples. Il y en a bien davantage et chacun porte son attention sur un aspect différent. CouchDB est une base de données, aussi nous ne chercherons pas à détailler comment passer à l’échelle n’importe quel système, mais nous nous concentrerons sur ce qui intéresse un utilisateur de CouchDB, c’est-à-dire vous ! Nous avons identifié trois éléments d’importance que vous pouvez passer à l’échelle :
 
 <ul>
 
-<li>Read requests</li>
+<li>les requêtes de lecture ;</li>
 
-<li>Write requests</li>
+<li>les requêtes d’écriture ;</li>
 
-<li>Data</li>
+<li>les données.</li>
 
 </ul>
 
-<h3 id="reads">Scaling Read Requests</h3>
+<h3 id="reads">Dimensionner les requêtes de lecture</h3>
 
-<p>A read request retrieves a piece of information from the database. It passes the following stations within CouchDB. First, the HTTP server module needs to accept the request. For that, it opens a socket to send data over. The next station is the HTTP request handle module that analyzes the request and directs it to the appropriate submodule in CouchDB. For single documents, the request then gets passed to the database module where the data for the document is looked up on the filesystem and returned all the way up again.
+<p>Une requête de lecture obtient une information de la base de données. Elle se réalise de la manière suivante avec CouchDB : tout d’abord, le module du serveur HTTP doit accepter la requête. Pour ce faire, il ouvre un <em>socket</em> pour y faire transiter les données. L’étape suivante consiste, pour le module de gestion de la requête HTTP, à analyser la requête et à l’envoyer au sous-module CouchDB adapté. Dans le cas d’obtention d’un seul document, la requête est envoyée au module de la base, lequel trouve le document sur le système de fichiers et renvoie la donnée à travers toutes les couches précitées.
 
-<p>All this takes processing time and enough sockets (or file descriptors) must be available. The storage backend of the server must be able to fulfill all read requests. There are a few more things that can limit a system to accept more read requests; the basic point here is that a single server can process only so many concurrent requests. If your applications generate more requests, you need to set up a second server that your application can read from.
+<p>Tout cela nécessite du temps de traitement et de disposer d’un nombre suffisant de <em>sockets</em> (ou de descripteurs de fichiers). Le système de stockage du serveur doit être capable de gérer toutes les requêtes de lecture. En outre, il y a d’autres éléments susceptibles de limiter la capacité d’un système à accepter un grand nombre de requêtes de lecture : le principe ici est qu’un serveur ne peut générer que <em>n</em> requêtes de lecture au même moment. Si votre application génère davantage de requêtes, vous avez besoin qu’un autre serveur soit capable de gérer l’excédent.
 
-<p>The nice thing about read requests is that they can be cached. Often-used items can be held in memory and can be returned at a much higher level than the one that is your bottleneck. Requests that can use this cache don’t ever hit your database and are thus virtually toll-free. <a href="balancing.html">Chapter 18, Load Balancing</a> explains this scenario.
+<p>La caractéristique sympathique des requêtes de lecture est qu’elles peuvent être conservées par un mécanisme d’antémémoire (<em>cached</em> en anglais). Cela permet à une couche de haut niveau d’envoyer la réponse attendue, ce qui soulage votre goulot d’étranglement, lequel se situe au niveau de la recherche du document dans la base. En effet, les requêtes qui pourront profiter de cette antémémoire n’iront pas interroger votre base de données et donc ne coûteront virtuellement rien. Le <a href="balancing.html">chapitre 18, Équilibrage de charge</a> détaille ce scénario.
 
-<h3 id="writes">Scaling Write Requests</h3>
+<h3 id="writes">Dimensionner les requêtes d’écriture</h3>
 
-<p>A write request is like a read request, only a little worse. It not only reads a piece of data from disk, it writes it back after modifying it. Remember, the nice thing about reads is that they’re cacheable. Writes: not so much. A cache must be notified when a write changes data, or clients must be told to not use the cache. If you have multiple servers for scaling reads, a write must occur on all servers. In any case, you need to work harder with a write. <a href="clustering.html">Chapter 19, Clustering</a> covers methods for scaling write requests across servers.
+<p>Une requête d’écriture est similaire à une requête de lecture, en pire. En effet, elle ne fait pas que lire une donnée sur le disque, elle va écrire une modification de celle-ci. Souvenez-vous que les requêtes de lecture peuvent être antémémorisées ; ce n’est pas le cas des écritures. Par conséquent, il est nécessaire que le mécanisme d’antémémoire soit informé de la modification de la donnée pour qu’il n’envoie pas au client une information périmée. Ou bien les clients doivent recevoir l’ordre de ne pas utiliser l’antémémoire. Si vous avez plusieurs serveurs qui permettent de lire les données, l’écriture doit se produire sur chacun de ces serveurs. Dans tous les cas, votre tâche est considérablement plus difficile quand vous écrivez que quand vous lisez. Le <a href="clustering.html">chapitre 19, Groupement de serveurs</a> détaille les méthodes permettant le passage à l’échelle des requêtes d’écriture sur plusieurs serveurs.
 
-<h3 id="data">Scaling Data</h3>
+<h3 id="data">Dimensionner les données</h3>
 
-<p>The third way of scaling is scaling data. Today’s hard drives are cheap and have a lot of capacity, and they will only get better in the future, but there is only so much data a single server can make sensible use of. It must maintain one more indexes to the data that uses disk space again. Creating backups will take longer and other maintenance tasks become a pain.
+<p>La troisième manière de passer à l’échelle est de dimensionner les données. Les disques durs d’aujourd’hui sont peu onéreux et offrent un grand espace de stockage, et cela ne fera que s’améliorer avec le temps. Toutefois, un serveur ne peut décemment gérer qu’un volume limité de données. Il doit maintenir des index, ce qui nécessite de l’espace. La sauvegarde prendra davantage de temps. Les autres tâches d’exploitation deviendront pénibles.
 
-<p>The solution is to chop the data into manageable chunks and put each chunk on a separate server. All servers with a chunk now form a <em>cluster</em> that holds all your data. <a href="clustering.html">Chapter 19, Clustering</a> takes a look at creating and using these clusters.
+<p>La solution consiste à scinder les données en partitions qui seront faciles à exploiter et à placer chaque tranche sur un serveur distinct. Chaque serveur qui dispose d’une partition fera partie d’un <em>groupement</em> (<em>cluster en anglais</em>) qui détiendra l’ensemble des données. Le <a href="clustering.html">chapitre 19, Groupement de serveurs</a> indique comment créer et exploiter ces groupements.
 
-<p>While we are taking separate looks at scaling of reads, writes, and data, these rarely occur isolated. Decisions to scale one will affect the others. We will describe individual as well as combined solutions in the following chapters.
+<p>Nous optons pour une approche séparée des opérations de lecture, d’écriture et du partitionnement des données. Toutefois, les décisions prises dans un domaine vont avoir un impact sur les autres. C’est pourquoi nous nous attarderons aussi sur la combinaison de ces approches dans les chapitres suivants.
 
-<h3 id="basics">Basics First</h3>
+<h3 id="basics">Prérequis</h3>
 
-<p>Replication is the basis for all of the three scaling methods. Before we go scaling, <a href="replication.html">Chapter 16, Replication</a> will familiarize you with CouchDB’s excellent replication feature.
+<p>La réplication est fondamentale pour chacune des méthodes exposées. Avant de vous plonger dans le sujet, le <a href="replication.html">chapitre 16, Réplication</a> vous familiarisera avec l’excellent mécanisme de réplication de CouchDB.

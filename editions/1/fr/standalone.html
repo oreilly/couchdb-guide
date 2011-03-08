@@ -1,4 +1,4 @@
-<title>Standalone Applications</title>
+<title>Applications autonomes</title>
 
 <meta charset="utf-8">
 
@@ -10,35 +10,35 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="standalone">Standalone Applications</h2>
+<h2 id="standalone">Applications autonomes</h2>
 
-<p>CouchDB is useful for many areas of an application. Because of its incremental MapReduce and replication characteristics, it is especially well suited to online interactive document and data management tasks. These are the sort of workloads experienced by the majority of web applications. This coupled with CouchDB’s HTTP interface make it a natural fit for the web.
+<p>CouchDB peut être utile pour plusieurs parties d’un logiciel. Puisque MapReduce et le mécanisme de réplication fonctionnent de manière incrémentale, ils sont particulièrement adaptés aux documents interactifs et aux tâches de traitement des données. Cela correspond à la charge de travail que subissent bon nombre d’applications web. En ajoutant à cela l’interface HTTP de CouchDB, cela en fait une solution naturellement adaptée à ce milieu.
 
-<p>In this part, we’ll tour a document-oriented web application—a basic blog implementation. As a lowest common denominator, we’ll be using plain old HTML and JavaScript. The lessons learned should apply to Django/Rails/Java-style middleware applications and even to intensive MapReduce data mining tasks. CouchDB’s API is the same, regardless of whether you’re running a small installation or an industrial cluster.
+<p>Dans cette partie, nous verrons une application web orientée document : un blogue basique. Comme plus petit dénominateur commun, nous utiliserons du bon vieux HTML et du JavaScript. Les enseignements que vous pourrez en tirer s’appliqueront à Django, Rails, aux intergiciels basés sur Java et même aux tâches intensives de fouille de données avec MapReduce. Que vous exploitiez une petite installation ou un cluster industriel, l’API de CouchDB est la même.
 
-<p>There is no right answer about which application development framework you should use with CouchDB. We’ve seen successful applications in almost every commonly used language and framework. For this example application, we’ll use a two-layer architecture: CouchDB as the data layer and the browser for the user interface. We think this is a viable model for many document-oriented applications, and it makes a great way to teach CouchDB, because we can easily assume that all of you have a browser at hand without having to ensure that you’re familiar with a particular server-side scripting language.
+<p>Il n’y a pas de réponse magique quant au <em>framework</em> de développement que vous devriez utiliser avec CouchDB. Nous avons vu fonctionner des applications avec presque tous les langages répandus et avec n’importe quel <em>framework</em>. Pour notre exemple, nous utilisons une architecture deux tiers : CouchDB comme tiers de persistance des données et le navigateur comme interface d’accès à celles-ci. Nous pensons qu’il s’agit d’un modèle viable pour de nombreux logiciels orientés documents. De plus, c’est un bon moyen d’enseigner CouchDB, car nous pouvons estimer sans grand risque que vous disposez d’un navigateur sous la main sans avoir à poser un quelconque prérequis sur votre maîtrise des langages côté serveur.
 
-<h3 id="version">Use the Correct Version</h3>
+<h3 id="version">Utiliser la bonne version</h3>
 
-<p>This part is interactive, so be prepared to follow along with your laptop and a running CouchDB database. We’ve made the full example application and all of the source code examples available online, so you’ll start by downloading the current version of the example application and installing it on your CouchDB instance.
+<p>Cette partie est interactive, alors soyez prêt à la suivre avec votre ordinateur portable et à faire fonctionner une base de données CouchDB. Nous avons complètement créé cette application et avons publié l’intégralité du code source. C’est pourquoi vous commencerez par télécharger la dernière version de l’application et que vous l’installerez sur votre instance de CouchDB.
 
-<p>A challenge of writing this book and preparing it for production is that CouchDB is evolving at a rapid pace. The basics haven’t changed in a long time, and probably won’t change much in the future, but things around the edges are moving forward rapidly for CouchDB’s 1.0 release.
+<p>Un des défis posés par ce livre pour son écriture et son édition est que CouchDB évolue très vite. Les fondamentaux n’ont pas changé depuis longtemps et ne changeront probablement pas avant longtemps, mais ce qui les entoure évolue rapidement pour atteindre la version 1.0 de CouchDB.
 
-<p>This book is going to press as CouchDB version 0.10.0 is about to be released. Most of the code was written against 0.9.1 and the development trunk that is becoming version 0.10.0. In this part we’ll work with two other software packages: CouchApp, which is a set of tools for editing and sharing CouchDB application code; and Sofa, the example blog itself.
+<p>Ce livre sera édité à l’époque de la version 0.10.0. La majeure partie du code a été rédigée avec la version 0.9.1 et le tronc courant du développement qui va devenir la 0.10.0. Dans cette partie, nous travaillerons avec deux autres logiciels : CouchApp, un ensemble d’outils pour éditer et partager du code d’application CouchDB, et Sofa, le blogue d’exemple.
 
 <div class="aside note">
 
-<p>See <a href="http://couchapp.org">http://couchapp.org</a> for the latest information about the CouchApp model.
+<p>Visitez <a href="http://couchapp.org">http://couchapp.org</a> pour obtenir les dernières informations concernant CouchApp.
 
 </div>
 
-<p>As a reader, it is your responsibility to use the correct versions of these packages. For CouchApp, the correct version is always the latest. The correct version of Sofa depends on which version of CouchDB you are using. To see which version of CouchDB you are using, run the following command:
+<p>En tant que lecteur, il est de votre responsabilité d’utiliser les bonnes versions de ces logiciels. Pour CouchApp, la bonne version est toujours la dernière. La bonne version de Sofa dépend de la version de CouchDB que vous utilisez. Pour savoir quelle version vous utilisez, faites :
 
 <pre>
 curl http://127.0.0.1:5984
 </pre>
 
-<p>You should see something like one of these three examples:
+<p>Vous devriez voir l’une de ces trois réponses :
 
 <pre>
 {"couchdb":"Welcome","version":"0.9.1"}
@@ -48,79 +48,79 @@ curl http://127.0.0.1:5984
 {"couchdb":"Welcome","version":"0.11.0a858744"}
 </pre>
 
-<p>These three correspond to versions 0.9.1, 0.10.0, and trunk. If the version of CouchDB you have installed is 0.9.1 or earlier, you should upgrade to at least 0.10.0, as Sofa makes use of features not present until 0.10.0. There is an older version of Sofa that will work, but this book covers features and APIs that are part of the 0.10.0 release of CouchDB. It’s conceivable that there will be a 0.9.2, 0.10.1 and even a 0.10.2 release by the time you read this. Please use the latest release of whichever version you prefer.
+<p>Ces trois lignes correspondent aux versions 0.9.1, 0.10.0 et au tronc de développement. Si vous utilisez CouchDB 0.9.1 ou plus récent, vous devriez mettre à jour pour atteindre au moins la version 0.10.0, puisque Sofa utilise des fonctionnalités qui ne sont pas présentes avant. Il existe toutefois une ancienne version de Sofa qui fonctionnera, mais ce livre décrit des fonctionnalités et des APIs qui sont liés à la version 0.10.0 de CouchDB. Il est probable qu’au jour où vous lirez ceci, il existera une version 0.9.2 ou 0.10.1, voire une 0.10.2. Utilisez la dernière mise à jour de la version que vous préférez.
 
-<p><em>Trunk</em> refers to the latest development version of CouchDB available in the Apache Subversion repository. We recommend that you use a released version of CouchDB, but as developers, we often use trunk. Sofa’s master branch will tend to work on trunk, so if you want to stay on the cutting edge, that’s the way to do it.
+<p>Le <em>tronc</em> fait référence à la dernière version de développement de CouchDB disponible sur le dépôt Subversion d’Apache. Nous vous recommandons d’utiliser une version publiée de CouchDB, mais en tant que développeurs, nous utilisons souvent le tronc de développement. La branche maîtresse de Sofa aura tendance à fonctionner avec le tronc, donc si vous désirez rester à la pointe, vous savez comment vous y prendre.
 
-<h3 id="portable">Portable JavaScript</h3>
+<h3 id="portable">JavaScript portable</h3>
 
-<p>If you’re not familiar with JavaScript, we hope the source examples are given with enough context and explanation so that you can keep up. If you are familiar with JavaScript, you’re probably already excited that CouchDB supports view and template rendering JavaScript functions.
+<p>Si le JavaScript ne vous est pas familier, nous espérons que les exemples qui vous sont donnés s’accompagnent de suffisamment d’éléments de contexte et d’explications pour que vous puissiez suivre. Si le JavaScript vous est familier, vous serez sans doute heureux de savoir que CouchDB intègre les fonctions de vue et de patrons de rendu (ou modèles de documents).
 
-<p>One of the advantages of building applications that can be hosted on any standard CouchDB installation is that they are portable via replication. This means your application, if you develop it to be served directly from CouchDB, gets offline mode “for free.” Local data makes a big difference for users in a number of ways we won’t get into here. We call applications that can be hosted from a standard CouchDB <em>CouchApps</em>.
+<p>L’un des avantages à bâtir des applications qui nécessitent uniquement CouchDB est qu’elles peuvent être répliquées par le mécanisme de la base. Cela signifie que votre application, si vous la faites uniquement reposer sur CouchDB, pourra être utilisée hors ligne sans développement complémentaire. Avoir des données locales change considérablement la donne pour les utilisateurs, mais nous ne rentrerons pas ici dans les détails. Les applications qui nécessitent uniquement CouchDB pour fonctionner sont appelées « CouchApps ».
 
-<p>CouchApps are a great vehicle for teaching CouchDB because we don’t need to worry about picking a language or framework; we’ll just work directly with CouchDB so that readers get a quick overview of a familiar application pattern. Once you’ve worked through the example app, you’ll have seen enough to know how to apply CouchDB to your problem domain. If you don’t know much about Ajax development, you’ll learn a little about jQuery as well, and we hope you find the experience relaxing.
+<p>Les CouchApps sont un excellent moyen pour enseigner CouchDB parce qu’elles ne requièrent pas de choisir un langage ou un <em>framework</em> ; nous travaillerons directement avec CouchDB, ce qui permet aux lecteurs de comprendre rapidement la structure de l’application. Une fois que vous aurez réalisé l’application d’exemple, vous en aurez suffisamment vu pour savoir appliquer CouchDB à votre problématique. Si vous ne connaissez pas trop Ajax, vous l’apprendrez un peu, tout comme vous en apprendrez un peu sur jQuery, et nous espérons que vous trouverez l’expérience relaxante.
 
-<h3 id="documents">Applications Are Documents</h3>
+<h3 id="documents">Les applications sont des documents</h3>
 
-<p>Applications are stored as design documents (<a href="#figure/1">Figure 1, “CouchDB executes application code stored in design documents”</a>). You can replicate design documents just like everything else in CouchDB. Because design documents can be replicated, whole CouchApps are replicated. CouchApps can be updated via replication, but they are also easily “forked” by the users, who can alter the source code at will.
+<p>Les applications sont stockées comme des <em>design documents</em> (cf. <a href="#figure/1">Figure 1, CouchDB exécute une application stockée dans un <em>design document</em></a>). Vous pouvez répliquer les <em>design document</em> comme n’importe quoi d’autre dans CouchDB. Puisque les <em>design document</em> peuvent être répliqués, l’application entière peut l’être aussi. Les CouchApps peuvent être mises à jour par réplication, mais les utilisateurs peuvent aussi les bifurquer [NdT : <em>fork</em> en anglais] et  modifier le code source comme bon leur semble.
 
 <div class="figure" id="figure/1">
 
 <img src="standalone/01.png">
 
-<p class="caption">Figure 1. CouchDB executes application code stored in design documents
+<p class="caption">Figure 1. CouchDB exécute une application stockée dans un <em>design document</em>
 
 </div>
 
-<p>Because applications are just a special kind of document, they are easy to edit and share.
+<p>Puisque les applications sont juste un type particulier de document, il est facile de les partager.
 
 <div class="aside note">
 
-<p>J. Chris says: Thinking of peer-based application replication takes me back to my first year of high school, when my friends and I would share little programs between the TI-85 graphing calculators we were required to own. Two calculators could be connected via a small cable and we’d share physics cheat sheets, Hangman, some multi-player text-based adventures, and, at the height of our powers, I believe there may have been a Doom clone running.
+<p>« Quand je pense à la réplication d’applications conçues pour fonctionner sur un nœud, je me souviens de mes années de collège, quand nous partagions entre amis des programmes sur les TI-85 que nous étions obligés d’avoir », déclare J. Chris. « Deux calculatrices pouvaient être connectées par un câble et nous pouvions transférer des fafiots de sciences physiques. Hangman, quelques aventures multi-joueurs en mode texte, et, au paroxysme de nos talents, je crois me souvenir qu’un clone de Doom tournait aussi. »
 
-<p>The TI-85 programs were in Basic, so everyone was always hacking each other’s hacks. Perhaps the most ridiculous program was a version of Spy Hunter that you controlled with your mind. The idea was that you could influence the pseudorandom number generator by concentrating hard enough, and thereby control the game. Didn’t work. Anyway, the point is that when you give people access to the source code, there’s no telling what might happen.
+<p>« Les programmes de la TI-85 étaient écrits en Basic, donc tout le monde passait son temps à bidouiller les bidouillages des autres. Peut-être même que le programme le plus ridicule qui fût était une version de Spy Hunter que vous contrôliez avec votre esprit. L’idée était que vous pouviez influencer le générateur de nombres pseudoaléatoires en vous concentrant suffisamment et, par là même, contrôler le jeu. Ça ne marchait d’ailleurs pas du tout. Quoiqu’il en fût, l’important est que quand vous donnez accès aux autres à votre code source, personne ne peut prédire ce qui va se passer. »
 
 </div>
 
-<p>If people don’t like the aesthetics of your application, they can tweak the CSS. If people don’t like your interface choices, they can improve the HTML. If they want to modify the functionality, they can edit the JavaScript. Taken to the extreme, they may want to completely fork your application for their own purposes. When they show the modified version to their friends and coworkers, and hopefully you, there is a chance that more people may want to make improvements.
+<p>Si certains n’apprécient pas le design de votre application, ils peuvent modifier les CSS. Si d’autres n’approuvent pas vos choix d’interfaces, ils peuvent améliorer le HTML. S’ils veulent modifier une fonctionnalité, ils peuvent éditer le code JavaScript. En poussant la logique à l’extrême, ils pourraient bifurquer complètement votre application pour répondre à leur propre besoin. Quand ils montreront leur version à leurs amis et collègues, donc avec un peu de chance, à vous aussi, il est possible que d’autres personnes veuillent apporter des améliorations.
 
-<p>As the original developer, you have the control over your version and can accept or reject changes as you see fit. If someone messes around with the source code for a local application and breaks things beyond repair, they can replicate the original copy from your server, as illustrated in <a href="#figure/2">Figure 2, “Replicating application changes to a group of friends”</a>.
+<p>En tant que concepteur originel, vous contrôlez ce que devient votre version et pouvez accepter ou refuser les modifications comme bon vous semble. Si quelqu’un se mélange les pinceaux et détruit son application locale, il peut récupérer à nouveau la vôtre, comme le montre la <a href="#figure/2">Figure 2, Répliquer les modifications apportées à une application avec un groupe d’amis</a>.
 
 <div class="figure" id="figure/2">
 
 <img src="standalone/02.png">
 
-<p class="caption">Figure 2. Replicating application changes to a group of friends
+<p class="caption">Figure 2. Répliquer les modifications apportées à une application avec un groupe d’amis
 
 </div>
 
-<p>Of course, this may not be your cup of tea. Don’t worry; you can be as restrictive as you like with CouchDB. You can restrict access to data however you wish, but beware of the opportunities you might be missing. There is a middle ground between open collaboration and restricted access controls.
+<p>Bien sûr, ce n’est peut-être pas votre tasse de thé. Ne vous inquiétez pas, vous pouvez être aussi restrictif que vous le désirez avec CouchDB. Vous pouvez limiter l’accès aux données comme vous le voulez, mais soyez conscient des occasions sur lesquelles vous passez peut-être. Il existe des compromis entre la collaboration ouverte à tous les vents et la restriction absolue des accès.
 
-<p>Once you’ve finished the installation procedure, you’ll be able to see the full application code for Sofa, both in your text editor and as a design document in Futon.
+<p>Une fois que vous avez achevé la procédure d’installation, vous serez capable de voir tout le code de l’application Sofa, aussi bien dans votre éditeur de texte que sous la forme d’un <em>design document</em> dans Futon.
 
-<h3 id="summary">Standalone</h3>
+<h3 id="summary">Autosuffisance</h3>
 
-<p>What happens if you add an HTML file as a document attachment? Exactly the same thing. We can serve web pages directly with CouchDB. Of course, we might also need images, stylesheets, or scripts. No problem; just add these resources as document attachments and link to them using relative URIs.
+<p>Que se passe-t-il si vous joignez un fichier HTML à un document ? La même chose. CouchDB peut servir directement des pages web. Bien sûr, vous aurez peut-être aussi besoin d’images, de feuilles de style ou de scripts. Aucun souci : ajoutez ces fichiers comme des pièces jointes et liez-les entre eux avec des URIs relatives.
 
-<p>Let’s take a step back. What do we have so far? A way to serve HTML documents and other static files on the Web. That means we can build and serve traditional websites using CouchDB. Fantastic! But isn’t this a little like reinventing the wheel? Well, a very important difference is that we also have a document database sitting in the background. We can talk to this database using the JavaScript served up with our web pages. Now we’re really cooking with gas!
+<p>Prenons du recul. Qu’avons-nous à présent ? Un moyen de servir des documents HTML et d’autres fichiers statiques sur le Web. Vous pouvez donc créer un publier des sites web traditionnels avec CouchDB. Fantastique ! Mais n’est-ce pas réinventer la roue ? Eh bien, le changement, c’est que nous avons aussi une base de données derrière. Nous pouvons attaquer cette base de données avec le JavaScript envoyé dans nos pages web. Bienvenu à bord de la Rolls-Royce !
 
-<p>CouchDB’s features are a foundation for building standalone web applications backed by a powerful database. As a proof of concept, look no further than CouchDB’s built-in administrative interface. Futon is a fully functional database management application built using HTML, CSS, and JavaScript. Nothing else. CouchDB and web applications go hand in hand.
+<p>Les fonctionnalités de CouchDB permettent de bâtir des applications web autonomes s’appuyant sur une base de données puissante. Pour preuve, regardez l’interface d’administration Futon : elle est intégrée à CouchDB. Futon est une application de gestion de base de données pleinement opérationnelle avec de HTML, du CSS et du JavaScript. Et rien d’autre. CouchDB est fait pour s’entendre avec les applications web.
 
-<h3 id="wild">In the Wild</h3>
+<h3 id="wild">Dans la nature</h3>
 
-<p>There are plenty of examples of CouchApps in the wild. This section includes screenshots of just a few sites and applications that use a standalone CouchDB architecture.
+<p>Il existe de nombreux exemples de CouchApps dans la nature. Cette section contient des captures d’écran de quelques sites et applications qui utilisent une architecture CouchDB autonome.
 
-<p>Damien Katz, inventor of CouchDB and writer of this book’s <a href="foreword.html">Foreword</a>, decided to see how long it would take to implement a shared calendar with real-time updates as events are changed on the server. It took about an afternoon, thanks to some amazing open source jQuery plug-ins. <a href="http://jchrisa.net/cal/_design/cal/index.html">The calendar demo is still running on J. Chris’s server</a>. See <a href="#figure/3">Figure 3, “Group calendar”</a>.
+<p>Damien Katz, inventeur de CouchDB et auteur de la <a href="foreword.html">préface</a> de ce livre, a cherché à voir combien de temps serait nécessaire à implémenter un calendrier partagé avec des mises à jour en temps réel quand un évènement est modifié sur le serveur. Cela lui a pris l’après-midi, grâce soit rendue à quelques greffons impressionnants du <em>framework</em> JQuery. <a href="http://jchrisa.net/cal/_design/cal/index.html">Le calendrier fonctionne toujours sur le serveur de J. Chris</a>. Reportez-vous à la <a href="#figure/3">Figure 3, Calendrier de groupe</a>.
 
 <div class="figure" id="figure/3">
 
 <img src="standalone/03.png">
 
-<p class="caption">Figure 3. Group calendar
+<p class="caption">Figure 3. Calendrier de groupe
 
 </div>
 
-<p>Jason Davies swapped out the backend of the <a href="http://www.elyservice.co.uk/">Ely Service website</a> with CouchDB, without changing anything visible to the user. The technical details are <a href="http://www.jasondavies.com/blog/2009/05/08/couchdb-on-wheels/">covered on his blog</a>. See <a href="#figure/4">Figure 4, “Ely Service”</a>.
+<p>Jason Davies s’est appuyé sur CouchDB pour le stockage du <a href="http://www.elyservice.co.uk/">site Ely Service</a>. Les détails techniques sont <a href="http://www.jasondavies.com/blog/2009/05/08/couchdb-on-wheels/">donnés sur son blogue</a>. Reportez-vous à la <a href="#figure/4">Figure 4, Ely Service</a>.
 
 <div class="figure" id="figure/4">
 
@@ -130,9 +130,9 @@ curl http://127.0.0.1:5984
 
 </div>
 
-<p>Jason also converted his mom’s ecommerce website, Bet Ha Bracha, to a CouchApp. It uses the <code>_update</code> handler to hook into different transaction gateways. See <a href="#figure/5">Figure 5, “Bet Ha Bracha”</a>.
+<p>Jason a aussi converti le site commercial de sa mère, Bet Ha Bracha, en une CouchApp. Il utilise le gestionnaire <code>_update</code> pour s’adresse aux passerelles de transaction. Reportez-vous à la <a href="#figure/5">Figure 5, Bet Ha Bracha</a>.
 
-<p><a href="http://processingjs.org/">Processing JS</a> is a toolkit for building animated art that runs in the browser. <a href="http://github.com/hpoydar/processing-js-studio">Processing JS Studio</a> is a gallery for Processing JS sketches. See <a href="#figure/6">Figure 6, “Processing JS Studio”</a>.
+<p><a href="http://processingjs.org/">Processing JS</a> est une bibliothèque qui permet d’écrire des animations qui s’exécutent dans le navigateur. <a href="http://github.com/hpoydar/processing-js-studio">Processing JS Studio</a> est une galerie recensant les « croquis » de Processing JS. Reportez-vous à la <a href="#figure/6">Figure 6, Processing JS Studio</a>.
 
 <div class="figure" id="figure/5">
 
@@ -150,7 +150,7 @@ curl http://127.0.0.1:5984
 
 </div>
 
-<p><a href="http://github.com/quirkey/swinger">Swinger</a> is a CouchApp for building and sharing presentations. It uses the <a href="http://www.quirkey.com/blog/2009/09/15/sammy-js-couchdb-and-the-new-web-architecture/">Sammy</a> JavaScript application framework. See <a href="#figure/7">Figure 7, “Swinger”</a>.
+<p><a href="http://github.com/quirkey/swinger">Swinger</a> est une CouchApp pour créer et partager des diaporamas. Il repose sur <em><a href="http://www.quirkey.com/blog/2009/09/15/sammy-js-couchdb-and-the-new-web-architecture/">Sammy</a> JavaScript application framework</em>. Reportez-vous à la <a href="#figure/7">Figure 7, Swinger</a>.
 
 <div class="figure" id="figure/7">
 
@@ -160,9 +160,9 @@ curl http://127.0.0.1:5984
 
 </div>
 
-<p><a href="http://nymphormation.org">Nymphormation</a> is a link sharing and tagging site by Benoît Chesneau. It uses CouchDB’s cookie authentication and also makes it possible to share links using replication. See <a href="#figure/8">Figure 8, “Nymphormation”</a>.
+<p><a href="http://nymphormation.org">Nymphormation</a> est un site de partage d’adresses et de classification conçu par Benoît Chesneau. Il utilise l’authentification par <em>cookie</em> de CouchDB et permet le partage des adresses par les mécanismes de réplication. Reportez-vous à la <a href="#figure/8">Figure 8, Nymphormation</a>.
 
-<p><a href="http://github.com/langalex/boom_amazing">Boom Amazing</a> is a CouchApp by Alexander Lang that allows you to zoom, rotate, and pan around an SVG file, record the different positions, and then replay those for a presentation or something else (from the Boom Amazing README). See <a href="#figure/9">Figure 9, “Boom Amazing”</a>.
+<p><a href="http://github.com/langalex/boom_amazing">Boom Amazing</a> est une CouchApp développée par Alexander Lang qui vous permet de pivoter, de zoomer et de faire des panoramiques de fichiers SVG, le tout en mémorisant les différentes positions pour pouvoir les rejouer lors d’une présentation (dixit le <em> Boom Amazing README</em>). Reportez-vous à la <a href="#figure/9">Figure 9, Boom Amazing</a>.
 
 <div class="figure" id="figure/8">
 
@@ -180,19 +180,19 @@ curl http://127.0.0.1:5984
 
 </div>
 
-<p>The <a href="http://github.com/jchris/couchdb-twitter-client">CouchDB Twitter Client</a> was one of the first standalone CouchApps to be released. It’s documented in J. Chris’s blog post, <a href="http://jchrisa.net/drl/_design/sofa/_show/post/my_couch_or_yours__shareable_ap">“My Couch or Yours, Shareable Apps are the Future”</a>. The screenshot in <a href="#figure/10">Figure 10, “Twitter Client”</a> shows the word cloud generated from a MapReduce view of CouchDB’s archived tweets. The cloud is normalized against the global view, so universally common words don’t dominate the chart.
+<p>Le <a href="http://github.com/jchris/couchdb-twitter-client">client Twitter CouchDB</a> fut une des premières CouchApp créées. Il est décrit par l’article du blogue de J. Chris <a href="http://jchrisa.net/drl/_design/sofa/_show/post/my_couch_or_yours__shareable_ap"><em>My Couch or Yours, Shareable Apps are the Future</em></a>. La capture d’écran présentée par la <a href="#figure/10">Figure 10, Client Twitter</a> montre un nuage de mots généré par une vue MapReduce des gazouillis archivés dans la base CouchDB. Ce nuage est stabilisé à partir de la vue globale, ce qui garantit que les mots communs ne domineront pas le nuage.
 
 <div class="figure" id="figure/10">
 
 <img src="standalone/10.png">
 
-<p class="caption">Figure 10. Twitter Client
+<p class="caption">Figure 10. Client Twitter
 
 </div>
 
-<p><a href="http://github.com/jchris/toast">Toast</a> is a chat application that allows users to create channels and then invite others to real-time chat. It was initially a demo of the <code>_changes</code> event loop, but it started to take off as a way to chat. See <a href="#figure/11">Figure 11, “Toast”</a>.
+<p><a href="http://github.com/jchris/toast">Toast</a> est un système de communication instantané qui permet aux utilisateurs de créer des salons et d’y inviter d’autres personnes. À l’origine, c’était une démonstration de la boucle d’évènements <code>_changes</code>, mais il a fini par être un moyen de communication. Reportez-vous à la figure <a href="#figure/11">Figure 11, Toast</a>.
 
-<p>Sofa is the example application for this part, and it has been deployed by a few different authors around the web. The screenshot in <a href="#figure/12">Figure 12, “Sofa”</a> is from Jan’s Tumblelog. To see Sofa in action, visit <a href="http://jchrisa.net">J. Chris’s site</a>, which has been running Sofa since late 2008.
+<p>Sofa est l’application d’exemple de cette partie, et elle a été déployée par différents auteurs sur le Web. La capture d’écran illustrée par la <a href="#figure/12">Figure 12, Sofa</a> a été prise sur le Tumblelog de Jan. Pour en voir davantage, vous pouvez visiter <a href="http://jchrisa.net">le site web de J. Chris</a> qui est en ligne depuis fin 2008.
 
 <div class="figure" id="figure/11">
 
@@ -210,10 +210,10 @@ curl http://127.0.0.1:5984
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Résumé</h3>
 
-<p>J. Chris decided to port his blog from Ruby on Rails to CouchDB. He started by exporting Rails ActiveRecord objects as JSON documents, paring away some features, and adding others as he converted to HTML and JavaScript.
+<p>J. Chris a décidé de migrer son blogue de <em>Ruby on Rails</em> vers CouchDB. Il a commencé par exporter les objets <em>ActiveRecords</em> de Rails vers leur équivalent JSON en abandonnant quelques fonctionnalités pour en intégrer d’autres dans les codes HTML et JavaScript.
 
-<p>The resulting blog engine features access-controlled posting, open comments with the possibility of moderation, Atom feeds, Markdown formatting, and a few other little goodies. This book is not about jQuery, so although we use this JavaScript library, we’ll refrain from dwelling on it. Readers familiar with using asynchronous XMLHttpRequest (XHR) should feel right at home with the code. Keep in mind that the figures and code samples in this part omit many of the bookkeeping details.
+<p>Le moteur de blogue qui en résulte offre les fonctionnalités de contrôle d’accès, de commentaires libres avec la possibilité de les modérer, de flux Atom, de formatage Markdown, etc. Le sujet principal de ce livre n’est pas jQuery, donc même si nous utilisons cette bibliothèque JavaScript, nous nous retiendrons de creuser ce sujet. Les lecteurs familiers des requêtes XML HTTP asynchrones (<em>asynchronous XMLHttpRequests, XHR</em>) devraient se sentir chez eux en présence du code. Gardez toutefois à l’esprit que les extraits de code et les illustrations de cette partie passent sous silence certains détails.
 
-<p>We will be studying this application and learning how it exercises all the core features of CouchDB. The skills learned in this part should be broadly applicable to any CouchDB application domain, whether you intend to build a self-hosted CouchApp or not.
+<p>Nous allons étudier cette application et voir comment elle met en pratique les fonctionnalités de base de CouchDB. Les compétences acquises dans cette partie devraient pouvoir s’appliquer dans tous les domaines où CouchDB a sa place, que vous comptiez bâtir une CouchApp que vous hébergez vous-mêmes ou non.
