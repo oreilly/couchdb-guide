@@ -10,41 +10,44 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="validation">Validation Functions</h2>
+<h2 id="validation">Validierungsfunktionen</h2>
 
-<p>In this chapter, we look closely at the individual components of Sofa’s validation function. Sofa has the basic set of validation features you’ll want in your apps, so understanding its validation function will give you a good foundation for others you may write in the future.
+<p>In diesem Kapitel schauen wir uns die Sofa Validierungsfunktionen genauer an. Sofa benutzt grundlegende Validierungsfunktonen die man in einer Anwendung benötigt. Wenn man diese Funktionen versteht, dann hat man genug Grundwissen um eigene Funktionen in weitere Anwendungen zu schreiben.
 
-<p>CouchDB uses the <code>validate_doc_update</code> function to prevent invalid or unauthorized document updates from proceeding. We use it in the example application to ensure that blog posts can be authored only by logged-in users. CouchDB’s validation functions—like map and reduce functions—can’t have any side effects; they run in isolation of a request. They have the opportunity to block not only end-user document saves, but also replicated documents from other CouchDBs.
+<p>CouchDB benutzt die <code>validate_doc_update</code> Funktion um unautorisierten Zugriff, ungültige oder unerwünschte Datenupdates zu verhindern. In der Beispielanwendung benutzen wir die Funktion, um sicherzustellen, dass Blogeinträge nur von autorisierten Benutzern bearbeitet werden. Bei den CouchDB Validierungsfunktonen - genau wie bei den map und reduce Funktionen - können keine Nebeneffekte auftreten, da diese isoliert von der Anfrage abgearbeitet werden. Sie haben die Möglichkeit nicht direkte Zugriffe zu blockieren, sondern können auch entfernte Zugriffe von anderen CouchDBs verhindern.
 
-<h3 id="functions">Document Validation Functions</h3>
+<h3 id="functions">Dokument Validierungsfunktionen</h3>
 
-<p>To ensure that users may save only documents that provide these fields, we can validate their input by adding another member to the <code>_design/</code> document: the <code>validate_doc_update</code> function. This is the first time you’ve seen CouchDB’s external process in action. CouchDB sends functions and documents to a JavaScript interpreter. This mechanism is what allows us to write our document validation functions in JavaScript. The <code>validate_doc_update</code> function gets executed for each document you want to create or update. If the validation function raises an exception, the update is denied; when it doesn’t, the updates are accepted.
-
-<p>Document validation is optional. If you don’t create a validation function, no checking is done and documents with any content or structure can be written into your CouchDB database. If you have multiple design documents, each with a <code>validate_doc_update</code> function, all of those functions are called upon each incoming write request. Only if all of them pass does the write succeed. The order of the validation execution is not defined. Each validation function must act on its own. See <a href="#figure/1">Figure 1, “The JavaScript document validation function”</a>.
+<p>Um sicherzustellen, das Benutzer nur Dokumente speichern, dessen Felder auch vorhanden sind, benötigt man nur dem <code>_design</code> Dokument die <code>validate_doc_update</code> Funktion hinzuzufügen. Das ist das erste mal, dass die CouchDB einen externen Prozess ausführt. CouchDB sendet Funktionen und Dokumente zu einem externen JavaScript Interpreter, was uns erlaubt, das wir die Validierungsfunktionen in CouchDB realisieren können. Die <code>validate_doc_update</code> Funktion wird für jedes Dokument das neu angelegt oder gespeichert wird, ausgeführt. Wenn die Validierung fehlschlägt und einen Fehler wirft, wird der Updatevorgang abgebrochen; wenn nicht, wird das Update ausgeführt.
+	
+	
+	
+<p>Die Validierung des Dokumentes ist optional. Wenn keine Validierungsfunktionen existieren, dann wird keine Eingabe überprüft und alle Daten können in die Datenbank geschrieben werden. Wenn mehrere Design Dokumente mit einer <code>validate_doc_update</code> Funktion existieren, dann wird bei einer ankommenden Anfrage jede Validierungsfunktion von jedem Designdokument aufgerufen und auf die Anfrage angewandt. Nur, wenn kein Fehler in dem gesamten Validierungsprozess geworfen wird, werden die Daten in die Datenbank geschrieben. Die Reihenfolge der Validierungsfunktionen ist nicht festgelegt, so, dass jede Funktionen für sich selbst arbeiten muss und keine Abhängigkeiten nutzen kann. Siehe auch <a href="#figure/1">Figur 1, “Die JavaScript, Dokumentvalidierungsfunktion”</a>.
 
 <div class="figure" id="figure/1">
 
 <img src="validation/01.png">
 
-<p class="caption">Figure 1. The JavaScript document validation function
+<p class="caption">Figur 1, die JavaScript, Dokumentvalidierungsfunktion
 
 </div>
 
-<p>Validation functions can cancel document updates by throwing errors. To throw an error in such a way that the user will be asked to authenticate, before retrying the request, use JavaScript code like:
+<p>Validierungsfunktionen können Updates abbrechen, indem sie Fehler werfen. Um einen Fehler zu werfen, welcher zeigt, das der Anwender nicht autorisiert ist, die Abfrage durchzuführen, sieht der JavaScript-Code so aus:
 
 <pre>
 throw({unauthorized : message});
 </pre>
 
-<p>When you’re trying to prevent an authorized user from saving invalid data, use this:
+<p>Um zu verhindern, das ein autorisierter Anwender, ungültige Daten in einen Datensatz schreibt, kann dieser Fehler geworfen werden:
 
 <pre>
 throw({forbidden : message});
 </pre>
 
-<p>This function throws <code>forbidden</code> errors when a post does not contain the necessary fields. In places it uses a <code>validate()</code> helper to clean up the JavaScript. We also use simple JavaScript conditionals to ensure that the <code>doc._id</code> is set to be the same as <code>doc.slug</code> for the sake of pretty URLs.
+<p>Diese Funktion wirft einen <code>forbidden</code> Fehler, wenn die ankommenden Daten nicht gültig sind. Zusätzlich werden auch <code>validate()</code> Helfer eingesetzt um die Daten zu validieren. Es werden auch einfache JavaScript Konditionen genutzt um sicherzustellen, dass <code>doc._id</code> den selben Inhalt wie <code>doc._slug</code> besitzt. Dies ist nützlich um schöne URLs zu formen. 
 
-<p>If no exceptions are thrown, CouchDB expects the incoming document to be valid and will write it to the database. By using JavaScript to validate JSON documents, we can deal with any structure a document might have. Given that you can just make up document structure as you go, being able to validate what you come up with is pretty flexible and powerful. Validation can also be a valuable form of documentation.
+
+<p>Wenn keine Fehler geworfen werden, dann sieht CouchDB die einkommenden Daten als gültig an und schreibt diese in die Datenbank. Indem wir JavaScript verwenden, um JSON Dokumente zu validieren, können wir jede mögliche erlaubte Struktur nutzen, die ein Dokument haben darf. Dadurch kann jedes gültige Dokument einfach und schnell validiert werden. Validierung ist auch eine gute Form der Dokumentation.
 
 <h3 id="context">Validation’s Context</h3>
 
