@@ -49,41 +49,43 @@ throw({forbidden : message});
 
 <p>Wenn keine Fehler geworfen werden, dann sieht CouchDB die einkommenden Daten als gültig an und schreibt diese in die Datenbank. Indem wir JavaScript verwenden, um JSON Dokumente zu validieren, können wir jede mögliche erlaubte Struktur nutzen, die ein Dokument haben darf. Dadurch kann jedes gültige Dokument einfach und schnell validiert werden. Validierung ist auch eine gute Form der Dokumentation.
 
-<h3 id="context">Validation’s Context</h3>
+<h3 id="context">Wie arbeitet die Validierung</h3>
 
-<p>Before we delve into the details of our validation function, let’s talk about the context in which they run and the effects they can have.
+<p>Bevor wir weiter ins Detail gehen, beschäftigen wir uns zuerst mit der Funktion der Validierung.
+	
+	
+<p>Validierungsfunktionen werden in <code>design documents</code> in dem Feld <code>validate_doc_update</code> gespeichert. Es gibt nur eine Validierungsfunktion pro Designdokument, aber es gibt mehrere Designdokumente in einer Datenbank. Beim speichern eines Datensatzes wird dieser, durch alle Validierungsfunktionen, aller Designdokumenten durchlaufen. (Die Reihenfolge der Abarbeitung ist nicht definiert.) In diesem Kapitel, gehen wir einfachhalber davon aus, das es nur eine einzige Validierungsfunktion gibt.
 
-<p>Validation functions are stored in <em>design documents</em> under the <code>validate_doc_update</code> field. There is only one per design document, but there can be many design documents in a database. In order for a document to be saved, it must pass validations on all design documents in the database (the order in which multiple validations are executed is left undefined). In this chapter, we’ll assume you are working in a database with only one validation function.
+<h3 id="writing">Eine Validierungsfunktion schreiben</h3>
 
-<h3 id="writing">Writing One</h3>
-
-<p>The function declaration is simple. It takes three arguments: the proposed document update, the current version of the document on disk, and an object corresponding to the user initiating the request.
+<p>Die Funktionsdeklaration ist denkbar einfach. Es werden 3 Argumente erwartet: das veränderte Dokument, die aktuelle Version des Dokuments, und das entsprechende Benutzerobject des Benutzers, welcher die Anfrage ausgeführt hat.s
 
 <pre>
 function(newDoc, oldDoc, userCtx) {}
 </pre>
 
-<p>Above is the simplest possible validation function, which, when deployed, would allow all updates regardless of content or user roles. The converse, which never lets anyone do anything, looks like this:
-
+<p>Hierdrüber ist die einfachste Validierungsfunktion, welche beim verändern der Daten, egal um welche Daten oder welchen Benutzer es sich handelt, alles zulässt. Umgekehrterweise sieht die Funktion die alles blockiert, so aus:
+	
 <pre>
 function(newDoc, oldDoc, userCtx) {
   throw({forbidden : 'no way'});
 }
 </pre>
 
-<p>Note that if you install this function in your database, you won’t be able to perform any other document operations until you remove it from the design document or delete the design document. Admins can create and delete design documents despite the existence of this extreme validation function.
+<p>Beachte, das wenn du diese Funktion in der Datenbank einsetzt, dass du solange keine Daten mehr verändern kannst, bis diese Funktion aus dem Designdokument entfernt wurde. Administratoren können trotz dieser Einschränkungen Designdokumente bearbeiten, so, dass diese Funktion auch wieder entfernt werden kann.
 
-<p>We can see from these examples that the return value of the function is ignored. Validation functions prevent document updates by raising errors. When the validation function passes without raising errors, the update is allowed to proceed.
+<p>Anhand dieser Beispiele können wir sehen, das die return-Anweisung ignoriert wird. Validierungsfunktionen verhindern Updates mithilfe von Exceptions.
+Wenn ein Update ohne Fehler alle Validierungsfunktionen durchläuft, dann wird dieses fest in die Datenbank geschrieben.
 
-<h4 id="type">Type</h4>
+<h4 id="type">Typen</h4>
 
-<p>The most basic use of validation functions is to ensure that documents are properly formed to fit your application’s expectations. Without validation, you need to check for the existence of all fields on a document that your MapReduce or user-interface code needs to function. With validation, you know that any saved documents meet whatever criteria you require.
+<p>Das wichtigste einer Validierungsfunktion ist, sicherzustellen, dass Dokumente alle Felder enthalten die eine Anwendung benötigt. Ohne Validierung, müssten man die Vollständigkeit eines Dokumentes in den MapReduce Funktionen sicherstellen. Mit Validierung weiß man, dass alle benötigten Felder beim speichern vorhanden sind.
 
-<p>A common pattern in most languages, frameworks, and databases is using types to distinguish between subsets of your data. For instance, in Sofa we have a few document types, most prominently <code>post</code> and <code>comment</code>.
+<p>Ein übliches Must in vielen Sprachen, Frameworks und Datenbanken ist, das benutzen von unterschiedlichen Typen um zwischen Datensätzen zu unterscheiden. Als Beispiel haben wir in Sofa die Dokumenttypen <code>post</code> und <code>comment</code>.
 
-<p>CouchDB itself has no notion of types, but they are a convenient shorthand for use in your application code, including MapReduce views, display logic, and user interface code. The convention is to use a field called <code>type</code> to store document types, but many frameworks use other fields, as CouchDB itself doesn’t care which field you use. (For instance, the CouchRest Ruby client uses <code>couchrest-type</code>).
-
-<p>Here’s an example validation function that runs only on posts:
+<p>CouchDB selber ist typenlos, aber sie sind ein praktisches Hilfsmiitel in Anwenungen, den MapReduce Views und dem Interface. Die Konvention besagt, das es ein Feld namens <code>type</code> innerhalb der einzelnen Dokumente geben sollte, aber viele Frameworks benutzen andere Felder. Wie der Benutzer das Feld nennt ist ihm überlassen. (Zum Beispiel nennt der CouchRest Ruby Client das Feld <code>couchrest-type</code>)
+	
+<p>Hier ist eine Beispiel Validierungsfunktion welche nur auf Posts angewandt wird:
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -93,8 +95,8 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>Since CouchDB stores only one validation function per design document, you’ll end up validating multiple types in one function, so the overall structure becomes something like:
-
+<p>Da CouchDB in jedem Designdokument nur eine Validierungsfunktion zulässt, kann man auch mehrere Typen innerhalb einer Validierung abarbeiten. Die Funktion könnte dann so aussehen:
+	
 <pre>
 function(newDoc, oldDoc, userCtx) {
   if (newDoc.type == "post") {
@@ -109,7 +111,7 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>It bears repeating that <code>type</code> is a completely optional field. We present it here as a helpful technique for managing validations in CouchDB, but there are other ways to write validation functions. Here’s an example that uses <em>duck typing</em> instead of an explicit <code>type</code> attribute:
+<p>Es sei nochmals gesagt, das <code>type</code> ein optionales Feld ist. Wir stellen es hier als eine nützliche Technik vor, um den Validierungsprozess zu vereinfachen. Es gibt auch andere Wege eine solche Funktion zu schreiben. Hier ist ein Beispiel das <em>duck typing</em>, anstatt von einem <code>type</code> Attribut benutzt:
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -119,17 +121,17 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>This validation function ignores the <code>type</code> attribute altogether and instead makes the somewhat simpler requirement that any document with both a title and a body must have an author. For some applications, typeless validations are simpler. For others, it can be a pain to keep track of which sets of fields are dependent on one another.
+<p>Dieser Weg der Validierung ignoriert den <code>type</code> Attribut völlig. Stattdessen wird hier davon ausgegangen, das ein Dokument, welches einen Title und einen Body haben, auch einen Author haben müssen. Für machen Anwendungen ist die typenlose Validation einfacher. Wiederrum kann es auch ein Nachteil sein, wenn andere Felder ihre Abhängigkeiten kennen.
 
-<p>In practice, many applications end up using a mix of typed and untyped validations. For instance, Sofa uses document types to track which fields are required on a given document, but it also uses duck typing to validate the structure of particular named fields. We don’t care what sort of document we’re validating. If the document has a <code>created_at</code> field, we ensure that the field is a properly formed timestamp. Similarly, when we validate the author of a document, we don’t care what type of document it is; we just ensure that the author matches the user who saved the document.
+<p>In der Praxis nutzen viele Anwendungen eine Mischung aus typenlosen und typisierter Validierung. Sofa benutzt zum Beispiel Dokumenttypen, um nachzuvollziehen welche Felder eines Dokuments benötigt werden. Es wird aber auch Duck Typing genutzt, um die Struktur von speziellen Feldern zu validieren. Es ist egal welche Sorte von Dokumenten wir validieren. Wenn das Dokument eine <code>created_at</code> Feld hat, dann können wir sichergehen, dass das Feld einen passenden Timestamp beinhaltet. Das ist vergleichbar damit, dass wenn wir einen Autor von einem Dokument validieren, es uns egal ist, welcher Typ dieser hat. Wir wissen nur, das der Autor dem Benutzer gleicht, welcher das Feld gespeichert hat.
 
-<h4 id="required">Required Fields</h4>
+<h4 id="required">Pflichtfelder</h4>
 
-<p>The most fundamental validation is ensuring that particular fields are available on a document. The proper use of required fields can make writing MapReduce views much simpler, as you don’t have to test for all the properties before using them—you know all documents will be well-formed.
+<p>Die wichtigste Form der Validierung ist, das wir sicherstellen, dass spezielle Felder in einem Dokument vorhanden sind.
 
-<p>Required fields also make display logic much simpler. Nothing says amateur like the word <code>undefined</code> showing up throughout your application. If you know for certain that all documents will have a field, you can avoid lengthy conditional statements to render the display differently depending on document structure.
+<p>Pflichtfelder machen die Anzeigenlogik viel einfacher. Nichts ist dilettantischer als wenn das Wort <code>undefined</code> aus der Anwendung zurückgegeben wird. Wenn ein Feld mit Sicherheit in einem Dokument immer vorkommt, dann kann man sich umständliche Abfrage aber auch sparen.
 
-<p>Sofa requires a different set of fields on posts and comments. Here’s a subset of the Sofa validation function:
+<p>Sofa benötigt eine verschiedene Felder bei Posts und Comments. Hier ist ein Ausschnitt einer Validierungsfunktion:
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -152,15 +154,16 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>This is our first look at actual validation logic. You can see that the actual error throwing code has been wrapped in a helper function. Helpers like the <code>require</code> function just shown go a long way toward making your code clean and readable. The <code>require</code> function is simple. It takes a field name and an optional message, and it ensures that the field is not empty or blank.
+<p>Das ist unser erster Blick auf die Validierungslogik. Man kann sehen, das der Codeabschnitt, welcher den Fehler wirft, in eine extra Funktion ausgelagert wurde. Helfer wie die <code>require</code> Funktion machen den Code einfach und leserlich. Die <code>require</code> Funktion ist dabei sehr einfach. Sie erwartet einf Feld Name und eine optionale Message und stellt sicher, das das Feld nicht leer ist.
 
-<p>Once we’ve declared our helper function, we can simply use it in a type-specific way. Posts require a <code>title</code>, a <code>timestamp</code>, a <code>body</code>, and an <code>author</code>. Comments require a <code>name</code>, a <code>timestamp</code>, and the <code>comment</code> itself. If we wanted to require that every single document contained a <code>created_at</code> field, we could move that declaration outside of any type conditional logic.
+<p>Wenn wir einmal die Helferfunktion deklariert haben, können wir diese immer wieder verwenden. Posts fordert einen <code>title</code>, einen <code>timestamp</code>, einen <code>body</code>, und einen <code>author</code>. Comments benötigt einen <code>name</code>, einen <code>timestamp</code>, und den <code>comment</code> selber. Wenn wir sicherstellen wollen, das jedes Dokument ein Feld <code>created_at</code> enthalten muss, dann können wir dies ausserhalb der Typendeklaration setzen.
+	
 
 <h4 id="timestamps">Timestamps</h4>
 
-<p>Timestamps are an interesting problem in validation functions. Because validation functions are run at replication time as well as during normal client access, we can’t require that timestamps be set close to the server’s system time. We can require two things: that timestamps do not change after they are initially set, and that they are well formed. What it means to be well formed depends on your application. We’ll look at Sofa’s particular requirements here, as well as digress a bit about other options for timestamp formats.
+<p>Timestamps sind ein interessantes Problem bei der Validierungsfunktion, da die Validierung nicht on-the-fly, sondern mit einer, wenn auch geringen, Zeitverzögerung ausgeführt wird. Wir können nicht erwarten, das der Timestamp mit dem Servertimestamp übereinstimmt. Wir können 2 Dinge erwarten: Timestamps verändern sich nicht, nachdem diese gesetzt wurden und sie sind richtig geformt. Was es heisst, das Timestamps im richtig Format gesetzt werden schauen wir uns anhand von Sofa an.
 
-<p>First, let’s look at a validation helper that does not allow fields, once set, to be changed on subsequent updates:
+<p>Als erstes gucken wir auf den Validationshelfer, welcher es nicht erlaubt, verhandene Felder zu verändern,
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -172,30 +175,31 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<p>The <code>unchanged</code> helper is a little more complex than the <code>require</code> helper, but not much. The first line of the function prevents it from running on initial updates. The <code>unchanged</code> helper doesn’t care at all what goes into a field the first time it is saved. However, if there exists an already-saved version of the document, the <code>unchanged</code> helper requires that whatever fields it is used on are the same between the new and the old version of the document.
+<p>Der <code>unchanged</code> Helfer ist ein bisschen komplexer als der <code>require</code> Helfer. Die erste Zeile in der Funktion verhindert das ausführen der Funktion bei Updates. Der <code>unchanged</code> Helfer kümmert sich nicht um den Inhalt des Feldes, welcher das erste mal gesetzt wird. Wenn also eine gespeicherte Version des Feldes schon existent ist, fordert der <code>unchanged</code> Helfer, das die neue sowie die alte Version gleich sind.
 
-<p>JavaScript’s equality test is not well suited to working with deeply nested objects. We use CouchDB’s JavaScript runtime’s built-in <code>toJSON</code> function in our equality test, which is better than testing for raw equality. Here’s why:
-
+<p>JavaScript’s Gleichheitsprüfung ist nicht geeignet um mit tieferen verschachtelten Objekten zu arbeiten. Wir nutzen die von der CouchDB integrierten <code>toJSON</code> JavaScript Funktion in unseren vergleichen, da diese besser geeignet ist, um die Objekte miteinander vergleichen zu können. Hier sieht man warum:
+	
 <pre>
 js&gt; [] == []
 false
 </pre>
 
-<p>JavaScript considers these arrays to be different because it doesn’t look at the contents of the array when making the decision. Since they are distinct objects, JavaScript must consider them not equal. We use the <code>toJSON</code> function to convert objects to a string representation, which makes comparisons more likely to succeed in the case where two objects have the same contents. This is not guaranteed to work for deeply nested objects, as <code>toJSON</code> may serialize objects.
-
+<p>JavaScript sieht diese Arrays nicht als gleich an, da nicht der Inhalt bei der Überprüfung als Grundlage genommen wird. Seit dies als Objekt angesehen wird, muss JavaScript diese nicht mehr als gleich ansehen. Wir benutzen die <code>toJSON</code> Funktion um das Objekt zu einem String zu konvertieren, da die Stringvergleiche den Inhalt betrachten und wir dadurch die Gleichheit zweier Objekte mit demselben Inhalt feststellen können.
+	
 <div class="aside note">
 
-<p>The <code>js</code> command gets installed when you install CouchDB’s SpiderMonkey dependency. It is a command-line application that lets you parse, evaluate, and run JavaScript code. <code>js</code> lets you quickly test JavaScript code snippets like the one previously shown. You can also run a syntax check of your JavaScript code using <code>js file.js</code>. In case CouchDB’s error messages are not helpful, you can resort to testing your code standalone and get a useful error report.
+<p>Der <code>js</code> Befehlt wird mitinstalliert, wenn CouchDB´s SpiderMonkey Abhängigkeit mitinstalliert wird. Dies ist eine Kommandozeilen Anwendung welche es erlaubt JavaScript Code on-the-fly zu parsen, evaluieren und auszuführen. Mit <code>js</code> kann man, wie oben gesehen, schnell JavaScript code testen. Man kann auch einen Syntaxcheck einer Datei mittels <code>js file.js</code> durchführen. Meistens sind die CouchDB Fehlerausgaben nicht sehr hilfreich, daher ist es öfter besser den Code so einzeln zu testen und eine aussagekräftige Fehlermeldung zu erhalten.
 
 </div>
 
-<h4 id="authorship">Authorship</h4>
+<h4 id="authorship">Autorschaft</h4>
 
-<p>Authorship is an interesting question in distributed systems. In some environments, you can trust the server to ascribe authorship to a document. Currently, CouchDB has a simple built-in validation system that manages <em>node admins</em>. There are plans to add a database admin role, as well as other roles. The authentication system is pluggable, so you can integrate with existing services to authenticate users to CouchDB using an HTTP layer, using LDAP integration, or through other means.
+<p>Die Autorschaft ist innerhalb von verteilten Systemen eine interessante Frage. In manchen Umgebungen kann man dem Server vertrauen, wenn dieser die Autorschaft zu einem Dokument setzt. Zurzeit hat die CouchDB ein einfaches eingebautes System um die Rechte der <em>node admins</em> zu verwalten. Es gibt die Möglichkeit einer Datenbank Administratorrechte zu vergeben, genau wie man andere Rechte vergeben kann. Die Authentifizierung der Benutzer zur CouchDB kann man über eine HTTP Schicht, welche LDAP nutzt, oder andere Mittel realisieren.
+	
 
-<p>Sofa uses the built-in node admin account system and so is best suited for single or small groups of authors. Extending Sofa to store author credentials in CouchDB itself is an exercise left to the reader.
-
-<p>Sofa’s validation logic says that documents saved with an author field must be saved by the author listed on that field:
+<p>Sofa nutzt den intigrierten vernetzten Administratorenaccount, da dieser am besten für einzelne oder größere Gruppen geeignet ist. Sofa so zu erweitern, das zusätzliche Autoreninformationen in der Datenbank gespeichert werden soll die Aufgabe des Lersers sein.
+	
+<p>Sofa’s Validierungslogik besagt, das nur ein Author, welcher in der  Autorenliste gelistet ist, Dokumente speichern darf:
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -206,8 +210,8 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Nachbereitung</h3>
 
-<p>Validation functions are a powerful tool to ensure that only documents you expect end up in your databases. You can test writes to your database by content, by structure, and by user who is making the document request. Together, these three angles let you build sophisticated validation routines that will stop anyone from tampering with your database.
+<p>Validierungsfunktionen sind ein starkes Mittel um sicherzustellen, das nur die Dokumente die man erwartet auch in die Datenbank geschrieben werden. Es gibt 3 mögliche Formen, auch welche wir bei der Validierung zugreifen können. Der Inhalt, die Struktur und derjenige, der die Anfrage ausgeführt hat. Zusammen sind diese 3 Validierungsmöglichkeiten ausreichend um komplexe Routinen zu schreiben, die jeden davon abhalten die Daten der Datenbank zu manipulieren.
 
-<p>Of course, validation functions are no substitute for a full security system, although they go a long way and work well with CouchDB’s other security mechanisms. Read more about CouchDB’s security in <a href="security.html">Chapter 22, Security</a>.
+<p>Mit Sicherheit sind die Validierungsfunktionen kein vollständiger Ersatz für Sicherheitssysteme, obwohl diese mit anderen Sicherheitsmechanismen sehr gut zusammenarbeiten. Mehr über CouchDB´s Sicherheit in <a href="security.html">Kapitel 22, Sicherheit</a>.
