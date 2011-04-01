@@ -1,4 +1,4 @@
-<title>Change Notifications</title>
+<title>Notification des mises à jour</title>
 
 <meta charset="utf-8">
 
@@ -10,47 +10,47 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="notifications">Change Notifications</h2>
+<h2 id="notifications">Notification des mises à jour</h2>
 
-<p>Say you are building a message service with CouchDB. Each user has an inbox database and other users send messages by dropping them into the inbox database. When users want to read all messages received, they can just open their inbox databases and see all messages.
+<p>Imaginez que vous concevez un service de messagerie à l’aide de CouchDB. Chaque utilisateur dispose d’une boîte aux lettres sous la forme d’une base de données ; les expéditeurs envoient leurs messages en déposant un document dans cette base. Quand les utilisateurs désirent relever leur courrier, ils peuvent ouvrir leur boîte et lire les messages qu’elle contient.
 
-<p>So far, so simple, but now you’ve got your users hitting the Refresh button all the time once they’ve looked at their messages to see if there are new messages. This is commonly referred to as <em>polling</em>. A lot of users are generating a lot of requests that, most of the time, don’t show anything new, just the list of all the messages they already know about.
+<p>Jusque là, c’est simple. Toutefois, vous vous retrouvez avec vos utilisateurs effectuant des rafraîchissements fréquents pour découvrir si un nouveau message est arrivé. C’est ce que l’on appelle couramment la scrutation (ou attente active, de l’anglais <em>polling</em>). Dans ce cas, un nombre important d’utilisateurs génère un nombre conséquent de requêtes qui, la plupart du temps, ne renvoient rien de nouveau ; juste la liste que l’utilisateur avait déjà consultée.
 
-<p>Wouldn’t it be nice to ask CouchDB to give you notice when a new message arrives? The <code>_changes</code> database API does just that.
+<p>Ne serait-il pas judicieux de demander à CouchDB de notifier l’utilisateur quand un nouveau message arrive ? L’API <code>_changes</code> est là pour cela !
 
-<p>The scenario just described can be seen as the <em>cache invalidation problem</em>; that is, when do I know that what I am displaying right now is no longer an apt representation of the underlying data store? Any sort of cache invalidation, not only backend/frontend-related, can be built using <code>_changes</code>.
+<p>Ce scénario traite le problème de l’invalidation de l’antémémoire, c’est-à-dire de savoir quand ce que j’affiche ne représente plus fidèlement les données sous-jancentes. Toute invalidation d’antémémoire, qu’elle soit ou non <em>backend/frontend-related</em>, peut se baser sur l’API <code>_changes</code>.
 
-<p><code>_changes</code> is also designed and suited to extract an activity stream from a database, whether for simple display or, equally important, to act on a new document (or a document change) when it occurs.
+<p><code>_changes</code> est aussi conçue pour extraire un fil d’activité d’une base de données, que ce soit pour afficher l’information ou pour réagir en conséquence à la création ou modification d’un document.
 
-<p>The beauty of systems that use the changes API is that they are <em>decoupled</em>. A program that is interested only in latest updates doesn’t need to know about programs that create new documents and vice versa.
+<p>La beauté des systèmes qui implémentent l’API de scrutation réside dans leur <em>découplage</em>. En effet, un programme qui s’intéresse uniquement aux dernières mises-à-jour n’a pas besoin de connaître les programmes qui créent des documents, et récpiroquement.
 
-<p>Here’s what a <code>changes</code> item looks like:
+<p>Voici à quoi ressemble un objet <code>changes</code> :
 
 <pre>
 {"seq":12,"id":"foo","changes":[{"rev":"1-23202479633c2b380f79507a776743d5"}]}
 </pre>
 
-<p>There are three fields:
+<p>Il y a trois champs :
 
 <dl>
 
 <dt><code>seq</code></dt>
 
-<dd>The <code>update_seq</code> of the database that was created when the document with the <code>id</code> got created or changed.</dd>
+<dd>L’<code>update_seq</code> de la base de données qui a été généré lors de la création ou de la mise à jour du document <code>id</code>.</dd>
 
 <dt><code>id</code></dt>
 
-<dd>The document ID.</dd>
+<dd>L’identifiant du document.</dd>
 
 <dt><code>changes</code></dt>
 
-<dd>An array of fields, which by default includes the document’s revision ID, but can also include information about document conflicts and other things.</dd>
+<dd>Un tableau de champs qui, par défaut, inclut l’identifiant de la révision du document. Il peut aussi contenir des informations sur les conflits ou d’autres choses.</dd>
 
 </dl>
 
-<p>The changes API is available for each database. You can get changes that happen in a single database per request. But you can easily send multiple requests to multiple databases’ changes API if you need that.
+<p>L’API de scrutation est disponible pour chaque base de donnes. Une seule requête vous permet d’obtenir les modifications occurant sur une seule base. Toutefois, vous pouvez facilement envoyer plusieurs requêtes pour interroger plusisuers API sur plusieurs bases si vous en avez besoin.
 
-<p>Let’s create a database that we can use as an example later in this chapter:
+<p>Créons une base de données que nous utiliserons par la suite :
 
 <pre>
 &gt; HOST="http://127.0.0.1:5984"
@@ -58,19 +58,19 @@
 {"ok":true}
 </pre>
 
-<p>There are three ways to request notifications: <em>polling</em> (the default), <em>long polling</em> and <em>continuous</em>. Each is useful in a different scenario, and we’ll discuss all of them in detail.
+<p>Il existe trois manières de d’obtenir des notifications : <em>scruter</em> (par défaut), <em>scruter à la ligne</em> [NdT : comme la pêche à la ligne, on pose la ligne et on attend] et </em>scruter de manière continue</em>. Chacune correspond à un besoin différent que nous expliciterons ci-après.
 
-<h3 id="polling">Polling for Changes</h3>
+<h3 id="polling">Scruter les modifications</h3>
 
-<p>In the previous example, we tried to avoid the polling method, but it is very simple and in some cases the only one suitable for a problem. Because it is the simplest case, it is the default for the changes API.
+<p>Dans l’exemple précédent, nous tentions d’éviter le recours à la scrutation. Cependant, c’est très simple et cela s’avère parfois la seule méthode convenable pour résoudre un problème. Comme il s’agit du cas le plus simple, c’est celui qui est choisi par défaut dans l’API de scrutation.
 
-<p>Let’s see what the changes for our test database look like. First, the request (we’re using <code>curl</code> again):
+<p>Voyons à quoi ressemble l’API dans notre base. Tout d’abord, la requête (nous utilisions de nouveau <code>curl</code>) :
 
 <pre>
 curl -X GET $HOST/db/_changes
 </pre>
 
-<p>The result is simple:
+<p>Le résultat est simple :
 
 <pre>
 {"results":[
@@ -79,19 +79,19 @@ curl -X GET $HOST/db/_changes
 "last_seq":0}
 </pre>
 
-<p>There’s nothing there because we didn’t put anything in yet—no surprise. But you can guess where we’d see results—when they start to come in. Let’s create a document:
+<p>Il n’y a rien à voir, car nous n’avons rien mis dans la base — guère surprenant. Vous pouvez deviner où vous verriez des modifications s’il y en avait. Créons un document :
 
 <pre>
 curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB répond :
 
 <pre>
 {"ok":true,"id":"test","rev":"1-aaa8e2a031bca334f50b48b6682fb486"}
 </pre>
 
-<p>Now let’s run the changes request again:
+<p>Regardons à nouveau l’API :
 
 <pre>
 {"results":[
@@ -100,9 +100,9 @@ curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 "last_seq":1}
 </pre>
 
-<p>We get a notification about our new document. This is pretty neat! But wait—when we created the document and got information like the revision ID, why would we want to make a request to the changes API to get it again? Remember that the purpose of the changes API is to allow you to build decoupled systems. The program that creates the document is very likely not the same program that requests changes for the database, since it already knows what it put in there (although this is blurry, the same program could be interested in changes made by others).
+<p>Nous obtenons une notification de notre nouveau document. C’est sympa ! Sauf que… nous avons déjà eu ces informations en retour de la requête de création du document. Pourquoi donc voudrions-nous soumettre une nouvelle requête pour l’obtenir à nouveau ? Souvenez-vous qu’il s’agit de créer des systèmes découplés. Le programme qui crée le document n’est probablement pas celui qui scrutera les changements puisqu’il les connaît déjà. Pour vous embrouiller un peu, ce même programme pourrait désirer connaître les modifications apportées par les autres.
 
-<p>Behind the scenes, we created another document. Let’s see what the changes for the database look like now:
+<p>Dans les coulisses, nous avons créé un nouveau document. Regardons l’effet :
 
 <pre>
 {"results":[
@@ -112,15 +112,15 @@ curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 "last_seq":2}
 </pre>
 
-<p>See how we get a new line in the result that represents the new document? In addition, the first document we put in there got listed again. The default result for the changes API is the history of all changes that the database has seen.
+<p>Voyez-vous la nouvelle ligne qui représente le nouveau document ? En plus, le premier document créé est de nouveau listé. Il faut dire que, par défaut, l’API de modification conserve l’historique de tous les changements effectués sur la base.
 
-<p>We’ve already seen the change for <code>"seq":1</code>, and we’re no longer really interested in it. We can tell the changes API about that by using the <code>since=1</code> query parameter:
+<p>Comme nous avons déjà vu la modification de <code>"seq":1</code>, elle ne nous intéresse plus. Aussi, nous pouvons demander à l’API de le masquer à l’aide du paramètre <code>since=1</code> :
 
 <pre>
 curl -X GET $HOST/db/_changes?since=1
 </pre>
 
-<p>This returns all changes <em>after</em> the <code>seq</code> specified by <code>since</code>:
+<p>Cela renvoie les modifications survenues <em>après</em> le <code>seq</code> spécifié par <code>since</code> :
 
 <pre>
 {"results":[
@@ -129,15 +129,15 @@ curl -X GET $HOST/db/_changes?since=1
 "last_seq":2}
 </pre>
 
-<p>While we’re discussing options, use <code>style=all_docs</code> to get more revision and conflict information in the <code>changes</code> array for each result row. If you want to specify the default explicitly, the value is <code>main_only</code>.
+<p>Puisque nous en sommes aux options, utilisez donc <code>style=all_docs</code> pour obtenir davantage de révisions et d’informations sur les conflits dans le tableau <code>changes</code> de chaque enregistrement. Si vous exigez explicitement le comportement par défaut, la valeur du paramètre est <code>main_only</code>.
 
-<h3 id="long">Long Polling</h3>
+<h3 id="long">Scruter à la ligne</h3>
 
-<p>The technique of long polling was invented for web browsers to remove one of the problems with the regular polling approach: it doesn’t run any requests if nothing changed. Long polling works like this: when making a request to the long polling API, you open an HTTP connection to CouchDB until a new row appears in the changes result, and both you and CouchDB keep the HTTP connection open. As soon as a result appears, the connection is closed.
+<p>La technique de scrutation à la ligne (<em>long polling</em> en anglais) a été inventée pour aider les navigateurs web à résoudre le problème majeur de la scrutation traditionnelle : elle n’envoie pas de requêtes si rien n’a changé. Cela fonctionne de la manière suivante : lorsqu’une requête part vers l’API de scrutation à la ligne [NdT : vous posez votre ligne de pêche], vous ouvrez une connexion HTTP à CouchDB jusqu’à ce qu’un nouvel enregistrement apparaisse dans l’API [NdT : qu’un poisson morde à l’hameçon] ; en attendant, vous et le serveur conservez la connexion ouverte. Dès qu’un résultat apparaît, la connexion est fermée.
 
-<p>This works well for low-frequency updates. If a lot of changes occur for a client, you find yourself opening many new requests, and the usefulness of this approach over regular polling declines. Another general consequence of this technique is that for each client requesting a long polling change notification, CouchDB will have to keep an HTTP connection open. CouchDB is well capable of doing so, as it is designed to handle many concurrent requests. But you need to make sure your operating system allows CouchDB to use at least as many sockets as you have long polling clients (and a few spare for regular requests, of course).
+<p>Cela fonctionne bien quand les mises-à-jour sont rares. Dans le cas où un grand nombre de modifications affectent un client, vous vous retrouvez à soumettre de nombreuses requêtes, ce qui réduit d’autant l’intérêt de cette approche par rapport à la scrutation traditionnelle. Une autre conséquence de cette technique est de devoir maintenir une connexion HTTP ouverte. CouchDB en est capable, puisqu’il est conçu pour traiter de nombreuses requêtes en parallèle. Toutefois, vous devez vous assurer que votre système d’exploitation permet à CouchDB d’utiliser au moins autant de sockets que vous avez de pêcheurs à la ligne (en sus d’un nombre complémentaire pour les requêtes usuelles).
 
-<p>To make a long polling request, add the <code>feed=longpoll</code> query parameter. For this listing, we added timestamps to show you when things happen.
+<p>Pour forger une requête de scrutation à la ligne, ajouter le paramètre <code>feed=longpoll</code>. Pour ce listing, nous avons ajouté l’horodatage pour vous montrer quand les choses se sont passées.
 
 <pre>
 00:00: &gt; curl -X GET "$HOST/db/_changes?feed=longpoll&amp;since=2"
@@ -147,21 +147,21 @@ curl -X GET $HOST/db/_changes?since=1
 00:10: "last_seq":3}
 </pre>
 
-<p>At <code>00:10</code>, we create another document behind your back again, and CouchDB promptly sends us the change. Note that we used <code>since=2</code> to avoid getting any of the previous notifications. Also note that we have to use double quotes for the <code>curl</code> command because we are using an ampersand, which is a special character for our shell.
+<p>À <code>00:10</code>, nous créons un autre document à votre insu et CouchDB nous indique promptement la modification. Notez que nous avons spécifié <code>since=2</code> pour éviter les notifications précédentes. Notez aussi que nous devons utiliser les doubles guillemets droits pour la commande <code>curl</code>, car nous utilisons une esperluette, laquelle est un caractère spécial pour notre <em>shell</em>.
 
-<p>The <code>style</code> option works for long polling requests just like for regular polling requests.
+<p>L’option <code>style</code> fonctionne de la même manière pour les requêtes de scrutation et de scrutation à la ligne.
 
-<p>Networks are a tricky beast, and sometimes you don’t know whether there are no changes coming or your network connection went stale. If you add another query parameter, <code>heartbeat=<em>N</em></code>, where <em>N</em> is a number, CouchDB will send you a newline character each <em>N</em> milliseconds. As long as you are receiving newline characters, you know there are no new change notifications, but CouchDB is still ready to send you the next one when it occurs.
+<p>Les réseaux sont des bêtes délicates et, quelques fois, vous ne savez pas si vous ne recevez rien car il n’y a rien à recevoir, ou parce que votre connexion est foutue. Si vous ajoutez un autre paramètre, <code>heartbeat=<em>N</em></code>, où <em>N</em> est un nombre, CouchDB vous enverra un retour chariot toutes les <em>N</em> millisecondes. Tant que vous recevez des retours chariot, c’est qu’il n’y a pas eu de nouveaux changements et que CouchDB est toujours prêt à vous notifier dès que cela survient.
 
-<h3 id="continuous">Continuous Changes</h3>
+<h3 id="continuous">Scruter en continu</h3>
 
-<p>Long polling is great, but you still end up opening an HTTP request for each change notification. For web browsers, this is the only way to avoid the problems of regular polling. But web browsers are not the only client software that can be used to talk to CouchDB. If you are using Python, Ruby, Java, or any other language really, you have yet another option.
+<p>La scrutation à la ligne est pratique, mais vous vous retrouvez tout de même à ouvrir une connexion HTTP par notification. Pour les navigateurs web, c’est le seul moyen d’éviter le fléau de la scrutation régulière. Mais les navigateurs ne sont pas les seuls clients qui peuvent communiquer avec CouchDB. Si vous utilisez Python, Ruby, Java, ou quelqu’autre langage, vous disposez d’une autre possibilité.
 
-<p>The <em>continuous changes API</em> allows you to receive change notifications as they come in using a single HTTP connection. You make a request to the continuous changes API and both you and CouchDB will hold the connection open “forever.” CouchDB will send you newlines for notifications when the occur and—as opposed to long polling—will keep the HTTP connection open, waiting to send the next notification.
+<p>L’<em>API de scrutation continue</em> vous permet de recevoir les modifications comme elles surviennent, à travers une seule connexion HTTP. Vous soumettez une requête à l’API et CouchDB et vous-même tiendrez la connexion ouverte pour « toujours ». CouchDB vous enverra des retours chariot lors des notifications et, contrairement à la scrutation à la ligne, ne fermera pas la connexion et attendra d’envoyer d’autres modifications.
 
-<p>This is great for both infrequent and frequent notifications, and it has the same consequence as long polling: you’re going to have a lot of long-living HTTP connections. But again, CouchDB easily supports these.
+<p>C’est pratique aussi bien pour les notifications fréquentes que rares, et cela emporte la même conséquence que la scrutation à la ligne : vous allez avoir de nombreuses connexion HTTP de longue durée. Une fois encore, CouchDB le supporte bien.
 
-<p>Use the <code>feed=continuous</code> parameter to make a continuous changes API request. Following is the result, again with timestamps. At <code>00:10</code> and <code>00:15</code>, we’ll create a new document each:
+<p>Utilisez le paramètre <code>feed=continuous</code> pour rendre une scrutation continue. Ci-dessous se trouve le résultat, à nouveau avec l’horodatage. À <code>00:10</code> et <code>00:15</code>, nous créerons un nouveau document :
 
 <pre>
 00:00: &gt; curl -X GET "$HOST/db/_changes?feed=continuous&amp;since=3"
@@ -169,7 +169,7 @@ curl -X GET $HOST/db/_changes?since=1
 00:15: {"seq":5,"id":"test5","changes":[{"rev":"1-02c6b758b08360abefc383d74ed5973d"}]}
 </pre>
 
-<p>Note that the continuous changes API result doesn’t include a wrapping JSON object with a results member with the individual notification results as array items; it includes only a raw line per notification. Also note that the lines are no longer separated by a comma. Whereas the regular and long polling APIs result is a full valid JSON object when the HTTP request returns, the continuous changes API sends individual rows as valid JSON objects. The difference makes it easier for clients to parse the respective results. The <code>style</code> and <code>heartbeat</code> parameters work as expected with the continuous changes API.
+<p>Notez bien que la réponse de l’API de scrutation continue n’enserre pas ses réponses dans un objet JSON pour lequel chaque notification est un élément du tableau. Elle consiste en une ligne brute par notification. Notez aussi que les lignes ne s’achèvent plus par des virgules. Contrairement aux deux autres modes de scrutation où le résultat est contenu dans un objet JSON, l’API de scrutation continue renvoie un objet JSON valide par ligne. Cette différence permet de faciliter le traitement des réponses par les clients. Par ailleurs, les paramètres <code>style</code> et <code>heartbeat</code> fonctionnent comme attendu dans cette API.
 
 <h3 id="filters">Filters</h3>
 
