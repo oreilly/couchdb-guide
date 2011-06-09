@@ -106,11 +106,11 @@ function(doc) {
 
 </div>
 
-<p>If you read carefully over the last few paragraphs, one part stands out: “When you query your view, CouchDB takes the source code and runs it for you on every document in the database.” If you have a lot of documents, that takes quite a bit of time and you might wonder if it is not horribly inefficient to do this. Yes, it would be, but CouchDB is designed to avoid any extra costs: it only runs through all documents once, when you <em>first</em> query your view. If a document is changed, the map function is only run once, to recompute the keys and values for that single document.
+<p>In den letzten Paragraphen haben wir folgenden Satz noch nicht beachtet : "Wenn man eine View aufruft, dann nimmt COuchDB den Source Code und führt diesen für jedes Dokument in der Datenbank aus." Wenn viele Dokumente in der Datenbank existieren, dann wird die Ausführung auf jedes Dokument sehr viel Zeit in Anspruch nehmen und man könnte meinen das die sehr ineffizient ist. Ist es auch, aber CouchDB ist so aufgebaut, das dieser Mehraufwand nicht so stark ins Gewicht fällt: es werden alle Dokumente nur einmalig durchlaufen, dann, wenn die View <em>das erste mal</em> aufgerufen wird. Wenn ein Dokument verändert wird, wir die Mapfunktion nur einmalig auf das Dokument angewandt um das Dokument mit den Keys und Values neu zu generieren.
 
-<p>The view result is stored in a B-tree, just like the structure that is responsible for holding your documents. View B-trees are stored in their own file, so that for high-performance CouchDB usage, you can keep views on their own disk. The B-tree provides very fast lookups of rows by key, as well as efficient streaming of rows in a key range. In our example, a single view can answer all questions that involve time: “Give me all the blog posts from last week” or “last month” or “this year.” Pretty neat. Read more about how CouchDB’s B-trees work in <a href="btree.html">Appendix F, The Power of B-trees</a>.
+<p>Das View Ergebnis wir in einem B-Baum gespeichert, genau wie die Struktur, welche für das Halten der Dokumente verantwortlich ist. View B-Bäume werden in separaten Dateien gespeichert so, dass für High-Performance Zugriffe die CouchDB diese auf ihrer eigenen Festplatte hat. Die B-Bäume stellen eine sehr schnelle Ausführung von Lookups von Rows mittels Keys sicher. Genauso schnell ist die Suche nach Bereichen von Keys. In unserem Beispiel kann eine einzelne View alle Anfragen beantworten: "Gibt mir alle Blogposts von letzter Woche" oder "vom letzten Monat" oder "von diesem Jahr". Lies mehr über die Arbeit von CouchDB mit B-Bäumen im <a href="btree.html">Anhang F, Die Macht der B-Bäume</a>.
 
-<p>When we query our view, we get back a list of all documents sorted by date. Each row also includes the post title so we can construct links to posts. Figure 1 is just a graphical representation of the view result. The actual result is JSON-encoded and contains a little more metadata:
+<p>Wenn wir unsere View aufrufen, bekommen wir eine Liste aller Dokumente, sortiert nach Datum, zurückgeliefert. Jede Zeile besitzt einen Posttitle so, dass wir Links zu Posts erstellen können. Figur 1 ist nur eine grafische Präsentierung des View Ergebnisses. Das eigentliche Ergebnis ist JSON-formatiert und beinhaltet ein bisschen mehr Metadaten.
 
 <pre>
 {
@@ -138,27 +138,31 @@ function(doc) {
 }
 </pre>
 
-<p>Now, the actual result is not as nicely formatted and doesn’t include any superfluous whitespace or newlines, but this is better for you (and us!) to read and understand. Where does that <code>"id"</code> member in the result rows come from? That wasn’t there before. That’s because we omitted it earlier to avoid confusion. CouchDB automatically includes the document ID of the document that created the entry in the view result. We’ll use this as well when constructing links to the blog post pages.
+<p>Das richtige Ergebnis ist nicht so schön formatiert und enthält auch keine überflüssigen Leerzeichen und Zeilen, aber so ist es besser für uns das Ergebnis zu lesen und zu verstehen. Wo kommt die <code>"id"</code> Zeile her, vorher war diese nicht da? Diese war auch vorher da, aber wir hatten sie für das bessere Verständnis weggelassen. CouchDB erzeugt die Zeile mit der ID automatisch. Wir werden diese bei unseren Links zu den Blogposts auch einsetzen.
 
-<h3 id="lookups">Efficient Lookups</h3>
+<h3 id="lookups">Effiziente Abfragen</h3>
 
-<p>Let’s move on to the second use case for views: “building efficient indexes to find documents by any value or structure that resides in them.” We already explained the efficient indexing, but we skipped a few details. This is a good time to finish this discussion as we are looking at map functions that are a little more complex.
 
-<p>First, back to the B-trees! We explained that the B-tree that backs the <code>key</code>-sorted view result is built only once, when you first query a view, and all subsequent queries will just read the B-tree instead of executing the map function for all documents again. What happens, though, when you change a document, add a new one, or delete one? Easy: CouchDB is smart enough to find the rows in the view result that were created by a specific document. It marks them <em>invalid</em> so that they no longer show up in view results. If the document was deleted, we’re good—the resulting B-tree reflects the state of the database. If a document got updated, the new document is run through the map function and the resulting new lines are inserted into the B-tree at the correct spots. New documents are handled in the same way. <a href="btree.html">Appendix F, The Power of B-trees</a> demonstrates that a B-tree is a very efficient data structure for our needs, and the crash-only design of CouchDB databases is carried over to the view indexes as well.
 
-<p>To add one more point to the efficiency discussion: usually multiple documents are updated between view queries. The mechanism explained in the previous paragraph gets applied to all changes in the database since the last time the view was queried in a batch operation, which makes things even faster and is generally a better use of your resources.
+<p>Das zweite Einsatzgebiet für views: “effiziente Indizies erstellen, um Dokumente mit beliebigem Wert oder Struktur zu finden.” Vorrangegangen wurden effiziente Indizies erklärt, aber es wurden ein paar Details übersprungen. Dies wird nun nachgehollt, bevor weiter auf map Funktionen eingegangen wird, da diese ein bisschen komplexer sind.
 
-<h4 id="one">Find One</h4>
+<p>Als erstes, zurück zu den B-Bäumen! Es wurde schon erläutert, dass der B-Baum, welcher den nach den <code>key</code>´s sortiert wurde, nur einmal, beim ersten ausführen, erstellt wird. Alle weiteren Abfragen nutzen diesen temporär erstellten B-Baum für weitere Abfragen, anstatt erneut die map Funktion erneut auf alle Werte anzuwenden. Was passiert, wenn neue Dokumente hinzugefügt, bestehende geändert oder welche gelöscht werden ? Ganz einfach: CouchDB ist intelligent genug die neuen Einträge in den Views zu filtern. Diese werden als <em>invalid</em> markiert und nicht mehr in der View ausgegeben. Wenn ein Dokumente gelöscht wird, so wird in dem Ergebnis das betroffene Dokument nicht mehr angezeigt. Wenn das Dokument geändert wird, dann durchläuft die neue Version des Dokuments erneut die map Funktion und wird in dem Ergebnis automatisch an der richtigen Stelle einsortiert. Neue Dokumente werden genau so verarbeitet. <a href="btree.html">Anhang F, Die Stärke der B-Bäume</a> demonstriert das ein B-Baum eine sehr effiziente Struktur für die CouchDB ist, and the crash-only design of CouchDB databases is carried over to the view indexes as well.
 
-<p>On to more complex map functions. We said “find documents by any value or structure that resides in them.” We already explained how to extract a value by which to sort a list of views (our <code>date</code> field). The same mechanism is used for fast lookups. The URI to query to get a view’s result is <code>/database/_design/designdocname/_view/viewname</code>. This gives you a list of all rows in the view. We have only three documents, so things are small, but with thousands of documents, this can get long. You can add <em>view parameters</em> to the URI to constrain the result set. Say we know the date of a blog post. To find a single document, we would use <code>/blog/_design/docs/_view/by_date?key="2009/01/30 18:04:11"</code> to get the “Biking” blog post. Remember that you can place whatever you like in the <code>key</code> parameter to the <code>emit()</code> function. Whatever you put in there, we can now use to look up exactly—and fast.
 
-<p>Note that in the case where multiple rows have the same key (perhaps we design a view where the key is the name of the post’s author), key queries can return more than one row.
+<p>Ein weiterer Punkt für Diskussion der Effizienz: in der Regel werden mehrere Dokumente zwischen den view Abfragen geändert.  Der Mechanismus, des im vorigen erklärten Abschnittes, wird in einer Operation in der Datenbank ausgeführt so, dass die Resourcen besser genutzt werden und alles schneller abläuft.
 
-<h4 id="many">Find Many</h4>
+<h4 id="one">Einzelne Daten finden</h4>
 
-<p>We talked about “getting all posts for last month.” If it’s February now, this is as easy as <code>/blog/_design/docs/_view/by_date?startkey="2010/01/01 00:00:00"&amp;endkey="2010/02/00 00:00:00"</code>. The <code>startkey</code> and <code>endkey</code> parameters specify an inclusive range on which we can search.
+<p>Weiter zu komplexeren map Funktoonen. Wir sagten, "Dokumente mit beliebigem Wert und Struktur in der Datenbank zu finden." Wir haben schon erläutert, wie man einen Wert aus einer sortierten Liste finden kann (Mittels des <code>date</code> Feldes). Der selbe Mechanismus wir für schnelles finden von anderen Daten genutzt. Die URI um eine View abzufragen lauet <code>/database/_design/designdocname/_view/viewname</code>. Dies gibt eine Lust von allen Werten in einer View zurück. Wir haben hier nur drei Dokumente so, dass alles sehr klein ist, aber mit tausenden von Dokumenten, kann diese Abfrage lange dauern. Man kann <em>view parameters</em> zu der URI hinzufügen hinzufügen um ein anderes Ergebnis zu erhalten. Wenn wir das Datum des blog Posts kennen, dann können wir danach suchen. Um ein einzelnes Dokument zu erhalten, können wir <code>/blog/_design/docs/_view/by_date?key="2009/01/30 18:04:11"</code> benutzen. So erhalten wir den "Biking" Blog Post. Beachte das man jedes erdenkliche Feld als <code>key</code> Parameter zu der <code>emit()</code>  Funktion aufnehmen kann. Welches Feld auch immer genommen wird, danach kann sehr schnell gesucht werden.
 
-<p>To make things a little nicer and to prepare for a future example, we are going to change the format of our date field. Instead of a string, we are going to use an array, where individual members are part of a timestamp in decreasing significance. This sounds fancy, but it is rather easy. Instead of:
+
+<p>Beachte das wenn mehrere Reihen die selben Felder haben (wenn eine view erstellt wird, wo ein Feld für den Namen des Post Autors genutzt wird), key Abfragen können mehr als eine Zeile zurückgeben.
+
+<h4 id="many">Mehrere Daten finden</h4>
+
+<p>Wir haben die Abfragen "alle Post des letzten Monats" bereits angesprochen. Wenn es jetzt Februar ist, dann würde die Abfrage so aussehen <code>/blog/_design/docs/_view/by_date?startkey="2010/01/01 00:00:00"&amp;endkey="2010/02/00 00:00:00"</code>. Der <code>startkey</code> und der <code>endkey</code> Parameter spezifizieren den Zeitraum in dem gesucht wird.
+
+<p>Um die Abfrage eleganter zu gestalten und für das weitere Kapitel nutzbarer zu machen, wird das Datumsfeld geändert. Anstatt einem String wird nun ein Array genutzt, bei dem die einzelnen Einträge Teil des Timestamps sind. Das klingt abwegig, ist aber ganz einfach. Anstatt von:
 
 <pre>
 {
@@ -166,13 +170,13 @@ function(doc) {
 }
 </pre>
 
-<p>we use:
+<p>nutzen wir nun:
 
 <pre>
 "date": [2009, 1, 31, 0, 0, 0]
 </pre>
 
-<p>Our map function does not have to change for this, but our view result looks a little different. See <a href="#table/2">Table 2, “New view results”</a>.
+<p>Unsere map Funktion brauchen wir nicht zu verändern. Die Ausgabe der View sieht dafür ein wenig verändert aus.  <a href="#table/2">Table 2, “Das neue View Ergebnis”</a>.
 
 <div class="figure" id="table/2">
 
@@ -196,11 +200,11 @@ function(doc) {
 
 </table>
 
-<p class="caption">Table 2. New view results
+<p class="caption">Table 2. Das neue View Ergebnis
 
 </div>
 
-<p>And our queries change to <code>/blog/_design/docs/_view/by_date?key=[2009, 1, 1, 0, 0, 0]</code> and <code>/blog/_design/docs/_view/by_date?key=[2009, 01, 31, 0, 0, 0]</code>. For all you care, this is just a change in syntax, not meaning. But it shows you the power of views. Not only can you construct an index with scalar values like strings and integers, you can also use JSON structures as keys for your views. Say we tag our documents with a list of tags and want to see all tags, but we don’t care for documents that have not been tagged.
+<p>Die Abfragen lauten nun <code>/blog/_design/docs/_view/by_date?key=[2009, 1, 1, 0, 0, 0]</code> und <code>/blog/_design/docs/_view/by_date?key=[2009, 01, 31, 0, 0, 0]</code>.  All die Abwandlung ist nur eine Syntaxänderung, die Abfragenlokig wird dabei nicht verändert, aber dies zeigt die Mächtigkeit der Views. Man kann nicht ausschließlich einen Index mit skalaren Werten wie Strings und Integers nutzen, auch JSON Strukturen können als keys für die Views genutzt werden. Angenommen unsere Dokumente werden mit mehreren Tags versehen, welche wir in unserem Ergebnis sehen möchten, uns aber diejenigen Einträge, welche nicht getagt wurden, nicht interessieren.
 
 <pre>
 {
@@ -228,25 +232,26 @@ function(doc) {
 }
 </pre>
 
-<p>This shows a few new things. You can have conditions on structure (<code>if(doc.tags.length &gt; 0)</code>) instead of just values. This is also an example of how a map function calls <code>emit()</code> multiple times per document. And finally, you can pass <code>null</code> instead of a value to the <code>value</code> parameter. The same is true for the <code>key</code> parameter. We’ll see in a bit how that is useful.
+<p>Dies zeigt ein paar neue Dinge. Man kann anstatt von Werten auch Konditionen in die Strukturen einbauen (<code>if(doc.tags.length &gt; 0)</code>). Dies ist auch ein Beispiel wie eine map Funktion, <code>emit()</code> mehrmals pro Dokument aufruft. Zudem kann auch <code>null</code> anstatt eines Wertes für den <code>value</code> Parameter genutzt werden. Dasselbe gilt für den <code>key</code> Parameter. Wir werden später sehen wie nützlich dieses Feature ist.
 
-<h4 id="reversed">Reversed Results</h4>
 
-<p>To retrieve view results in reverse order, use the <code>descending=true</code> query parameter. If you are using a <code>startkey</code> parameter, you will find that CouchDB returns different rows or no rows at all. What’s up with that?
+<h4 id="reversed">Umgekehrte Ergebnisse</h4>
 
-<p>It’s pretty easy to understand when you see how view query options work under the hood. A view is stored in a tree structure for fast lookups. Whenever you query a view, this is how CouchDB operates:
+<p>Um ein Ergebnis in umgekehrter Reihenfolge zu erhalten, kann man den <code>descending=true</code> Parameter nutzen. Wenn man gleichzeitig den <code>startkey</code> Parameter anhängt, gibt die CouchDB andere oder garkeine Spalten zurück.
+
+<p>Warum diesso ist, ist einfach zu verstehen wenn man weiß wie eine View Abfrage hinter den Kulissen arbeitet. Eine View ist einer Baum Struktur gespeichert, damit diese schnellausgeführt werden kann. Wenn man eine View abfragt, dann arbeitet CouchDB so:
 
 <ol>
 
-<li>Starts reading at the top, or at the position that <code>startkey</code> specifies, if present.</li>
+<li>Es wird angefangen oben, oder an der Position welche <code>startkey</code> angibt, zu lesen.</li>
 
-<li>Returns one row at a time until the end or until it hits <code>endkey</code>, if present.</li>
+<li>Bis zur letzten, oder bis zur, mittels <code>endkey</code> angegebenen, Spalte</li>
 
 </ol>
 
-<p>If you specify <code>descending=true</code>, the reading direction is reversed, <em>not</em> the sort order of the rows in the view. In addition, the same two-step procedure is followed.
+<p>Wenn <code>descending=true</code> genutzt wird, dann wird die Leserichtung verdreht, <em>not</em>  aber die Sortierung der Spalten innerhalb der View. Nachfolgend wird das selbe Prinzip der zwei Schritte abgearbeitet.
 
-<p>Say you have a view result that looks like this:
+<p>Angenommen unser View Ergebnis sieht so aus:
 
 <div>
 
@@ -272,7 +277,7 @@ function(doc) {
 
 </div>
 
-<p>Here are potential query options: <code>?startkey=1&amp;descending=true</code>. What will CouchDB do? See #1 above: it jumps to <code>startkey</code>, which is the row with the key <code>1</code>, and starts reading backward until it hits the end of the view. So the particular result would be:
+<p>Eine potenzielle Abfragemöglichkeit sieht so aus: <code>?startkey=1&amp;descending=true</code>. Was wird die CouchDB tun ? Siehe oben bei Punkt 1: es wird beim <code>startkey</code> angefangen, welches die Spalte mit dem Key <code>1</code> ist und dann wird rückwärts bis ans Ende der View gelesen. Das Ergebnis sieht dann so aus:
 
 <div>
 
@@ -296,7 +301,7 @@ function(doc) {
 
 </div>
 
-<p>This is very likely not what you want. To get the rows with the indexes <code>1</code> and <code>2</code> in reverse order, you need to switch the <code>startkey</code> to <code>endkey</code>: <code>endkey=1&amp;descending=true</code>:
+<p>Das ist nicht das was wir möchten. Um die Spalten mit den Indizies <code>1</code> und <code>2</code> in umgekehrter Reihenfolge zu erhalten muss einfach der <code>startkey</code> zum <code>endkey</code> abgeändert werden : <code>endkey=1&amp;descending=true</code>:
 
 <div>
 
@@ -320,13 +325,15 @@ function(doc) {
 
 </div>
 
-<p>Now that looks a lot better. CouchDB started reading at the bottom of the view and went backward until it hit <code>endkey</code>.
+<p>Dann ist das gewünschte Ergebnis erreicht. CouchDB fängt am Ende der View an zu lesen und ließt bis zum Anfang oder bis der <code>endkey</code> erreicht wird.
 
-<h3 id="comments">The View to Get Comments for Posts</h3>
 
-<p>We use an array key here to support the <code>group_level</code> reduce query parameter. CouchDB’s views are stored in the B-tree file structure (which will be described in more detail later on). Because of the way B-trees are structured, we can cache the intermediate reduce results in the non-leaf nodes of the tree, so reduce queries can be computed along arbitrary key ranges in logarithmic time. See <a href="#figure/1">Figure 1, “Comments map function”</a>.
+<h3 id="comments">Die View um Comments zum Post zu erhalten</h3>
 
-<p>In the blog app, we use <code>group_level</code> reduce queries to compute the count of comments both on a per-post and total basis, achieved by querying the same view index with different methods. With some array keys, and assuming each key has the value <code>1</code>:
+<p>Wir benutzen hier ein Array um den <code>group_level</code> Abfragenparameter zu unterstützen. CouchDB´s Views werden in B-Baum Strukturen gespeichert (was später im Detail weiter erläutert wird). Aufgrund der Struktur der B-Bäume, können die Zwischenergebnisse des Reduce Vorgangs einfach in den Knoten zwischengespeichert werden so, dass die Reduceabfragen, egal in welchem Bereich, immer in einer Logarithmischen Zeit laufen. Siehe  <a href="#figure/1">Figur 1, “Die Comments map Funktion”</a>.
+
+
+<p>In dem Blog nutzen wir <code>group_level</code> Reduceabfragen um die Anzahl der Comments für jeden Post, sowie die Anzahl aller Comments. Dies erreichen wir mit einer einzigen View über mehrere Methoden. Wir haben ein Array mit ein paar Keys, wobei wir annehmen, das jeder den Wert <code>1</code> hat:
 
 <pre>
 ["a","b","c"]
@@ -336,7 +343,7 @@ function(doc) {
 ["b","a","g"]
 </pre>
 
-<p>the reduce view:
+<p>die Reduceview:
 
 <pre>
 function(keys, values, rereduce) {
@@ -344,7 +351,7 @@ function(keys, values, rereduce) {
 }
 </pre>
 
-<p>returns the total number of rows between the start and end key. So with <code>startkey=["a","b"]&amp;endkey=["b"]</code> (which includes the first three of the above keys) the result would equal <code>3</code>. The effect is to count rows. If you’d like to count rows without depending on the row value, you can switch on the <code>rereduce</code> parameter:
+<p>gibt die Anzahl der Spalten zwischen den start und endkey zurück. Mit <code>startkey=["a","b"]&amp;endkey=["b"]</code> (was die ersten drei, der oben stehenden keys beinhaltet)  wäre das Ergebnis gleich <code>3</code>, womit wir die Spalten gezählt haben. Wenn die Anzahl der Spalten zurückgegeben werden soll, ohne, dass es einen Zusammenhang zu der jeweiligen Spalte gibt, kann man einfach den <code>rereduce</code> Paramter benutzen:
 
 <pre>
 function(keys, values, rereduce) {
@@ -360,20 +367,21 @@ function(keys, values, rereduce) {
 
 <img src="views/01.png">
 
-<p class="caption">Figure 1. Comments map function
+<p class="caption">Figur 1. Die Comments map Funktion
 
 </div>
 
-<p>This is the reduce view used by the example app to count comments, while utilizing the map to output the comments, which are more useful than just <code>1</code> over and over. It pays to spend some time playing around with map and reduce functions. Futon is OK for this, but it doesn’t give full access to all the query parameters. Writing your own test code for views in your language of choice is a great way to explore the nuances and capabilities of CouchDB’s incremental MapReduce system.
+<p>Das ist die Reduceview unserer Beispielanwendung um Comments zu zählen. Für die Ausgabe verwenden wir die Mapfunktion, was sinnvoller ist, anstatt Zeile für Zeile durchzugeben. Es kostet ein wenig Zeit mit den Map- und Reducefunktionen herumzuprobieren. Futon ist OK für diese Aufgaben, aber es erlaubt keinen vollen Zugriff auf alle Abfragenparameter. Eigene Abfragen in der präferierten Sprache zu schreiben, ist ein guter Weg den Hintergrund, sowie das MapReduce System von CouchDB zu verstehen.
 
-<p>Anyway, with a <code>group_level</code> query, you’re basically running a series of reduce range queries: one for each <em>group</em> that shows up at the <em>level</em> you query. Let’s reprint the key list from earlier, grouped at level <code>1</code>:
+
+<p>Mittels der <code>group_level</code> Abfrage, werden automatisch mehrere Reduceabfragen über einen bestimmten Bereich ausgeführt: einer für jede <em>group</em>, welcher das <em>level</em> ausgibt in dem man abfragt. Hier nochmal die Keyliste von vorher, mit dem Grouplevel <code>1</code>:
 
 <pre>
 ["a"]   3
 ["b"]   2
 </pre>
 
-<p>And at <code>group_level=2</code>:
+<p>Und mit <code>group_level=2</code>:
 
 <pre>
 ["a","b"]   2
@@ -381,13 +389,13 @@ function(keys, values, rereduce) {
 ["b","a"]   2
 </pre>
 
-<p>Using the parameter <code>group=true</code> makes it behave as though it were <code>group_level=Exact</code>, so in the case of our current example, it would give the number 1 for each key, as there are no exactly duplicated keys.
+<p>Das Benutzen des <code>group=true</code> Parameters gleicht dem <code>group_level=Exact</code> Parameters. In diesem Fall wird jedem Key die Nummer 1 gegeben, da keine doppelten Keys vorhanden sind.
 
 <h3 id="reduce">Reduce/Rereduce</h3>
 
-<p>We briefly talked about the <code>rereduce</code> parameter to your reduce function. We’ll explain what’s up with it in this section. By now, you should have learned that your view result is stored in B-tree index structure for efficiency. The existence and use of the <code>rereduce</code> parameter is tightly coupled to how the B-tree index works.
+<p>Im vorigen Abschnitt wurde kurz der <code>rereduce</code> Parameter angesprochen. Was es mit diesem auf sich hat, wird hier weiter erläutert. Bislang wissen wir, das die Viewergebnisse der Effizienz wegeb in einem B-Baum gespeichert werden. Die Existenz und das Nutzen des <code>rereduce</code> Parameters ist eng mit dem Arbeitsvorgang der B-Bäume verbunden.
 
-<p>Consider the map result shown in <a href="#example/1">Example 1, “Example view result (mmm, food)”</a>.
+<p>Siehe das Mapergebnis in <a href="#example/1">Beispiel 1, “Beispiel Viewergebnis (mmm, food)”</a>.
 
 <div id="example/1" class="figure">
 
@@ -406,11 +414,11 @@ function(keys, values, rereduce) {
 "vietnamese", 1
 </pre>
 
-<p class="caption">Example 1. Example view result (mmm, food)
+<p class="caption">Beispiel 1. Beispiel Viewergebnis (mmm, food)
 
 </div>
 
-<p>When we want to find out how many dishes there are per origin, we can reuse the simple reduce function shown earlier:
+<p>Wenn man herausfinden möchte, wieviel Gerichte pro Land vorhanden sind, kann man die Reducefunktion welche wir im vorigen Abschnutt genutzt haben, wieder benutzen:
 
 <pre>
 function(keys, values, rereduce) {
@@ -418,35 +426,41 @@ function(keys, values, rereduce) {
 }
 </pre>
 
-<p><a href="#figure/2">Figure 2, “The B-tree index”</a> shows a simplified version of what the B-tree index looks like. We abbreviated the key strings.
+<p><a href="#figure/2">Figur 2, “Der B-Baum Index”</a> zeigt eine vereinfachte Version wie der Index eines B-Baum aussieht. Die Keystrings wurden hier gekürzt.
 
 <div class="figure" id="figure/2">
 
 <img src="views/02.png">
 
-<p class="caption">Figure 2. The B-tree index
+<p class="caption">Figur 2, Der B-Baum Index
 
 </div>
 
-<p>The view result is what computer science grads call a “pre-order” walk through the tree. We look at each element in each node starting from the left. Whenever we see that there is a subnode to descend into, we descend and start reading the elements in that subnode. When we have walked through the entire tree, we’re done.
+<p>Das Viewergebnis ist, Informatikabsolventen nennen es einen Vordurchlauf durch die Baumstruktur. Gestartet von links, wird jedes Element und jeder Knoten betrachtet. Wenn ein Unterknoten existiert, dann wird dieser, genau wie der Hauptknoten, abgearbeitet. Wenn die gesamte Struktur durchlaufen wurde, ist der Vordurchlauf fertig.
 
-<p>You can see that CouchDB stores both keys and values inside each leaf node. In our case, it is simply always <code>1</code>, but you might have a value where you count other results and then all rows have a different value. What’s important is that CouchDB runs all elements that are within a node into the reduce function (setting the <code>rereduce</code> parameter to <code>false</code>) and stores the result inside the parent node along with the edge to the subnode. In our case, each edge has a <code>3</code> representing the reduce value for the node it points to.
+<p>CouchDB speichert sowohl die Schlüssel als auch die Werte in jedem Knoten. In unseren Fall ist es einfach, da es immer <code>1</code> ist, aber in anderen Fällen können alle Spalten auch unterschiedliche Werte haben. Wichtig ist, dass CouchDB alle Elemente, welche sich innerhalb eines Knoten in einer Reducefunktion befinden, (den <code>rereduce</code> Parameter auf <code>false</code> gesetzt) durchläuft und das Ergebnis in dem Elternknoten entlang der Ecke zu dem Unterknoten speichert. In diesem Fall ist der Wert jeder Ecke gleich <code>3</code>. Dieser repräsentiert das Reduceergebnis für jeden Knoten der auf diese Ecke zeigt.
 
-<p>In reality, nodes have more than 1,600 elements in them. CouchDB computes the result for all the elements in multiple iterations over the elements in a single node, not all at once (which would be disastrous for memory consumption).
 
-<p>Now let’s see what happens when we run a query. We want to know how many <code>"chinese"</code> entries we have. The query option is simple: <code>?key="chinese"</code>. See <a href="#figure/3">Figure 3, “The B-tree index reduce result”</a>.
+<p>In der Realität besitzen Knoten mehr als 1600 Elemente. CouchDb berechnet die Ergebnisse aller Elemente in mehreren Operationen, nicht alle auf einmal. (Was desaströs für den Speicherverbrauch wäre).
+
+
+<p>Wir wollen jetzt wissen, wie viele <code>"chinese"</code> Einträge wir haben. Die Abfrageoption ist einfach: <code>?key="chinese"</code>. 
+Siehe <a href="#figure/3">Figur 3, “Das B-Baum Reduceergebnis”</a>.
+
 
 <div class="figure" id="figure/3">
 
 <img src="views/03.png">
 
-<p class="caption">Figure 3. The B-tree index reduce result
+<p class="caption">Figur 3. Das B-Baum Reduceergebnis
 
 </div>
 
-<p>CouchDB detects that all values in the subnode include the <code>"chinese"</code> key. It concludes that it can take just the <code>3</code> value associated with that node to compute the final result. It then finds the node left to it and sees that it’s a node with keys outside the requested range (<code>key=</code> requests a range where the beginning and the end are the same value). It concludes that it has to use the <code>"chinese"</code> element’s value and the other node’s value and run them through the reduce function with the <code>rereduce</code> parameter set to <code>true</code>.
+<p>CouchDB erkennt das alle Werte in dem Unterknoten den <code>"chinese"</code> Key enthalten. Es werden genau <code>3</code> Werte gefunden, welche zur Berechnung des Endergebnisses genutzt werden. Danach wird der linke Knoten entdeckt, welcher auch den nötigen Schlüssel enthält, aber ausserhalb des angefragten Bereichs liegt (<code>key=</code> fragt einen Bereich, wo Anfang und Ende den selben Wert haben, an). Es werden die vorrangegangenen <code>"chinese"</code> Elemente, sowie die anderen Knotenelemente in der Reducefunktion genutzt. Wobei jetzt der <code>rereduce</code> Parameter auf <code>true</code> gesetzt wird.
 
-<p>The reduce function effectively calculates <code>3 + 1</code> on query time and returns the desired result. <a href="#example/2">Example 2, “The result is 4”</a> shows some pseudocode that shows the last invocation of the reduce function with actual values.
+
+<p>Die Reducefunktion berechnet für das Abfrageergebnis <code>3 + 1</code> und liefert somit das gewünschte Resultat. <a href="#example/2">Beispiel 2, “Das Ergebnis ist 4”</a> zeigt mit Pseudocode den letzten Aufruf der Funktion.
+
 
 <div class="figure" id="example/2">
 
@@ -456,11 +470,11 @@ function(null, [3, 1], true) {
 }
 </pre>
 
-<p class="caption">Example 2. The result is 4
+<p class="caption">Beispiel 2. Das Ergebnis ist 4
 
 </div>
 
-<p>Now, we said your reduce function must actually reduce your values. If you see the B-tree, it should become obvious what happens when you don’t reduce your values. Consider the following map result and reduce function. This time we want to get a list of all the unique labels in our view:
+<p>Nun können wir sagen, das die Reducefunktion die Werte reduzieren muss. Wenn man sich einen B-Baum anschaut, sollte es offensichtlich werden, was passiert, wenn die Werte nicht reduziert werden. Weiter mit folgendem Mapergebnis und folgender Reducefunktion. Das Ergebnis soll eine Liste mit allen Labels sein, wobei jedes Label nur einmal vorkommen darf.
 
 <pre>
 "abc", "afrikan"
@@ -477,7 +491,7 @@ function(null, [3, 1], true) {
 "zul", "vietnamese"
 </pre>
 
-<p>We don’t care for the key here and only list all the labels we have. Our reduce function removes duplicates; see <a href="#example/3">Example 3, “Don’t use this, it’s an example broken on purpose”</a>.
+<p>Der Key ist hier egal und es wird eine Liste genommen, die alle existierenden Labels beinhaltet. Die Reducefunktion entfernt dann die Duplikate; siehe <a href="#example/3">Beispiel 3, “Dies ist ein Beispiel was was produktiv nicht eingesetzt werden soll ”</a>.
 
 <div class="figure" id="example/3">
 
@@ -494,11 +508,11 @@ function(keys, values, rereduce) {
 }
 </pre>
 
-<p class="caption">Example 3. Don’t use this, it’s an example broken on purpose
+<p class="caption">Beispiel 3. Dies ist ein Beispiel was was produktiv nicht eingesetzt werden soll 
 
 </div>
 
-<p>This translates to <a href="#figure/4">Figure 4, “An overflowing reduce index”</a>.
+<p>Dies erklärt <a href="#figure/4">Figur 4, “Ein überlaufenden Reduceindex”</a>.
 
 <p>We hope you get the picture. The way the B-tree storage works means that if you don’t actually reduce your data in the reduce function, you end up having CouchDB copy huge amounts of data around that grow linearly, if not faster with the number of rows in your view.
 
@@ -510,7 +524,7 @@ function(keys, values, rereduce) {
 
 <img src="views/04.png">
 
-<p class="caption">Figure 4. An overflowing reduce index
+<p class="caption">Figur 4. Ein überlaufenden Reduceindex
 
 </div>
 
