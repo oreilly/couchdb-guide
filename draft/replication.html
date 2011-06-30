@@ -20,7 +20,7 @@
 
 <pre>
 POST /_replicate HTTP/1.1
-{"source":"database","target":"http://example.org/database"}
+{"source":"database","target":"http://example.org/database"} -H "Content-Type: application/json"
 </pre>
 
 <p>This call sends all the documents in the local database <code>database</code> to the remote database <code>http://example.org/database</code>. A database is considered “local” when it is on the same CouchDB instance you send the <code>POST /_replicate</code> HTTP request to. All other instances of CouchDB are “remote.”
@@ -29,6 +29,7 @@ POST /_replicate HTTP/1.1
 
 <pre>
 POST /_replicate HTTP/1.1
+Content-Type: application/json
 {"source":"http://example.org/database","target":"database"}
 </pre>
 
@@ -98,7 +99,7 @@ POST /_replicate HTTP/1.1
 <p>One common scenario is triggering replication on nodes that have admin accounts enabled. Creating design documents is restricted to admins, and if the replication is triggered without admin credentials, writing the design documents during replication will fail and be recorded as <code>doc_write_failures</code>. If you have admins, be sure to include the credentials in the replication request:
 
 <pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@127.0.0.1:5984/database"}'
+&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@127.0.0.1:5984/database"}' -H "Content-Type: application/json"
 </pre>
 
 <h3 id="continuous">Continuous Replication</h3>
@@ -106,7 +107,7 @@ POST /_replicate HTTP/1.1
 <p>Now that you know how replication works under the hood, we share a neat little trick. When you add <code>"continuous":true</code> to the replication trigger object, CouchDB will not stop after replicating all missing documents from the source to the target. It will listen on CouchDB’s <code>_changes</code> API (see <a href="notifications.html">Chapter 20, Change Notifications</a>) and automatically replicate over any new docs as they come into the source to the target. In fact, they are not replicated right away; there’s a complex algorithm determining the ideal moment to replicate for maximum performance. The algorithm is complex and is fine-tuned every once in a while, and documenting it here wouldn’t make much sense.
 
 <pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}'
+&gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}' -H "Content-Type: application/json"
 </pre>
 
 <p>At the time of writing, CouchDB doesn’t remember continuous replications over a server restart. For the time being, you are required to trigger them again when you restart CouchDB. In the future, CouchDB will allow you to define permanent continuous replications that survive a server restart without you having to do anything.

@@ -145,7 +145,7 @@ HOST="http://127.0.0.1:5984"
 {"ok":true,"id":"foo","rev":"1-74620ecf527d29daaab9c2b465fbce66"}
 
 &gt; curl -X POST $HOST/_replicate -d '{"source":"db","target":"http://127.0.0.1:5984/db-replica"}'
-{"ok":true,...,"docs_written":1,"doc_write_failures":0}]}
+{"ok":true,...,"docs_written":1,"doc_write_failures":0}]} -H "Content-Type: application/json"
 </pre>
 
 <p>We skip a bit of the output of the replication session (see <a href="replication.html">Chapter 16, Replication</a> for details). If you see <code>"docs_written":1</code> and <code>"doc_write_failures":0</code>, our document made it over to <code>db-replica</code>. We now update the document to <code>{"count":2}</code> in <code>db-replica</code>. Note that we now need to include the correct <code>_rev</code> property.
@@ -162,7 +162,7 @@ HOST="http://127.0.0.1:5984"
 {"ok":true,"id":"foo","rev":"2-7c971bb974251ae8541b8fe045964219"}
 
 &gt; curl -X POST $HOST/_replicate -d '{"source":"db","target":"http://127.0.0.1:5984/db-replica"}'
-{"ok":true,..."docs_written":1,"doc_write_failures":0}]}
+{"ok":true,..."docs_written":1,"doc_write_failures":0}]} -H "Content-Type: application/json"
 </pre>
 
 <p>To see that we have a conflict, we create a simple view in <code>db-replica</code>. The map function looks like this:
@@ -231,7 +231,7 @@ function(doc) {
 <p>Finally, we replicate from <code>db-replica</code> back to <code>db</code> by simply swapping <code>source</code> and <code>target</code> in our request to <code>_replicate</code>:
 
 <pre>
-&gt; curl -X POST $HOST/_replicate -d '{"target":"db","source":"http://127.0.0.1:5984/db-replica"}'
+&gt; curl -X POST $HOST/_replicate -d '{"target":"db","source":"http://127.0.0.1:5984/db-replica"}' -H "Content-Type: application/json"
 </pre>
 
 <p>We see that our revision ends up in <code>db</code>, too:
