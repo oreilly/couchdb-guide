@@ -56,6 +56,22 @@ apt-cache search libicu
 
 <p>Select and install the highest version from the list available.
 
+<p>Note that in Ubuntu 10.04 and up, libmozjs-dev (the spidermonkey library) is no longer available. Instead, please use
+
+<pre>
+apt-get install xulrunner-dev
+</pre>
+
+as an alternative to libmozjs-dev. The other dependencies are still necessary.
+
+<p>And when you install, you need to specifically configure using xulrunner                                         
+
+<pre># This fixes problem where the basic test suite fails to run.
+# Note: To install couchdb in the default location use --prefix= in the configure statement
+# Note: To check what XULRunner version you have installed use xulrunner -v
+./configure --prefix= --with-js-lib=/usr/lib/xulrunner-devel-x.x.x.x/lib --with-js-include=/usr/lib/xulrunner-devel-x.x.x.x/include
+</pre>
+
 <h4 id="mac">Mac OS X</h4>
 
 <p>You will need to install the Xcode Tools metapackage by running:
