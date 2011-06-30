@@ -288,7 +288,7 @@ function(keys, values) {
 
 <p>The total sum of all <code>age</code> fields in all our documents is <code>15</code>. Just what we wanted. The <code>key</code> member of the result object is <code>null</code>, as we can’t know anymore which documents took part in the creation of the reduced result. We’ll cover more advanced reduce cases later on.
 
-<p>As a rule of thumb, the reduce function should reduce a single scalar value. That is, an integer; a string; or a small, fixed-size list or object that includes an aggregated value (or values) from the <code>values</code> argument. It should never just return <code>values</code> or similar. CouchDB will give you a warning if you try to use reduce “the wrong way”:
+<p>As a rule of thumb, the reduce function should reduce to a single scalar value. That is, an integer; a string; or a small, fixed-size list or object that includes an aggregated value (or values) from the <code>values</code> argument. It should never just return <code>values</code> or similar. CouchDB will give you a warning if you try to use reduce “the wrong way”:
 
 <pre>
 {"error":"reduce_overflow_error","message":"Reduce output must shrink more rapidly: Current output: ..."}
