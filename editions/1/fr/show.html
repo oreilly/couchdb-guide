@@ -135,7 +135,7 @@ GET /_show/myshow/72d43a93eb74b5f2
 <p>The request object (including helpfully parsed versions of query parameters) is available to show functions as well. By way of illustration, here’s a show function that returns different data based on the URL query parameters:
 
 <pre>
-function(req, doc) {
+function(doc, req) {
   return "&lt;p&gt;Aye aye, " + req.parrot + "!&lt;/p&gt;";
 }
 </pre>

@@ -109,7 +109,7 @@ http://127.0.0.1:5984/mydb/_design/admin
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/basic
-curl -X PUT http://127.0.0.1:5984/basic/_design/example -d @mydesign.json
+curl -X PUT http://127.0.0.1:5984/basic/_design/example -data-binarymydesign.json
 </pre>
 
 <p>From the second request, you should see a response like:
@@ -121,7 +121,7 @@ curl -X PUT http://127.0.0.1:5984/basic/_design/example -d @mydesign.json
 <p>Now we can query the view we’ve defined, but before we do that, we should add a few documents to the database so we have something to view. Running the following command a few times will add empty documents:
 
 <pre>
-curl -X POST http://127.0.0.1:5984/basic -d '{}'
+curl -X POST http://127.0.0.1:5984/basic -d '{}' -H "Content-Type: application/json"
 </pre>
 
 <p>Now to query the view:

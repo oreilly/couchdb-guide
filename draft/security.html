@@ -24,7 +24,7 @@
 
 <p>A note of relief: by default, CouchDB will listen only on your loopback network interface (<code>127.0.0.1</code> or <code>localhost</code>) and thus only you will be able to make requests to CouchDB, nobody else. But when you start to open up your CouchDB to the public (that is, by telling it to bind to your machine’s public IP address), you will want to think about restricting access so that the next bad guy doesn’t ruin your admin party.
 
-<p>In our previous discussions, w dropped some keywords about how things without the admin party work. First, there’s <em>admin</em> itself, which implies some sort of super user. Then there are <em>privileges</em>. Let’s explore these terms a little more.
+<p>In our previous discussions, we dropped some keywords about how things without the admin party work. First, there’s <em>admin</em> itself, which implies some sort of super user. Then there are <em>privileges</em>. Let’s explore these terms a little more.
 
 <p>CouchDB has the idea of an <em>admin user</em> (e.g. an administrator, a super user, or root) that is allowed to do anything to a CouchDB installation. By default, everybody is an admin. If you don’t like that, you can create specific admin users with a username and password as their credentials.
 
@@ -160,7 +160,7 @@ function(newDoc, oldDoc, userCtx) {
 
 <pre>
 &gt; curl -X POST $HOST/somedatabase/ -d '{"a":1}'
-{"ok":true,"id":"36174efe5d455bd45fa1d51efbcff986","rev":"1-23202479633c2b380f79507a776743d5"}
+{"ok":true,"id":"36174efe5d455bd45fa1d51efbcff986","rev":"1-23202479633c2b380f79507a776743d5"} -H "Content-Type: application/json"
 </pre>
 
 <p>we should see this in our <code>couch.log</code> file:
@@ -195,7 +195,7 @@ function(newDoc, oldDoc, userCtx) {
 
 <pre>
 &gt; HOST="http://127.0.0.1:5984"
-&gt; curl -vX POST $HOST/_session -H 'application/x-www-form-urlencoded' -d 'name=anna&amp;password=secret'
+&gt; curl -vX POST $HOST/_session -H 'Content-Type: application/x-www-form-urlencoded' -d 'name=anna&amp;password=secret'
 </pre>
 
 <p>CouchDB replies, and we’ll give you some more detail:

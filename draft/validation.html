@@ -178,7 +178,7 @@ js&gt; [] == []
 false
 </pre>
 
-<p>JavaScript considers these arrays to be different because it doesn’t look at the contents of the array when making the decision. Since they are distinct objects, JavaScript must consider them not equal. We use the <code>toJSON</code> function to convert objects to a string representation, which makes comparisons more likely to succeed in the case where two objects have the same contents. This is not guaranteed to work for deeply nested objects, as <code>toJSON</code> may serialize objects.
+<p>JavaScript considers these arrays to be different because it doesn’t look at the contents of the array when making the decision. Since they are distinct objects, JavaScript must consider them not equal. We use the <code>toJSON</code> function to convert objects to a string representation, which makes comparisons more likely to succeed in the case where two objects have the same contents. This is not guaranteed to work for deeply nested objects, as <code>toJSON</code> may serialize objects in an undefined order.
 
 <div class="aside note">
 

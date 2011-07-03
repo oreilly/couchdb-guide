@@ -65,8 +65,7 @@ var l10n = {
             <a href='http://jan.prima.de/'>Jan Lehnardt</a> et\
             <a href='http://nslater.org/'>Noah Slater</a> ;\
 	    traduit de l’anglais par\
-	    <a href='https://wiki.fsfe.org/Fellows/jil.larner'>Jil Larner</a>\
-	    et <a href='http://blog.shimaore.net'>Stéphane Alnet</a>",
+	    <a href='https://wiki.fsfe.org/Fellows/jil.larner'>Jil Larner</a>",
         "home": "Accueil",
         "nextPage": "Page suivante",
         "prevPage": "Page précédente",

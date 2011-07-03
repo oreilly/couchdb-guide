@@ -178,7 +178,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &lt; Date: Sun, 05 Jul 2009 22:48:28 GMT
 </pre>
 
-<p>The <code>Date</code> header tells you the time of the server. Since client and server time are not necessary synchronized, this header is purely informational. You shouldn’t build any critical application logic on top of this!
+<p>The <code>Date</code> header tells you the time of the server. Since client and server time are not necessarily synchronized, this header is purely informational. You shouldn’t build any critical application logic on top of this!
 
 <pre>
 &lt; Content-Type: text/plain;charset=utf-8
@@ -265,7 +265,7 @@ curl -X GET http://127.0.0.1:5984/_uuids
 {"uuids":["6e1295ed6c29495e54cc05947f18c8af"]}
 </pre>
 
-<p>Voilá, a UUID. If you need more than one, you can pass in the <code>?count=10</code> HTTP parameter to request 10 UUIDs, or really, any number you need.
+<p>Voilà, a UUID. If you need more than one, you can pass in the <code>?count=10</code> HTTP parameter to request 10 UUIDs, or really, any number you need.
 
 </div>
 
@@ -368,7 +368,7 @@ curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{
 <p>Attachments get their own URL where you can upload data. Say we want to add the album artwork to the <code>6e1295ed6c29495e54cc05947f18c8af</code> document (“There is Nothing Left to Lose”), and let’s also say the artwork is in a file <code>artwork.jpg</code> in the current directory:
 
 <pre>
-&gt; curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/ artwork.jpg?rev=2-2739352689 --data-binary @artwork.jpg -H "Content-Type: image/jpg"
+&gt; curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg?rev=2-2739352689 --data-binary @artwork.jpg -H "Content-Type: image/jpg"
 </pre>
 
 <p>The <code>--data-binary @</code> option tells <code>curl</code> to read a file’s contents into the HTTP request body. We’re using the <code>-H</code> option to tell CouchDB that we’re uploading a JPEG file. CouchDB will keep this information around and will send the appropriate header when requesting this attachment; in case of an image like this, a browser will render the image instead of offering you the data for download. This will come in handy later. Note that you need to provide the current revision number of the document you’re attaching the artwork to, just as if you would update the document. Because, after all, attaching some data is changing the document.
@@ -408,7 +408,7 @@ curl -X PUT http://127.0.0.1:5984/albums-replica
 <p>Now we can use the database <code>albums-replica</code> as a replication target:
 
 <pre>
-curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"albums-replica"}'
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"albums-replica"}' -H "Content-Type: application/json"
 </pre>
 
 <div class="aside note">
@@ -449,7 +449,7 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 <p>There are more types of replication useful in other situations. The <code>source</code> and <code>target</code> members of our replication request are actually links (like in HTML) and so far we’ve seen links relative to the server we’re working on (hence <em>local</em>). You can also specify a remote database as the target:
 
 <pre>
-curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"http://example.org:5984/albums-replica"}'
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"http://example.org:5984/albums-replica"}' -H "Content-Type: application/json"
 </pre>
 
 <p>Using a local <code>source</code> and a remote <code>target</code> database is called <em>push replication</em>. We’re pushing changes to a remote server.
@@ -465,13 +465,13 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 <p>You can also use a remote <code>source</code> and a local <code>target</code> to do a <em>pull replication</em>. This is great for getting the latest changes from a server that is used by others:
 
 <pre>
-curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums-replica","target":"albums"}'
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums-replica","target":"albums"}' -H "Content-Type: application/json"
 </pre>
 
 <p>Finally, you can run <em>remote replication</em>, which is mostly useful for management operations:
 
 <pre>
-curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums","target":"http://example.org:5984/albums-replica"}'
+curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums","target":"http://example.org:5984/albums-replica"}' -H "Content-Type: application/json"
 </pre>
 
 <div class="aside note">
