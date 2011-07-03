@@ -79,7 +79,7 @@ var l10n = {
 var scripts = [
     "http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js",
     "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js",
-    "https://github.com/christophercliff/sausage/raw/master/jquery.sausage.js",
+    "/script/all/jquery.sausage.js",
     "http://www.google-analytics.com/ga.js"
 ];
 
@@ -315,59 +315,37 @@ function autolink() {
 }
 
 function chop() {
-    
-    var $content = $(".content"),
-        $sections = $("<div/>"),
-        $as = $content.find("a.anchor"),
-        j = -1;
-    
-    $as
-        .each(function(i, el){
-            
-            $sections
-                .append("<section/>")
-                ;
-            
-        })
-        ;
-    
-    $content.children()
-        .each(function(i, el){
-            
-            var $el = $(el),
-                $section;
-            
-            if ($el.hasClass("anchor"))
-            {
-                j++;
-            }
-            
-            $section = $sections.find("section").eq(j) || $sections;
-            
-            $section
-                .append($(el).clone())
-                ;
-            
-        })
-        ;
-    
-    $content
-        .html($sections)
-        ;
-    
+    var $content = $(".content");
+    var $sections = $("<div/>");
+    var $as = $content.find("a.anchor");
+    var j = -1;
+    $as.each(function(i, el) {
+        $sections.append("<section/>"); 
+    });
+    $content.children().each(function(i, el) {
+        var $el = $(el);
+        var $section;
+        if ($el.hasClass("anchor")) {
+            j++;
+        }
+        $section = $sections.find("section").eq(j) || $sections;
+        $section.append($(el).clone());
+    });
+    $content.html($sections);
 }
 
 function sausage() {
-    $(window)
-        .sausage({
-            page: "section",
-            content: function (i, $page) {
-                return "<span class='sausage-span'>"
-                    + $page.find(".anchor").first().text()
-                    + "</span>";
-            }
-        })
-        ;
+    if ($("section").length < 1) {
+        return;
+    }
+    $(window).sausage({
+        page: "section",
+        content: function(i, $page) {
+            return "<span class='sausage-span'>"
+                + $page.find(".anchor").first().text()
+                + "</span>";
+        }
+    });
 }
 
 function get_lang() {
