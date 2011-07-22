@@ -12,25 +12,25 @@
 
 <h2 id="notifications">Notification des mises à jour</h2>
 
-<p>Imaginez que vous concevez un service de messagerie à l’aide de CouchDB. Chaque utilisateur dispose d’une boîte aux lettres sous la forme d’une base de données ; les expéditeurs envoient leurs messages en déposant un document dans cette base. Quand les utilisateurs désirent relever leur courrier, ils peuvent ouvrir leur boîte et lire les messages qu’elle contient.
+<p>Imaginez que vous concevez un service de messagerie à l’aide de CouchDB. Chaque utilisateur dispose d’une boîte aux lettres sous la forme d’une base de données ; les expéditeurs envoient leurs messages en déposant un document dans cette base. Quand les utilisateurs désirent relever leur courrier, ils peuvent ouvrir leur boîte et lire les messages qu’elle contient.
 
-<p>Jusque là, c’est simple. Toutefois, vous vous retrouvez avec vos utilisateurs effectuant des rafraîchissements fréquents pour découvrir si un nouveau message est arrivé. C’est ce que l’on appelle couramment la scrutation (ou attente active, de l’anglais <em>polling</em>). Dans ce cas, un nombre important d’utilisateurs génère un nombre conséquent de requêtes qui, la plupart du temps, ne renvoient rien de nouveau ; juste la liste que l’utilisateur avait déjà consultée.
+<p>Jusque-là, c’est simple. Toutefois, vous vous retrouvez avec vos utilisateurs effectuant des rafraîchissements fréquents pour découvrir si un nouveau message est arrivé. C’est ce que l’on appelle couramment la scrutation (ou attente active, de l’anglais <em>polling</em>). Dans ce cas, un nombre important d’utilisateurs génère un nombre conséquent de requêtes qui, la plupart du temps, ne renvoient rien de nouveau ; juste la liste que l’utilisateur avait déjà consultée.
 
-<p>Ne serait-il pas judicieux de demander à CouchDB de notifier l’utilisateur quand un nouveau message arrive ? L’API <code>_changes</code> est là pour cela !
+<p>Ne serait-il pas judicieux de demander à CouchDB de notifier l’utilisateur quand un nouveau message arrive ? L’API <code>_changes</code> est là pour cela !
 
-<p>Ce scénario traite le problème de l’invalidation de l’antémémoire, c’est-à-dire de savoir quand ce que j’affiche ne représente plus fidèlement les données sous-jancentes. Toute invalidation d’antémémoire, qu’elle soit ou non <em>backend/frontend-related</em>, peut se baser sur l’API <code>_changes</code>.
+<p>Ce scénario traite le problème de l’invalidation de l’antémémoire, c’est-à-dire de savoir quand ce que j’affiche ne représente plus fidèlement les données sous-jacentes. Toute invalidation d’antémémoire, qu’elle soit ou non <em>backend/frontend-related</em>, peut se baser sur l’API <code>_changes</code>.
 
 <p><code>_changes</code> est aussi conçue pour extraire un fil d’activité d’une base de données, que ce soit pour afficher l’information ou pour réagir en conséquence à la création ou modification d’un document.
 
-<p>La beauté des systèmes qui implémentent l’API de scrutation réside dans leur <em>découplage</em>. En effet, un programme qui s’intéresse uniquement aux dernières mises-à-jour n’a pas besoin de connaître les programmes qui créent des documents, et récpiroquement.
+<p>La beauté des systèmes qui implémentent l’API de scrutation réside dans leur <em>découplage</em>. En effet, un programme qui s’intéresse uniquement aux dernières mises à jour n’a pas besoin de connaître les programmes qui créent des documents, et réciproquement.
 
-<p>Voici à quoi ressemble un objet <code>changes</code> :
+<p>Voici à quoi ressemble un objet <code>changes</code> :
 
 <pre>
 {"seq":12,"id":"foo","changes":[{"rev":"1-23202479633c2b380f79507a776743d5"}]}
 </pre>
 
-<p>Il y a trois champs :
+<p>Il y a trois champs :
 
 <dl>
 
@@ -48,9 +48,9 @@
 
 </dl>
 
-<p>L’API de scrutation est disponible pour chaque base de donnes. Une seule requête vous permet d’obtenir les modifications occurant sur une seule base. Toutefois, vous pouvez facilement envoyer plusieurs requêtes pour interroger plusisuers API sur plusieurs bases si vous en avez besoin.
+<p>L’API de scrutation est disponible pour chaque base de données. Une seule requête vous permet d’obtenir les modifications se produisant sur une seule base. Toutefois, vous pouvez facilement envoyer plusieurs requêtes pour interroger plusieurs API sur plusieurs bases si vous en avez besoin.
 
-<p>Créons une base de données que nous utiliserons par la suite :
+<p>Créons une base de données que nous utiliserons par la suite :
 
 <pre>
 &gt; HOST="http://127.0.0.1:5984"
@@ -58,19 +58,19 @@
 {"ok":true}
 </pre>
 
-<p>Il existe trois manières de d’obtenir des notifications : <em>scruter</em> (par défaut), <em>scruter à la ligne</em> [NdT : comme la pêche à la ligne, on pose la ligne et on attend] et </em>scruter de manière continue</em>. Chacune correspond à un besoin différent que nous expliciterons ci-après.
+<p>Il existe trois manières d'obtenir des notifications : <em>scruter</em> (par défaut), <em>scruter à la ligne</em> [NdT : comme la pêche à la ligne, on pose la ligne et on attend] et </em>scruter de manière continue</em>. Chacune correspond à un besoin différent que nous expliciterons ci-après.
 
 <h3 id="polling">Scruter les modifications</h3>
 
-<p>Dans l’exemple précédent, nous tentions d’éviter le recours à la scrutation. Cependant, c’est très simple et cela s’avère parfois la seule méthode convenable pour résoudre un problème. Comme il s’agit du cas le plus simple, c’est celui qui est choisi par défaut dans l’API de scrutation.
+<p>Dans l’exemple précédent, nous tentions d’éviter le recours à la scrutation. Cependant, c’est très simple et cela s’avère parfois la seule méthode convenable pour résoudre un problème. Comme il s’agit du cas le plus aisé, c’est celui qui est choisi par défaut dans l’API de scrutation.
 
-<p>Voyons à quoi ressemble l’API dans notre base. Tout d’abord, la requête (nous utilisions de nouveau <code>curl</code>) :
+<p>Voyons à quoi ressemble l’API dans notre base. Tout d’abord, la requête (nous utilisions de nouveau <code>curl</code>) :
 
 <pre>
 curl -X GET $HOST/db/_changes
 </pre>
 
-<p>Le résultat est simple :
+<p>Le résultat est limpide :
 
 <pre>
 {"results":[
@@ -79,19 +79,19 @@ curl -X GET $HOST/db/_changes
 "last_seq":0}
 </pre>
 
-<p>Il n’y a rien à voir, car nous n’avons rien mis dans la base — guère surprenant. Vous pouvez deviner où vous verriez des modifications s’il y en avait. Créons un document :
+<p>Il n’y a rien à voir, car nous n’avons rien mis dans la base — guère surprenant. Vous pouvez deviner où vous verriez des modifications s’il y en avait. Créons un document :
 
 <pre>
 curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 </pre>
 
-<p>CouchDB répond :
+<p>CouchDB répond :
 
 <pre>
 {"ok":true,"id":"test","rev":"1-aaa8e2a031bca334f50b48b6682fb486"}
 </pre>
 
-<p>Regardons à nouveau l’API :
+<p>Regardons à nouveau l’API :
 
 <pre>
 {"results":[
@@ -100,9 +100,9 @@ curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 "last_seq":1}
 </pre>
 
-<p>Nous obtenons une notification de notre nouveau document. C’est sympa ! Sauf que… nous avons déjà eu ces informations en retour de la requête de création du document. Pourquoi donc voudrions-nous soumettre une nouvelle requête pour l’obtenir à nouveau ? Souvenez-vous qu’il s’agit de créer des systèmes découplés. Le programme qui crée le document n’est probablement pas celui qui scrutera les changements puisqu’il les connaît déjà. Pour vous embrouiller un peu, ce même programme pourrait désirer connaître les modifications apportées par les autres.
+<p>Nous obtenons une notification de notre nouveau document. C’est sympa ! Sauf que… nous avons déjà eu ces informations en retour de la requête de création du document. Pourquoi donc voudrions-nous soumettre une nouvelle requête pour l’obtenir à nouveau ? Souvenez-vous qu’il s’agit de créer des systèmes découplés. Le programme qui crée le document n’est probablement pas celui qui scrutera les changements puisqu’il les connaît déjà. Pour vous embrouiller un peu, ce même programme pourrait désirer connaître les modifications apportées par les autres.
 
-<p>Dans les coulisses, nous avons créé un nouveau document. Regardons l’effet :
+<p>Dans les coulisses, nous avons créé un nouveau document. Regardons l’effet :
 
 <pre>
 {"results":[
@@ -112,15 +112,15 @@ curl -X PUT $HOST/db/test -d '{"name":"Anna"}'
 "last_seq":2}
 </pre>
 
-<p>Voyez-vous la nouvelle ligne qui représente le nouveau document ? En plus, le premier document créé est de nouveau listé. Il faut dire que, par défaut, l’API de modification conserve l’historique de tous les changements effectués sur la base.
+<p>Voyez-vous la nouvelle ligne qui représente le nouveau document ? En plus, le premier document créé est de nouveau listé. Il faut dire que, par défaut, l’API de modification conserve l’historique de tous les changements effectués sur la base.
 
-<p>Comme nous avons déjà vu la modification de <code>"seq":1</code>, elle ne nous intéresse plus. Aussi, nous pouvons demander à l’API de le masquer à l’aide du paramètre <code>since=1</code> :
+<p>Comme nous avons déjà vu la modification de <code>"seq":1</code>, elle ne nous intéresse plus. Aussi, nous pouvons demander à l’API de le masquer à l’aide du paramètre <code>since=1</code> :
 
 <pre>
 curl -X GET $HOST/db/_changes?since=1
 </pre>
 
-<p>Cela renvoie les modifications survenues <em>après</em> le <code>seq</code> spécifié par <code>since</code> :
+<p>Cela renvoie les modifications survenues <em>après</em> le <code>seq</code> spécifié par <code>since</code> :
 
 <pre>
 {"results":[
@@ -133,11 +133,11 @@ curl -X GET $HOST/db/_changes?since=1
 
 <h3 id="long">Scruter à la ligne</h3>
 
-<p>La technique de scrutation à la ligne (<em>long polling</em> en anglais) a été inventée pour aider les navigateurs web à résoudre le problème majeur de la scrutation traditionnelle : elle n’envoie pas de requêtes si rien n’a changé. Cela fonctionne de la manière suivante : lorsqu’une requête part vers l’API de scrutation à la ligne [NdT : vous posez votre ligne de pêche], vous ouvrez une connexion HTTP à CouchDB jusqu’à ce qu’un nouvel enregistrement apparaisse dans l’API [NdT : qu’un poisson morde à l’hameçon] ; en attendant, vous et le serveur conservez la connexion ouverte. Dès qu’un résultat apparaît, la connexion est fermée.
+<p>La technique de scrutation à la ligne (<em>long polling</em> en anglais) a été inventée pour aider les navigateurs web à résoudre le problème majeur de la scrutation traditionnelle : elle n’envoie pas de requêtes si rien n’a changé. Cela fonctionne de la manière suivante : lorsqu’une requête part vers l’API de scrutation à la ligne [NdT : vous posez votre ligne de pêche], vous ouvrez une connexion HTTP à CouchDB jusqu’à ce qu’un nouvel enregistrement apparaisse dans l’API [NdT : qu’un poisson morde à l’hameçon] ; en attendant, vous et le serveur conservez la connexion ouverte. Dès qu’un résultat apparaît, la connexion est fermée.
 
-<p>Cela fonctionne bien quand les mises-à-jour sont rares. Dans le cas où un grand nombre de modifications affectent un client, vous vous retrouvez à soumettre de nombreuses requêtes, ce qui réduit d’autant l’intérêt de cette approche par rapport à la scrutation traditionnelle. Une autre conséquence de cette technique est de devoir maintenir une connexion HTTP ouverte. CouchDB en est capable, puisqu’il est conçu pour traiter de nombreuses requêtes en parallèle. Toutefois, vous devez vous assurer que votre système d’exploitation permet à CouchDB d’utiliser au moins autant de sockets que vous avez de pêcheurs à la ligne (en sus d’un nombre complémentaire pour les requêtes usuelles).
+<p>Cela fonctionne bien quand les mises à jour sont rares. Dans le cas où un grand nombre de modifications affectent un client, vous vous retrouvez à soumettre de nombreuses requêtes, ce qui réduit d’autant l’intérêt de cette approche par rapport à la scrutation traditionnelle. Une autre conséquence de cette technique est de devoir maintenir une connexion HTTP ouverte. CouchDB en est capable, puisqu’il est conçu pour traiter de nombreuses requêtes en parallèle. Toutefois, vous devez vous assurer que votre système d’exploitation permet à CouchDB d’utiliser au moins autant de sockets que vous avez de pêcheurs à la ligne (en sus d’un nombre complémentaire pour les requêtes usuelles).
 
-<p>Pour forger une requête de scrutation à la ligne, ajouter le paramètre <code>feed=longpoll</code>. Pour ce listing, nous avons ajouté l’horodatage pour vous montrer quand les choses se sont passées.
+<p>Pour forger une requête de scrutation à la ligne, ajouter le paramètre <code>feed=longpoll</code>. Pour ce listage, nous avons ajouté l’horodatage pour vous montrer quand les choses se sont passées.
 
 <pre>
 00:00: &gt; curl -X GET "$HOST/db/_changes?feed=longpoll&amp;since=2"
@@ -151,17 +151,17 @@ curl -X GET $HOST/db/_changes?since=1
 
 <p>L’option <code>style</code> fonctionne de la même manière pour les requêtes de scrutation et de scrutation à la ligne.
 
-<p>Les réseaux sont des bêtes délicates et, quelques fois, vous ne savez pas si vous ne recevez rien car il n’y a rien à recevoir, ou parce que votre connexion est foutue. Si vous ajoutez un autre paramètre, <code>heartbeat=<em>N</em></code>, où <em>N</em> est un nombre, CouchDB vous enverra un retour chariot toutes les <em>N</em> millisecondes. Tant que vous recevez des retours chariot, c’est qu’il n’y a pas eu de nouveaux changements et que CouchDB est toujours prêt à vous notifier dès que cela survient.
+<p>Les réseaux sont des bêtes délicates et, quelques fois, vous ne savez pas si vous ne recevez rien car il n’y a rien à recevoir, ou parce que votre connexion est morte. Si vous ajoutez un autre paramètre, <code>heartbeat=<em>N</em></code>, où <em>N</em> est un nombre, CouchDB vous enverra un retour chariot toutes les <em>N</em> millisecondes. Tant que vous recevez des retours chariot, c’est qu’il n’y a pas eu de nouveaux changements et que CouchDB est toujours prêt à vous notifier dès que cela survient.
 
 <h3 id="continuous">Scruter en continu</h3>
 
-<p>La scrutation à la ligne est pratique, mais vous vous retrouvez tout de même à ouvrir une connexion HTTP par notification. Pour les navigateurs web, c’est le seul moyen d’éviter le fléau de la scrutation régulière. Mais les navigateurs ne sont pas les seuls clients qui peuvent communiquer avec CouchDB. Si vous utilisez Python, Ruby, Java, ou quelqu’autre langage, vous disposez d’une autre possibilité.
+<p>La scrutation à la ligne est pratique, mais vous vous retrouvez tout de même à ouvrir une connexion HTTP par notification. Pour les navigateurs web, c’est le seul moyen d’éviter le fléau de la scrutation régulière. Mais les navigateurs ne sont pas les seuls clients qui peuvent communiquer avec CouchDB. Si vous utilisez Python, Ruby, Java, ou quelque autre langage, vous disposez d’une autre possibilité.
 
-<p>L’<em>API de scrutation continue</em> vous permet de recevoir les modifications comme elles surviennent, à travers une seule connexion HTTP. Vous soumettez une requête à l’API et CouchDB et vous-même tiendrez la connexion ouverte pour « toujours ». CouchDB vous enverra des retours chariot lors des notifications et, contrairement à la scrutation à la ligne, ne fermera pas la connexion et attendra d’envoyer d’autres modifications.
+<p>L’<em>API de scrutation continue</em> vous permet de recevoir les modifications comme elles surviennent, à travers une seule connexion HTTP. Vous soumettez une requête à l’API et CouchDB et vous-même tiendrez la connexion ouverte pour « toujours ». CouchDB vous enverra des retours chariot lors des notifications et, contrairement à la scrutation à la ligne, ne fermera pas la connexion et attendra d’envoyer d’autres modifications.
 
-<p>C’est pratique aussi bien pour les notifications fréquentes que rares, et cela emporte la même conséquence que la scrutation à la ligne : vous allez avoir de nombreuses connexion HTTP de longue durée. Une fois encore, CouchDB le supporte bien.
+<p>C’est pratique aussi bien pour les notifications fréquentes que rares, et cela emporte la même conséquence que la scrutation à la ligne : vous allez avoir de nombreuses connexions HTTP de longue durée. Une fois encore, CouchDB le supporte bien.
 
-<p>Utilisez le paramètre <code>feed=continuous</code> pour rendre une scrutation continue. Ci-dessous se trouve le résultat, à nouveau avec l’horodatage. À <code>00:10</code> et <code>00:15</code>, nous créerons un nouveau document :
+<p>Utilisez le paramètre <code>feed=continuous</code> pour rendre une scrutation continue. Ci-dessous se trouve le résultat, à nouveau avec l’horodatage. À <code>00:10</code> et <code>00:15</code>, nous créerons un nouveau document :
 
 <pre>
 00:00: &gt; curl -X GET "$HOST/db/_changes?feed=continuous&amp;since=3"
@@ -169,13 +169,13 @@ curl -X GET $HOST/db/_changes?since=1
 00:15: {"seq":5,"id":"test5","changes":[{"rev":"1-02c6b758b08360abefc383d74ed5973d"}]}
 </pre>
 
-<p>Notez bien que la réponse de l’API de scrutation continue n’enserre pas ses réponses dans un objet JSON pour lequel chaque notification est un élément du tableau. Elle consiste en une ligne brute par notification. Notez aussi que les lignes ne s’achèvent plus par des virgules. Contrairement aux deux autres modes de scrutation où le résultat est contenu dans un objet JSON, l’API de scrutation continue renvoie un objet JSON valide par ligne. Cette différence permet de faciliter le traitement des réponses par les clients. Par ailleurs, les paramètres <code>style</code> et <code>heartbeat</code> fonctionnent comme attendu dans cette API.
+<p>Notez bien que la réponse de l’API de scrutation continue n’encapsule pas ses réponses dans un objet JSON pour lequel chaque notification est un élément du tableau. Elle consiste en une ligne brute par notification. Notez aussi que les lignes ne s’achèvent plus par des virgules. Contrairement aux deux autres modes de scrutation où le résultat est contenu dans un objet JSON, l’API de scrutation continue renvoie un objet JSON valide par ligne. Cette différence permet de faciliter le traitement des réponses par les clients. Par ailleurs, les paramètres <code>style</code> et <code>heartbeat</code> fonctionnent comme attendu dans cette API.
 
-<h3 id="filters">Filters</h3>
+<h3 id="filters">Filtres</h3>
 
-<p>The change notification API and its three modes of operation already give you a lot of options requesting and processing changes in CouchDB. Filters for changes give you an additional level of flexibility. Let’s say the messages from our first scenario have priorities, and a user is interested only in notifications about messages with a <code>high</code> priority.
+<p>L’API de scrutation, avec ses trois modes d’opération, vous offre déjà de nombreuses possibilités d’obtention et de traitement des modifications opérées dans CouchDB. Vous pouvez y ajouter des filtres et ainsi gagner en souplesse. Illustrons : les messages précédents ont un niveau de priorité et un utilisateur ne s’intéresse qu’aux messages de priorité haute (<code>high</code>).
 
-<p>Enter filters. Similar to view functions, a filter is a JavaScript function that gets stored in a design document and is later executed by CouchDB. They live in special member <code>filters</code> under a name of your choice. Here is an example:
+<p>Bienvenue dans les filtres ! À l’instar des vues, un filtre est une fonction JavaScript définie dans un <em>design document</em> et exécutée par CouchDB. Ils se trouvent dans le membre spécial <code>filters</code> et portent le nom que vous leur donnez. Par exemple :
 
 <pre>
 {
@@ -188,17 +188,17 @@ curl -X GET $HOST/db/_changes?since=1
 }
 </pre>
 
-<p>To query the changes API with this filter, use the <code>filter=designdocname/filtername</code> query parameter:
+<p>Pour interroger l’API de scrutation avec ces filtres, utilisez le paramètre <code>filter=designdocname/filtername</code> dans la requête :
 
 <pre>
 curl "$HOST/db/_changes?filter=app/important"
 </pre>
 
-<p>The result now includes only rows for document updates for which the filter function returns <code>true</code>—in our case, where the <code>priority</code> property of our document has the value <code>high</code>. This is pretty neat, but CouchDB takes it up another notch.
+<p>Le résultat se restreint désormais aux enregistrements qui désignent des documents pour lesquels le filtre a renvoyé <code>true</code> — dans notre cas, lorsque la propriété <code>priority</code> est positionnée à la valeur <code>high</code>. Voilà qui est bien pratique ! mais ce n’est pas tout. CouchDB va plus loin.
 
-<p>Let’s take the initial example application where users can send messages to each other. Instead of having a database per user that acts as the inbox, we now use a single database as the inbox for all users. How can a user register for changes that represent a new message being put in her inbox?
+<p>Revenons à l’exemple initial où les utilisateurs peuvent s’échanger des messages. Plutôt que d’avoir une base de données par utilisateur, laquelle représente la boîte aux lettres, nous avons une unique base pour tout le monde. Dès lors, comment un utilisateur peut-il souscrire aux seules arrivées de messages qui le concernent ?
 
-<p>We can make the filter function using a request parameter:
+<p>Nous pouvons désigner un paramètre à la fonction de filtrage :
 
 <pre>
 function(doc, req)
@@ -211,13 +211,13 @@ function(doc, req)
 }
 </pre>
 
-<p>If you now run a request adding a <code>?name=Steve</code> parameter, the filter function will only return result rows for documents that have the <code>name</code> field set to “Steve.” If you are running a request for a different user, just change the request parameter (<code>name=Joe</code>).
+<p>Si vous soumettez une requête en y adjoignant le paramètre <code>?name=Steve</code>, le filtre ne retournera que les enregistrements désignant des documents dont le champ <code>name</code> est positionné à « Steve ». Pour changer d’utilisateur, vous n’avez qu’à changer la valeur du paramètre (<code>name=Joe</code>).
 
-<p>Now, adding a query parameter to a filtered changes request is easy. What would hinder Steve from passing in <code>name=Joe</code> as the parameter and seeing Joe’s inbox? Not much. Can CouchDB help with this? We wouldn’t bring this up if it couldn’t, would we?
+<p>Toutefois, qu’est-ce qui empêcherait Steve de placer <code>name=Joe</code> dans sa requête pour accéder au contenu de sa boîte ? Pas grand-chose. CouchDB peut-il apporter une solution ? Dans le cas contraire, évoquerions-nous le sujet ?
 
-<p>The <code>req</code> parameter of the filter function includes a member <code>userCtx</code>, the <em>user context</em>. This includes information about the user that has already been authenticated over HTTP earlier in the phase of the request. Specifically, <code>req.userCtx.name</code> includes the username of the user who makes the filtered changes request. We can be sure that the user is who he says he is because he has been authenticated against one of the authenticating schemes in CouchDB. With this, we don’t even need the dynamic filter parameter (although it can still be useful in other situations).
+<p>Le paramètre <code>req</code> de la fonction de filtrage inclut un membre <code>userCtx</code> : le <em>contexte utilisateur</em>. Il contient les informations transmises par l’utilisateur lors de son authentification HTTP. Plus précisément, <code>req.userCtx.name</code> contient le nom de l’utilisateur qui soumet la requête de scrutation. Nous pouvons être confiants dans cette valeur car elle a été validée par le moteur d’authentification de CouchDB. De cette manière, nous n’avons même plus besoin du paramètre dynamique dans notre requête (bien qu’il puisse être utile dans d’autres cas).
 
-<p>If you have configured CouchDB to use authentication for requests, a user will have to make an authenticated request and the result is available in our filter function:
+<p>Si vous avez configuré CouchDB pour exiger l’authentification des requêtes, un utilisateur devra soumettre une requête d’authentification dont le résultat sera disponible dans notre fonction de filtrage :
 
 <pre>
 function(doc, req)
@@ -232,6 +232,6 @@ function(doc, req)
 }
 </pre>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Résumé</h3>
 
-<p>The changes API lets you build sophisticated notification schemes useful in many scenarios with isolated and asynchronous components yet working to the same beat. In combination with replication, this API is the foundation for building distributed, highly available, and high-performance CouchDB clusters.
+<p>L’API de scrutation vous permet de concevoir des schémas de notification utiles dans bien des cas, notamment en présence de composants asynchrones qui suivront les mêmes évènements. En y associant le mécanisme de réplication, cette API est la base nécessaire à la réalisation de grappes CouchDB distribuées, hautement disponibles et à haute performance.
