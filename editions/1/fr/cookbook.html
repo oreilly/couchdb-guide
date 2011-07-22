@@ -1,4 +1,4 @@
-<title>View Cookbook for SQL Jockeys</title>
+<title>Correspondances entre SQL et vues CouchDB</title>
 
 <meta charset="utf-8">
 
@@ -10,29 +10,29 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="cookbook">View Cookbook for SQL Jockeys</h2>
+<h2 id="cookbook">Correspondances entre SQL et vues CouchDB</h2>
 
-<p>This is a collection of some common SQL queries and how to get the same result in CouchDB. The key to remember here is that CouchDB does not work like an SQL database at all and that best practices from the SQL world do not translate well or at all to CouchDB. This chapter’s “cookbook” assumes that you are familiar with the CouchDB basics such as creating and updating databases and documents.
+<p>Ce chapitre contient un ensemble de requêtes SQL classiques et la manière de les traduire en vues CouchDB. Il faut se souvenir d’un élément clé : CouchDB ne fonctionne pas comme une base de données SQL et toutes les bonnes pratiques du monde SQL ne se retrouvent guère, voire pas du tout, dans CouchDB. Les recettes données dans ce chapitre partent du principe que vous êtes familiarisé avec CouchDB (vous savez créer et mettre à jour des bases de données et des documents).
 
-<h3 id="using">Using Views</h3>
+<h3 id="using">Utiliser les vues</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 CREATE TABLE
 </pre>
 
-<p>or:
+<p>ou :
 
 <pre>
 ALTER TABLE
 </pre>
 
-<p>Using views is a two-step process. First you <em>define</em> a view; then you <em>query</em> it. This is analogous to defining a table structure (with indexes) using <code>CREATE TABLE</code> or <code>ALTER TABLE</code> and querying it using an SQL query.
+<p>L’utilisation d’une vue se fait en deux temps : d’abord, vous la <em>définissez</em>, ensuite vous l’<em>interrogez</em>. C’est analogue à la définition de la structure d’une table (avec ses indexes) à l’aide de <code>CREATE TABLE</code> ou <code>ALTER TABLE</code>, puis à la consulter avec une requête SQL.
 
-<h4 id="defining">Defining a View</h4>
+<h4 id="defining">Définir une vue</h4>
 
-<p>Defining a view is done by creating a special document in a CouchDB database. The only real specialness is the <code>_id</code> of the document, which starts with <code>_design/</code>—for example, <code>_design/application</code>. Other than that, it is just a regular CouchDB document. To make sure CouchDB understands that you are defining a view, you need to prepare the contents of that design document in a special format. Here is an example:
+<p>On définit une vue dans CouchDB en créant un document particulier. Sa seule particularité est son <code>_id</code>, lequel commence par <code>_design/</code> (par exemple : <code>_design/application</code>). À cette exception près, c’est un document on ne peut plus ordinaire. Afin que CouchDB comprenne que vous définissez une vue, vous devez préparer le contenu de ce <em>design document</em> selon un format particulier. Voici un exemple :
 
 <pre>
 {
@@ -47,9 +47,9 @@ ALTER TABLE
 }
 </pre>
 
-<p>We are defining a view <code>viewname</code>. The definition of the view consists of two functions: the <em>map</em> function and the <em>reduce</em> function. Specifying a reduce function is optional. We’ll look at the nature of the functions later. Note that <code>viewname</code> can be whatever you like: <code>users</code>, <code>by-name</code>, or <code>by-date</code> are just some examples.
+<p>Nous définissons une vue <code>viewname</code>. La définition d’une vue consiste en deux fonctions : subdivision (<em>map</em> en anglais) et agrégation (<em>reduce</em> en anglais). Cette dernière est optionnelle. Nous reviendrons sur la nature de ces fonctions. Notez ici que <code>viewname</code> peut prendre la valeur de votre choix : <code>users</code>, <code>by-name</code>, <code>by-date</code>, etc.
 
-<p>A single design document can also include multiple view definitions, each identified by a unique name:
+<p>Un seul <em>design document</em> peut inclure plusieurs définitions de vues, chacune identifiée par un nom unique :
 
 <pre>
 {
@@ -68,27 +68,27 @@ ALTER TABLE
 }
 </pre>
 
-<h4 id="querying">Querying a View</h4>
+<h4 id="querying">Interroger une vue</h4>
 
-<p>The name of the design document and the name of the view are significant for querying the view. To query the view <code>viewname</code>, you perform an HTTP <code>GET</code> request to the following URI:
+<p>Le nom du <em>design document</em> et le nom de la vue sont essentiels pour interroger la vue. En effet, pour interroger <code>viewname</code>, vous forgez une requête HTTP <code>GET</code> à l’URI suivante :
 
 <pre>
 /database/_design/application/_view/viewname
 </pre>
 
-<p><code>database</code> is the name of the database you created your design document in. Next up is the design document name, and then the view name prefixed with <code>_view/</code>. To query <code>anotherview</code>, replace <code>viewname</code> in that URI with <code>anotherview</code>. If you want to query a view in a different design document, adjust the design document name.
+<p><code>database</code> est le nom de la base de données dans laquelle vous avez créé votre <em>design document</em>. Vient ensuite le nom du <em>design document</em>, puis le nom de la vue lui-même préfixé par <code>_view</code>. Pour interroger <code>anotherview</code>, remplacez <code>viewname</code> dans l’URI précédente par <code>anotherview</code>. Si vous souhaitez interroger une vue définie dans un autre <em>design document</em>, ajustez le nom dans l’URI.
 
-<h4 id="mapreduce">MapReduce Functions</h4>
+<h4 id="mapreduce">Fonctions de subdivision et d’agrégation (MapReduce)</h4>
 
-<p>MapReduce is a concept that solves problems by applying a two-step process, aptly named the <em>map</em> phase and the <em>reduce</em> phase. The map phase looks at all documents in CouchDB separately one after the other and creates a <em>map result</em>. The map result is an ordered list of key/value pairs. Both <code>key</code> and <code>value</code> can be specified by the user writing the map function. A map function may call the built-in <code>emit(key, value)</code> function 0 to <em>N</em> times per document, creating a row in the map result per invocation.
+<p><em>MapReduce</em> est un concept qui résout les problèmes en deux temps. Tout d’abord vient la phase de <em>subdivision</em> (<em>map</em>), puis celle <em>d’agrégation</em> (<em>reduce</em>). La phase de subdivision parcourt les documents les uns après les autres et crée un <em>résultat de subdivision</em>. Celui-ci prend la forme d’une liste ordonnée de couples (clé, valeur). Les deux membres de ce couple peuvent être définis par l’utilisateur lors de la création de la fonction de subdivision. Ainsi, elle peut appeler la fonction <code>emit(key, value)</code> de 0 à <em>N</em> fois par document, créant autant d’entrées dans le résultat de la subdivision.
 
-<p>CouchDB is smart enough to run a map function only once for every document, even on subsequent queries on a view. Only changes to documents or new documents need to be processed anew.
+<p>CouchDB est suffisamment malin pour exécuter une seule et unique fois la fonction de subdivision sur un document, même si d’autres requêtes interrogent la vue. Seules les modifications de documents et les créations de documents nécessitent de l’exécuter à nouveau.
 
-<h5 id="map">Map functions</h5>
+<h5 id="map">Fonctions de subdivision</h5>
 
-<p>Map functions run in isolation for every document. They can’t modify the document, and they can’t talk to the outside world—they can’t have <em>side effects</em>. This is required so that CouchDB can guarantee correct results without having to recalculate a complete result when only one document gets changed.
+<p>Les fonctions de subdivision s’exécutent de manière indépendante pour chaque document. Elles ne peuvent pas modifier le document, pas plus qu’elles ne peuvent communiquer avec l’extérieur — elles ne peuvent avoir d’<em>effets de bord</em>. Cela est rendu nécessaire pour que CouchDB puisse garantir de détenir les bons résultats sans avoir à recalculer tout le résultat dès qu’un document est modifié.
 
-<p>The map result looks like this:
+<p>Le résultat de subdivision ressemble à cela :
 
 <pre>
 {"total_rows":3,"offset":0,"rows":[
@@ -98,9 +98,9 @@ ALTER TABLE
 ]}
 </pre>
 
-<p>It is a list of rows sorted by the value of <code>key</code>. The <code>id</code> is added automatically and refers back to the document that created this row. The <code>value</code> is the data you’re looking for. For example purposes, it’s the girl’s age.
+<p>C’est une liste d’enregistrements triés par la valeur de la clé <code>key</code>. L’identifiant <code>id</code> est ajouté automatiquement et référence le document qui a donné lieu à cet enregistrement. La valeur <code>value</code> est la donnée que vous cherchez. Dans notre exemple, il s’agit de l’âge de la fille.
 
-<p>The map function that produces this result is:
+<p>La fonction de subdivision qui donne ce résultat est la suivante :
 
 <pre>
 function(doc) {
@@ -110,25 +110,25 @@ function(doc) {
 }
 </pre>
 
-<p>It includes the <code>if</code> statement as a sanity check to ensure that we’re operating on the right fields and calls the <code>emit</code> function with the name and age as the key and value.
+<p>Elle contient l’instruction <code>if</code> comme garde-fou afin de s’assurer que nous travaillons sur les bons champs et appelle la fonction <code>emit</code> avec le nom et l’âge de la fille, respectivement pour la clé et la valeur.
 
-<h5 id="reduce">Reduce functions</h5>
+<h5 id="reduce">Fonctions d’agrégation</h5>
 
-<p>Reduce functions are explained in <a href="#aggregate">the section called “Aggregate Functions”</a>.
+<p>Les fonctions d’agrégation sont expliquées dans la section <a href="#aggregate"><em>Fonctions d’agrégation</em></a>.
 
-<h3 id="key">Look Up by Key</h3>
+<h3 id="key">Recherche par clé</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE value="<em>searchterm</em>"
 </pre>
 
-<p>Use case: get a <em>result</em> (which can be a record or set of records) associated with a <em>key</em> (<code>"searchterm"</code>).
+<p>Cas d’utilisation : obtenir un <em>résultat</em> (qui peut être un seul ou un jeu d’enregistrements) associé à une <em>clé</em> (<code>"searchterm"</code>).
 
-<p>To look something up quickly, regardless of the storage mechanism, an index is needed. An index is a data structure optimized for quick search and retrieval. CouchDB’s map result is stored in such an index, which happens to be a B+ tree.
+<p>Pour trouver quelque chose rapidement, sans égard pour le mécanisme de stockage, un index est nécessaire. Un index est une structure de données optimisée pour la recherche et la récupération rapide. Le résultat de la subdivision est stocké dans un tel index, lequel est, soit dit en passant, un arbre B+.
 
-<p>To look up a value by <code>"searchterm"</code>, we need to put all values into the key of a view. All we need is a simple map function:
+<p>Pour chercher une valeur correspondant à <code>"searchterm"</code>, nous devons mettre toutes ses valeurs dans les clés d’une vue. Pour cela, il nous faut une simple fonction de subdivision :
 
 <pre>
 function(doc) {
@@ -138,13 +138,13 @@ function(doc) {
 }
 </pre>
 
-<p>This creates a list of documents that have a <code>value</code> field sorted by the data in the <code>value</code> field. To find all the records that match <code>"searchterm"</code>, we query the view and specify the search term as a query parameter:
+<p>Cela crée une liste des documents ayant un champ <code>value</code>, laquelle est triée par la donnée du champ <code>value</code>. Aussi, pour trouver tous les enregistrements correspondants à <code>"searchterm"</code>, nous interrogeons la vue et précisions la valeur recherchée dans la requête :
 
 <pre>
 /database/_design/application/_view/viewname?key="searchterm"
 </pre>
 
-<p>Consider the documents from the previous section, and say we’re indexing on the <code>age</code> field of the documents to find all the five-year-olds:
+<p>Reprenons les documents de la section précédente, et disons que nous les indexons sur le champ <code>âgé</code>. Nous cherchons toutes les filles de cinq ans :
 
 <pre>
 function(doc) {
@@ -154,13 +154,13 @@ function(doc) {
 }
 </pre>
 
-<p>Query:
+<p>Requête :
 
 <pre>
 /ladies/_design/ladies/_view/age?key=5
 </pre>
 
-<p>Result:
+<p>Résultat :
 
 <pre>
 {"total_rows":3,"offset":1,"rows":[
@@ -168,21 +168,21 @@ function(doc) {
 ]}
 </pre>
 
-<p>Easy.
+<p>Facile.
 
-<p>Note that you have to emit a value. The view result includes the associated document ID in every row. We can use it to look up more data from the document itself. We can also use the <code>?include_docs=true</code> parameter to have CouchDB fetch the documents individually for us.
+<p>Notez que vous devez émettre une valeur. Le résultat de la vue inclut l’identifiant du document associé à chaque enregistrement. Nous pouvons l’utiliser ensuite pour extraire davantage d’informations du document. Nous pouvons aussi préciser le paramètre <code>?include_docs=true</code> pour que CouchDB nous joigne chaque document.
 
-<h3 id="prefix">Look Up by Prefix</h3>
+<h3 id="prefix">Recherche par préfixe</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searchterm</em>%"
 </pre>
 
-<p>Use case: find all documents that have a field value that starts with <code>searchterm</code>. For example, say you stored a MIME type (like <code>text/html</code> or <code>image/jpg</code>) for each document and now you want to find all documents that are images according to the MIME type.
+<p>Cas d’utilisation : trouver tous es documents dont un champ commence par la valeur  <code>searchterm</code>. Par exemple, vous avez stocké un type MIME (comme <code>text/html</code> ou <code>image/jpg</code>) dans chaque document, et vous voulez maintenant trouver tous les documents qui sont des images en fonction du type MIME déclaré.
 
-<p>The solution is very similar to the previous example: all we need is a map function that is a little more clever than the first one. But first, an example document:
+<p>La solution ressemble beaucoup à l’exemple précédent. Nous avons juste besoin d’une fonction de subdivision qui soit un peu plus intelligente. Mais avant, un exemple de document :
 
 <pre>
 {
@@ -193,7 +193,7 @@ SELECT <em>field</em> FROM <em>table</em> WHERE <em>value</em> LIKE "<em>searcht
 }
 </pre>
 
-<p>The clue lies in extracting the prefix that we want to search for from our document and putting it into our view index. We use a regular expression to match our prefix:
+<p>Le truc consiste à extraire le préfixe que nous voulons rechercher et le placer dans l’index de notre vue. Pour ce faire, nous utilisons une expression rationnelle :
 
 <pre>
 function(doc) {
@@ -208,29 +208,29 @@ function(doc) {
 }
 </pre>
 
-<p>We can now query this view with our desired MIME type prefix and not only find all images, but also text, video, and all other formats:
+<p>Nous pouvons alors chercher dans cette vue notre préfixe MIME et trouver, selon notre désir, toutes les images, tous les textes, toutes les vidéos et tous les autres formats :
 
 <pre>
 /files/_design/finder/_view/by-mime-type?key="image/"
 </pre>
 
-<h3 id="aggregate">Aggregate Functions</h3>
+<h3 id="aggregate">Fonctions d’agrégation</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 SELECT COUNT(<em>field</em>) FROM <em>table</em>
 </pre>
 
-<p>Use case: calculate a derived value from your data.
+<p>Cas d’utilisation : calculer une valeur déduite de vos données.
 
-<p>We haven’t explained reduce functions yet. Reduce functions are similar to aggregate functions in SQL. They compute a value over multiple documents.
+<p>Nous n’avons pas encore expliqué les fonctions d’agrégation. Elles sont similaires aux fonctions éponymes de SQL [NdT : évident avec la traduction française, beaucoup moins avec le terme « reduce »]. Elles calculent des valeurs en se basant sur plusieurs documents.
 
-<p>To explain the mechanics of reduce functions, we’ll create one that doesn’t make a whole lot of sense. But this example is easy to understand. We’ll explore more useful reductions later.
+<p>Pour expliquer le fonctionnement des fonctions d’agrégation, nous allons en concevoir une qui ne fait pas grand sens, mais qui est facile à comprendre. Nous verrons d’autres agrégats plus utiles par la suite.
 
-<p>Reduce functions operate on the output of the map function (also called the <em>map re⁠sult</em> or <em>intermediate result</em>). The reduce function’s job, unsurprisingly, is to reduce the list that the map function produces.
+<p>Les fonctions d’agrégations travaillent sur le résultat des fonctions de subdivision (aussi appelé <em>résultat de subdivision</em> ou <em>résultat intermédiaire</em>). Le rôle de la fonction d’agrégation est, sans surprise, de réduire la liste fournie par la fonction de subdivision [NdT : d’où le Map<em>Reduce</em>]).
 
-<p>Here’s what our summing reduce function looks like:
+<p>Voici à quoi ressemble notre fonction de sommation :
 
 <pre>
 function(keys, values) {
@@ -242,7 +242,7 @@ function(keys, values) {
 }
 </pre>
 
-<p>Here’s an alternate, more idiomatic JavaScript version:
+<p>Voilà la même, plus dans l’esprit JavaScript :
 
 <pre>
 function(keys, values) {
@@ -254,13 +254,13 @@ function(keys, values) {
 }
 </pre>
 
-<p>This reduce function takes two arguments: a list of <code>keys</code> and a list of <code>values</code>. For our summing purposes we can ignore the <code>keys</code>-list and consider only the <code>value</code> list. We’re looping over the list and add each item to a running total that we’re returning at the end of the function.
+<p>Cette fonction d’agrégation accepte deux arguments : une liste de clés <code>keys</code> et une liste de valeurs <code>values</code>. Dans notre exemple de sommes, nous pouvons ignorer la liste de clés et exploiter uniquement la liste de valeurs. Nous parcourons la liste et, à chaque itération, incrémentons un total que nous renvoyons à la fin de la fonction.
 
-<p>You’ll see one difference between the map and the reduce function. The map function uses <code>emit()</code> to create its result, whereas the reduce function returns a value.
+<p>Vous voyez présentement une différence entre une fonction de subdivision et d’agrégation. La première appelle <code>emit()</code> pour créer un résultat tandis que la seconde renvoie une valeur.
 
-<p>For example, from a list of integer values that specify the age, calculate the sum of all years of life for the news headline, “786 life years present at event.” A little contrived, but very simple and thus good for demonstration purposes. Consider the documents and the map view we used earlier in this chapter.
+<p>Voici un exemple : à partir de la liste des âges, calculer la somme des années de vie pour affiche en une « 786 années de vie présentes à l’évènement ». Un peu tiré par les cheveux, mais très simple et bon pour notre démonstration. Souvenez-vous des documents précédents sur l’âge des filles.
 
-<p>The reduce function to calculate the total age of all girls is:
+<p>La fonction d’agrégation pour calculer l’âge total des filles est la suivante :
 
 <pre>
 function(keys, values) {
@@ -268,9 +268,9 @@ function(keys, values) {
 }
 </pre>
 
-<p>Note that, instead of the two earlier versions, we use CouchDB’s predefined <code>sum()</code> function. It does the same thing as the other two, but it is such a common piece of code that CouchDB has it included.
+<p>Notez que, plutôt que d’itérer sur la liste, nous utilisons la fonction <code>sum()</code> prédéfinie dans CouchDB. Elle fait la même chose, mais c’est un besoin si courant que CouchDB offre un raccourci.
 
-<p>The result for our reduce view now looks like this:
+<p>Le résultat renvoyé par notre vue agrégée est le suivant :
 
 <pre>
 {"rows":[
@@ -278,25 +278,25 @@ function(keys, values) {
 ]}
 </pre>
 
-<p>The total sum of all <code>age</code> fields in all our documents is <code>15</code>. Just what we wanted. The <code>key</code> member of the result object is <code>null</code>, as we can’t know anymore which documents took part in the creation of the reduced result. We’ll cover more advanced reduce cases later on.
+<p>La somme totale de tous les champs <code>âgés</code> dans l’ensemble de nos documents est <code>15</code>. Pile ce que nous voulions. Le membre <code>key</code> de l’objet résultant est <code>null</code>, car nous ne pouvons plus savoir quel document a permis d’obtenir le résultat. Nous nous intéresserons à des usages plus avancés par la suite.
 
-<p>As a rule of thumb, the reduce function should reduce a single scalar value. That is, an integer; a string; or a small, fixed-size list or object that includes an aggregated value (or values) from the <code>values</code> argument. It should never just return <code>values</code> or similar. CouchDB will give you a warning if you try to use reduce “the wrong way”:
+<p>Une règle fondamentale : une fonction d’agrégation doit renvoyer une unique valeur scalaire. C’est-à-dire un entier, une chaîne de caractères, une liste de taille fixe ou un objet contenant une ou plusieurs valeurs agrégées à partir de l’argument <code>values</code>. Elle ne doit jamais se contenter de retourner <code>values</code> ou quelque chose du genre. CouchDB vous avertira si vous agrégez de la mauvaise manière :
 
 <pre>
 {"error":"reduce_overflow_error","message":"Reduce output must shrink more rapidly: Current output: ..."}
 </pre>
 
-<h3 id="unique">Get Unique Values</h3>
+<h3 id="unique">Obtenir des valeurs uniques</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 SELECT DISTINCT <em>field</em> FROM <em>table</em>
 </pre>
 
-<p>Getting unique values is not as easy as adding a keyword. But a reduce view and a special query parameter give us the same result. Let’s say you want a list of tags that your users have tagged themselves with and no duplicates.
+<p>Obtenir des valeurs uniques n’est pas aussi simple qu’ajouter un mot clé. Toutefois, une vue agrégée et un paramètre de requête particulier nous donnent le même résultat. Imaginons que vous désiriez la liste des tags que vos utilisateurs se sont appliqués, et sans doublon.
 
-<p>First, let’s look at the source documents. We punt on <code>_id</code> and <code>_rev</code> attributes here:
+<p>Tout d’abord, regardons les documents sources. Nous masquons les attributs <code>_id</code> et <code>_rev</code> :
 
 <pre>
 {
@@ -315,7 +315,7 @@ SELECT DISTINCT <em>field</em> FROM <em>table</em>
 }
 </pre>
 
-<p>Next, we need a list of all tags. A map function will do the trick:
+<p>Ensuite, nous avons besoin d’une liste de tous les tags. Une fonction de subdivision suffira :
 
 <pre>
 function(dude) {
@@ -327,7 +327,7 @@ function(dude) {
 }
 </pre>
 
-<p>The result will look like this:
+<p>Le résultat ressemblera à :
 
 <pre>
 {"total_rows":9,"offset":0,"rows":[
@@ -343,7 +343,7 @@ function(dude) {
 ]}
 </pre>
 
-<p>As promised, these are all the tags, including duplicates. Since each document gets run through the map function in isolation, it cannot know if the same key has been emitted already. At this stage, we need to live with that. To achieve uniqueness, we need a reduce:
+<p>Comme promis, voici tous les tags, y compris les doublons. Comme la fonction de subdivision est exécutée de manière indépendante sur chaque document, elle ne peut pas savoir ce qui a été émis par ailleurs. À ce stade, nous devons vivre avec. Pour obtenir l’unicité, nous avons besoin d’un agrégat :
 
 <pre>
 function(keys, values) {
@@ -351,13 +351,13 @@ function(keys, values) {
 }
 </pre>
 
-<p>This reduce doesn’t do anything, but it allows us to specify a special query parameter when querying the view:
+<p>Cette fonction d’agrégation ne fait rien, mais elle nous permet de spécifier un paramètre spécial quand nous appelons la vue :
 
 <pre>
 /dudes/_design/dude-data/_view/tags?group=true
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB répond :
 
 <pre>
 {"rows":[
@@ -371,9 +371,9 @@ function(keys, values) {
 ]}
 </pre>
 
-<p>In this case, we can ignore the value part because it is always true, but the result includes a list of all our tags and no duplicates!
+<p>Dans ce cas, nous pouvons ignorer les valeurs, car elles seront toujours à vrai. Le résultat nous donne la liste de tous les tags, et sans doublon !
 
-<p>With a small change we can put the reduce to good use, too. Let’s see how many of the non-unique tags are there for each tag. To calculate the tag frequency, we just use the summing up we already learned about. In the map function, we emit a <code>1</code> instead of <code>null</code>:
+<p>En apportant une légère retouche, nous pouvons exploiter plus utilement la fonction d’agrégation. Voyons combien de tags identiques sont répertoriés. Pour calculer la fréquence d’un tag, nous utilisons la sommation vue précédemment. Dans la fonction de subdivision, nous émettons un <code>1</code> au lieu de <code>null</code> :
 
 <pre>
 function(dude) {
@@ -385,7 +385,7 @@ function(dude) {
 }
 </pre>
 
-<p>In the reduce function, we return the sum of all values:
+<p>Dans la fonction d’agrégation, nous retournons la somme des valeurs :
 
 <pre>
 function(keys, values) {
@@ -393,7 +393,7 @@ function(keys, values) {
 }
 </pre>
 
-<p>Now, if we query the view with the <code>?group=true</code> parameter, we get back the count for each tag:
+<p>Désormais, si nous interrogeons la vue avec le paramètre <code>?group=true</code>, nous obtiendrons le compte de chaque tag :
 
 <pre>
 {"rows":[
@@ -407,16 +407,16 @@ function(keys, values) {
 ]}
 </pre>
 
-<h3 id="uniqueness">Enforcing Uniqueness</h3>
+<h3 id="uniqueness">Garantir l’unicité</h3>
 
-<p>How you would do this in SQL:
+<p>Ce que cela donnerait en SQL :
 
 <pre>
 UNIQUE KEY(<em>column</em>)
 </pre>
 
-<p>Use case: your applications require that a certain value exists only once in a database.
+<p>Cas d’utilisation : votre application requiert qu’une valeur ne soit présente qu’une seule fois dans la base de données.
 
-<p>This is an easy one: within a CouchDB database, each document must have a unique <code>_id</code> field. If you require unique values in a database, just assign them to a document’s <code>_id</code> field and CouchDB will enforce uniqueness for you.
+<p>C’est facile : dans une base de données CouchDB, chaque document doit avoir un champ <code>_id</code> unique. Si vous avez besoin de garantir l’unicité d’une valeur, assignez-la au champ <code>_id</code> du document et CouchDB s’occupera du reste.
 
-<p>There’s one caveat, though: in the distributed case, when you are running more than one CouchDB node that accepts write requests, uniqueness can be guaranteed only per node or outside of CouchDB. CouchDB will allow two identical IDs to be written to two different nodes. On replication, CouchDB will detect a conflict and flag the document accordingly.
+<p>Toutefois, il y a un défaut : dans le cas d’une base distribuée avec plusieurs instances de CouchDB acceptant les écritures, l’unicité ne peut être garantie que par nœud ou en dehors de CouchDB. CouchDB permettra l’écriture de deux identifiants identiques sur deux nœuds différents. C’est lors de la réplication que le conflit apparaîtra et que CouchDB indiquera le problème.
