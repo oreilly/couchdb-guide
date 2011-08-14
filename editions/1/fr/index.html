@@ -1,87 +1,243 @@
-<title>CouchDB : le guide authentique</title>
+<title>Sécurité</title>
 
 <meta charset="utf-8">
 
 <link rel="stylesheet" href="../../../style.css">
 
+<link rel="prev" href="cookbook.html">
+
+<link rel="next" href="performance.html">
+
 <script src="../../../script.js"></script>
 
-<h2>Table des matières</h2>
+<h2 id="security">Sécurité</h2>
 
-<h3><a href="foreword.html">Avant-propos</a></h3>
+<p>Nous avons signalé précédemment que CouchDB suit son développement et que des fonctionnalités pourraient avoir été ajoutées depuis la publication de ce livre. C’est tout particulièrement vrai en ce qui concerne les mécanismes de sécurité. Il y a, à l’heure actuelle (version 0.10.0) une implantation rudimentaire de la sécurité et, au jour où nous écrivons ces lignes, des améliorations sont en discussion.
 
-<h3><a href="preface.html">Préface</a></h3>
+<p>Dans ce chapitre, nous décrirons les mécanismes de sécurité de base de CouchDB : l’<em>Admin Party</em> (en français vulgaire : <em><a href="http://fr.wiktionary.org/wiki/f%C3%AAte_du_slip">fête du slip</a></em>), la <em>Basic Authentication</em>, <em>Cookie Authentication</em>, et <em>OAuth</em>.
 
-<h3 id="part/i">Partie I. Introduction [complète]</h3>
+<h3 id="party">La fête du slip (Admin Party)</h3>
 
-<h4><a href="why.html">1. Pourquoi CouchDB ?</a></h4>
+<p>Quand vous démarrez CouchDB juste après l’avoir installé, n’importe qui peut exécuter n’importe quelle requête. Créer une base de données ? Aucun problème ! Supprimer quelques comptes ? Pas de souci, allez-y ! CouchDB nomme cela l’<em>Admin Party</em> ; les Français connaissant l’heureuse expression de la <em>fête du slip</em>. Chacun peut faire ce qui lui plaît.
 
-<h4><a href="consistency.html">2. Cohérence finale</a></h4>
+<p>Si cette approche permet de faire ses premiers pas facilement, il semble évident que lâcher une telle installation de CouchDB dans la nature est pour le moins téméraire. En effet, tout utilisateur malicieux pourrait s’immiscer et supprimer une base de données.
 
-<h4><a href="tour.html">3. Premiers pas</a></h4>
+<p>Si cela peut vous rassurer, sachez que, par défaut, CouchDB n’écoute que votre interface de <em>loopback</em> (<code>127.0.0.1</code> ou <code>localhost</code>). Ainsi, vous seul pouvez soumettre des requêtes à CouchDB. Toutefois, quand vous ouvrirez votre serveur au public (c’est-à-dire en ordonnant à CouchDB d’écouter votre adresse IP publique), vous devrez penser à restreindre les accès afin d’éviter que cela tourne en une fête du slip.
 
-<h4><a href="api.html">4. Les fondamentaux de l’API</a></h4>
+<p>Lors de nos discussions antérieures, nous avons distillé quelques mots-clés sur la façon dont les choses se passent en dehors de la fête du slip. En premier lieu, il y a un <em>admin</em>, c’est-à-dire une sorte de super utilisateur. Ensuite, il y a des <em>privilèges</em>. Voyons cela plus en détail.
 
-<h3 id="part/ii">Part II. Developing with CouchDB [non traduite]</h3>
+<p>CouchDB conçoit un <em>administrateur</em> comme étant autorisé à tout faire sur l’installation de CouchDB. Par défaut, tout le monde est administrateur. Si vous ne le souhaitez pas, vous pouvez créer des comptes d’administrateurs avec un nom d’utilisateur et un mot de passe.
 
-<h4><a href="design.html">5. Design Documents</a></h4>
+<p>CouchDB définit aussi un ensemble de requêtes que seuls les administrateurs peuvent exécuter. Si vous avez créé des comptes utilisateurs, CouchDB vous demandera de vous authentifier pour les opérations suivantes :
 
-<h4><a href="views.html">6. Trouver vos données à l’aide des vues</a></h4>
+<ul>
 
-<h4><a href="validation.html">7. Fonctions de validation</a></h4>
+<li>Créer une base de données (<code>PUT /database</code>)</li>
 
-<h4><a href="show.html">8. Fonctions d’affichage</a></h4>
+<li>Supprimer une base de données (<code>DELETE /database</code>)</li>
 
-<h4><a href="transforming.html">9. Transforming Views with List Functions</a></h4>
+<li>Créer un <em>design document</em> (<code>PUT /database/_design/app</code>)</li>
 
-<h3 id="part/iii">Partie III. Exemples d’application [complète]</h3>
+<li>Mettre à jour un <em>design document</em> (<code>PUT /database/_design/app?rev=1-4E2</code>)</li>
 
-<h4><a href="standalone.html">10. Applications autonomes</a></h4>
+<li>Supprimer un un <em>design document</em> (<code>DELETE /database/_design/app?rev=1-6A7</code>)</li>
 
-<h4><a href="managing.html">11. Gestion des <em>design documents</em></a></h4>
+<li>Ordonner le compactage (<code>POST /_compact</code>)</li>
 
-<h4><a href="documents.html">12. Stockage des documents</a></h4>
+<li>Consulter la liste des tâches (<code>GET /_active_tasks</code>)</li>
 
-<h4><a href="formats.html">13. Afficher des documents dans des formats particuliers</a></h4>
+<li>Redémarrer le serveur (<code>POST /_restart</code>)</li>
 
-<h4><a href="lists.html">14. Lister les articles</a></h4>
+<li>Consulter la configuration actuelle (<code>GET /_config</code>)</li>
 
-<h3 id="part/iv">Partie IV. Deploiement de CouchDB [Complète]</h3>
+<li>Modifier la configuration actuelle (<code>PUT /_config</code>)</li>
 
-<h4><a href="scaling.html">15. Principes de dimensionnement</a></h4>
+</ul>
 
-<h4><a href="replication.html">16. Réplication</a></h4>
+<h4 id="users">Créer de nouveaux administrateurs</h4>
 
-<h4><a href="conflicts.html">17. Gestion des conflits</a></h4>
+<p>Examinons le fonctionnement de l’API (avec <code>curl</code>) lorsque nous ajoutons un compte administrateur.
 
-<h4><a href="balancing.html">18. Équilibrage de charge</a></h4>
+<pre>
+&gt; HOST="http://127.0.0.1:5984"
+&gt; curl -X PUT $HOST/database
+{"ok":true}
+</pre>
 
-<h4><a href="clustering.html">19. Groupement de serveurs</a></h4>
+<p>À l’origine, nous pouvons ajouter une base de données. Rien d’inattendu. Maintenant, créons un compte d’administrateur. Nous l’appellerons <code>anna</code> et son mot de passe sera <code>secret</code>. Prêtez attention aux doubles guillemets droits dans le code suivant ; ils sont nécessaires pour délimiter une chaîne de caractère dans l’API de configuration (comme nous l’avons vu plus tôt) :
 
-<h3 id="part/v">Part V. Références [incomplète]</h3>
+<pre>
+curl -X PUT $HOST/_config/admins/anna -d '"secret"'
+""
+</pre>
 
-<h4><a href="notifications.html">20. Notification des mises à jour</a></h4>
+<p>L’API <code>_config</code> nous renvoie la valeur précédente de l’objet modifié. Puisqu’il n’existait pas, nous obtenons une chaîne vide.
 
-<h4><a href="cookbook.html">21. Correspondances entre SQL et vues CouchDB</a></h4>
+<p>Si nous consultons les journaux de CouchDB, nous y trouvons les deux lignes suivantes :
 
-<h4><a href="security.html">22. Security</a></h4>
+<pre>
+[debug] [&lt;0.43.0&gt;] saving to file '/Users/jan/Work/couchdb-git/etc/couchdb/local_dev.ini', Config: '{{"admins","anna"},"secret"}'
 
-<h4><a href="performance.html">23. High Performance</a></h4>
+[debug] [&lt;0.43.0&gt;] saving to file '/Users/jan/Work/couchdb-git/etc/couchdb/local_dev.ini', Config:'{{"admins","anna"}, "-hashed-6a1cc3760b4d09c150d44edf302ff40606221526,a69a9e4f0047be899ebfe09a40b2f52c"}'
+</pre>
 
-<h4><a href="recipes.html">24. Recipes</a></h4>
+<p>La première ligne correspond à notre requête. Vous voyez que notre compte administrateur est écrit dans les fichiers de configuration de CouchDB. Nous avons défini le niveau de journalisation à <code>debug</code> pour voir précisément ce qui est réalisé. C’est pourquoi nous voyons déjà notre requête arriver avec un mot de passe en clair, puis l’apercevons à nouveau avec l’empreinte du mot de passe.
 
-<h3 id="part/vi">Part VI. Appendix</h3>
+<h4 id="hashing">Chiffrer les mots de passe</h4>
 
-<h4><a href="unix.html">A. Installing on Unix-like Systems</a></h4>
+<p>Voir ici le mot de passe en clair vous inquiète ? Rassurez-vous, lorsque vous ôtez le mode de débogage, vous ne le verrez nulle part, car il est condensé immédiatement. L’empreinte correspond à cette longue chaîne de caractère toute moche qui commence par <code>-hashed-</code>. Comment cela fonctionne-t-il ?
 
-<h4><a href="mac.html">B. Installing on Mac OS X</a></h4>
+<ol>
 
-<h4><a href="windows.html">C. Installing on Windows</a></h4>
+<li>Créer un nouveau UUID de 128 bits. C’est notre sel (<em>salt</em> en anglais).</li>
 
-<h4><a href="source.html">D. Installing from Source</a></h4>
+<li>Créer un condensé SHA1 de la concaténation des octets composant le mot de passe en clair et le sel (<code>sha1(password + salt)</code>).</li>
 
-<h4><a href="json.html">E. JSON Primer</a></h4>
+<li>Préfixer le résultat par <code>-hashed-</code> et ajouter <code>,salt</code>.</li>
 
-<h4><a href="btree.html">F. The Power of B-trees</a></h4>
+</ol>
 
-<h3><a href="colophon.html">Colophon</a></h3>
+<p>Lors de l’authentification, la comparaison du mot de passe avec l’empreinte stockée se fait en suivant la même procédure. La probabilité de collision (deux condensés identiques pour des mots de passe différents) est trop improbable pour être mentionné (voir Bruce Schneier). En outre, si la forme condensée des mots de passe tombait dans de mauvaises mains, il est, à ce jour, considéré que retrouver le mot de passe initial serait malcommode (c.-à-d.. que cela prendrait du temps et coûterait cher).
+
+<p>Certes, mais qu’en est-il du préfixe <code>-hashed-</code> ? Tout d’abord, rappelons la manière dont fonctionne l’API de configuration. Lorsque CouchDB démarre, il lit les fichiers de configuration <code>.ini</code> et stocke les paramètres dans une zone de stockage interne (lequel n’est pas une base de données). L’API vous permet de lire et de modifier ces paramètres. En ce dernier cas, les modifications sont sitôt écrites dans les fichiers <code>.ini</code>.
+
+<p>Les fichiers <code>.ini</code> peuvent aussi être édités à la main lorsque CouchDB est arrêté. Ainsi, plutôt que de créer l’utilisateur par requête, vous pourriez avoir arrêté CouchDB, édité votre fichier <code>local.ini</code>, ajouté <code>anna = secret</code> à la section <code>[admins]</code> et redémarré CouchDB. Lorsqu’il aurait lu le fichier <code>local.ini</code>, il aurait remplacé le mot de passe en clair par son empreinte. Afin de s’assurer que CouchDB condense uniquement les mots de passe en clair, les condensés sont préfixés par <code>-hashed-</code>. Subséquemment, vos mots de passe ne peuvent pas débuter par <code>-hashed-</code>, ce qui ne devrait guère vous gêner.
+
+<h3 id="authentication">Basic Authentication</h3>
+
+<p>Puisque nous avons à présent un administrateur, CouchDB ne nous permettra pas de créer de nouvelles bases de données à moins que nous lui communiquions des paramètres d’identification valides. Vérifions :
+
+<pre>
+&gt; curl -X PUT $HOST/somedatabase
+{"error":"unauthorized","reason":"You are not a server admin."}
+</pre>
+
+<p>Ça à l’air bon. Essayons voir avec le bon compte :
+
+<pre>
+&gt; HOST="http://anna:secret@127.0.0.1:5984"
+&gt; curl -X PUT $HOST/somedatabase
+{"ok":true}
+</pre>
+
+<p>Si vous avez déjà accédé à un site web ou un serveur FTP protégé par mot de passe, l’allure de l’URL <code>username:password@</code> devrait vous paraître familière.
+
+<p>Si vous êtes sensible à la sécurité, le <code>s</code> manquant dans <code>http://</code> vous rend nerveux. Nous envoyons nos identifiants à CouchDB en clair. C’est une mauvaise idée, n’est-ce pas ? Certainement, mais souvenez-vous de notre scénario : CouchDB écoute sur le port <code>127.0.0.1</code> d’un PC de développement dont nous sommes les seuls utilisateurs. Qui pourrait récupérer notre mot de passe ?
+
+<p>Si vous travaillez dans un environnement de production, vous devrez bien entendu reconsidérer la chose. Votre instance de CouchDB va-t-elle communiquer à travers un réseau public ? Même un LAN partagé avec d’autres clients est public. Il existe plusieurs moyens de sécuriser une connexion entre vous ou votre application et CouchDB, lesquels sortent du cadre de ce livre. Nous vous suggérons de vous renseigner sur les VPNs et de placer CouchDB derrière un serveur mandataire HTTP (comme le module Apache mod_pryx, nginx ou varnish) qui gèrera SSL à votre place. Pour l’heure, CouchDB ne sait pas exposer son API par SSL. Elle peut, en revanche, répliquer avec une base de données qui se trouve derrière un serveur mandataire SSL.
+
+<h4 id="validation">Validations lors d’une mise à jour, le retour !</h4>
+
+<p>Vous souvenez-vous du <a href="validation.html">chapitre 7, <em>Fonctions de validation</em></a> ? Nous avions une fonction de validation des mises à jour qui nous permettait de vérifier que l’utilisateur qui souhaitait modifier un document correspondait à celui qui l’avait créé.
+
+<pre>
+function(newDoc, oldDoc, userCtx) {
+  if (newDoc.author) {
+    if(newDoc.author != userCtx.name) {
+      throw("forbidden": "You may only update documents with author " +
+        userCtx.name});
+    }
+  }
+}
+</pre>
+
+<p>Qu’est-ce que ce <code>userCtx</code> ? C’est un objet contenant les informations relatives à l’identification de la requête courante. Regardons ce qui s’y trouve. Nous en profitons pour vous donner une astuce pour inspecter ce qui se passe dans le code JavaScript que vous écrivez.
+
+<pre>
+&gt; curl -X PUT $HOST/somedatabase/_design/log -d '{"validate_doc_update":"function(newDoc, oldDoc, userCtx) { log(userCtx); }"}'
+{"ok":true,"id":"_design/log","rev":"1-498bd568e17e93d247ca48439a368718"}
+</pre>
+
+<p>Regardons la fonction <code>validate_doc_update</code> :
+
+<pre>
+function(newDoc, oldDoc, userCtx) {
+  log(userCtx);
+}
+</pre>
+
+<p>Elle sera appelée lors de toute mise à jour des documents et ne fera rien d’autre que de créer une entrée dans le journal de CouchDB. Si nous créons un document :
+
+<pre>
+&gt; curl -X POST $HOST/somedatabase/ -d '{"a":1}'
+{"ok":true,"id":"36174efe5d455bd45fa1d51efbcff986","rev":"1-23202479633c2b380f79507a776743d5"}
+</pre>
+
+<p>nous devrions voir apparaître cela dans notre fichier <code>couch.log</code> :
+
+<pre>
+[info] [&lt;0.9973.0&gt;] OS Process :: {"db": "somedatabase","name": "anna","roles":["_admin"]}
+</pre>
+
+<p>Reformattons :
+
+<pre>
+{
+  "db": "somedatabase",
+  "name": "anna",
+  "roles": ["_admin"]
+}
+</pre>
+
+<p>Nous y trouvons le nom de la base de données courante, le nom de l’utilisateur authentifié ainsi qu’un tableau de <code>rôles</code> contenant le rôle <code>"_admin"</code>. Nous pouvons en déduire que les administrateurs sont vus par CouchDB comme des <em>utilisateurs classiques</em> qui possèdent le <em>rôle d’administration</em>.
+
+<p>En séparant les utilisateurs des rôles, le système d’authentification peut être étendu avec flexibilité. Pour lors, nous nous occuperons seulement des utilisateurs administrateurs.
+
+<h3 id="cookies">Cookie Authentication</h3>
+
+<p>La <em>Basic authentication</em> qui recourt à des mots de passe en clair est pratique, à défaut d’être sûre. Mais elle donne aussi une mauvaise expérience à l’utilisateur. Si vous utilisez la <em>Basic authentication</em> pour identifier vos admins, vous devrez compter avec une fenêtre de demande de mot de passe souvent moche et inaltérable dont la seule apparition indique surtout un <em>boulot de gougnafier</em>.
+
+<p>CouchDB propose donc une alternative : <em>l’authentification par cookie</em>. Avec cette approche, votre application peut s’affranchir de la fenêtre standard du navigateur internet. Vous pouvez exploiter un formulaire HTML classique et le soumettre à CouchDB. À sa réception, CouchDB génèrera un jeton unique dont le client pourra se servir pour ses prochaines requêtes. Lorsque CouchDB aperçoit le jeton dans une requête, il en déduit l’identité de l’utilisateur sans avoir besoin de réclamer à nouveau le mot de passe. Par défaut, un jeton est valide 10 minutes.
+
+<p>Pour obtenir le premier jeton, et ainsi authentifier l’utilisateur pour la première fois, le nom d’utilisateur et le mot de passe doivent être soumis à l’API <code>_session</code>. Cette API est suffisamment intelligente pour décoder les formulaires HTML qui lui sont soumis, ce qui vous évite d’implanter une quelconque logique de votre côté.
+
+<p>Dans le cas où vous n’utilisez pas de formulaires HTML pour vous connecter, vous devez envoyer une requête HTTP similaire à la soumission d’un formulaire. Heureusement, c’est très simple :
+
+<pre>
+&gt; HOST="http://127.0.0.1:5984"
+&gt; curl -vX POST $HOST/_session -H 'application/x-www-form-urlencoded' -d 'username=anna&amp;password=secret'
+</pre>
+
+<p>CouchDB répond avec quelques détails :
+
+<pre>
+&lt; HTTP/1.1 200 OK
+&lt; Set-Cookie: AuthSession=YW5uYTo0QUIzOTdFQjrC4ipN-D-53hw1sJepVzcVxnriEw;
+&lt; Version=1; Path=/; HttpOnly
+&gt; ...
+&lt;
+{"ok":true}
+</pre>
+
+<p>Un code de réponse <code>200</code> nous indique que tout s’est bien passé, un en-tête <code>Set-Cookie</code> donne le jeton que nous pouvons utiliser dans la prochaine requête, et la réponse standard JSON nous indique que la requête s’est exécutée avec succès.
+
+<p>Dès lors, nous pouvons utiliser le jeton pour soumettre une autre requête, avec l’identité que nous avons communiquée précédemment, sans avoir besoin de préciser à nouveau le mot de passe, ni le nom de l’utilisateur :
+
+<pre>
+&gt; curl -vX PUT $HOST/mydatabase --cookie AuthSession=YW5uYTo0QUIzOTdFQjrC4ipN-D-53hw1sJepVzcVxnriEw -H "X-CouchDB-WWW-Authenticate: Cookie" -H "Content-Type: application/x-www-form-urlencoded"
+{"ok":true}
+</pre>
+
+<p>Vous pouvez utiliser ce jeton pendant 10 minutes. Passé ce délai, vous devrez vous authentifier à nouveau. La durée de vie du jeton peut être ajustée avec le paramètre <code>timeout</code> (exprimé en secondes) dans la section de configuration <code>couch_httpd_auth</code>.
+
+<div class="aside warning">
+
+<p>Veuillez noter que l’authentification par cookie ne fonctionne que si vous activez la directive <code>cookie_authentication_handler</code> dans votre fichier <code>local.ini</code> :
+
+<pre>
+[httpd]
+authentication_handlers = {couch_httpd_auth, cookie_authentication_handler}, {couch_httpd_oauth, oauth_authentication_handler}, {couch_httpd_auth, default_authentication_handler}
+</pre>
+
+<p>En outre, vous devez définir le <em>secret du serveur</em> :
+
+<pre>
+[couch_httpd_auth]
+secret = yours3cr37pr4s3
+</pre>
+
+</div>
+
+<h3 id="network">Sécurité d’un serveur sur le réseau</h3>
+
+<p>CouchDB est un serveur ayant accès au réseau. Il existe de bonnes pratiques pour sécuriser ces services, mais cela va au-delà du ressort de ce livre. L’<a href="source.html">Annexe D, <em>installation depuis les sources</em> inclut quelques-unes des bonnes pratiques. Assurez-vous d’en comprendre les implications.
