@@ -109,7 +109,7 @@ http://127.0.0.1:5984/mydb/_design/admin
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/basic
-curl -X PUT http://127.0.0.1:5984/basic/_design/example -data-binarymydesign.json
+curl -X PUT http://127.0.0.1:5984/basic/_design/example --data-binary @mydesign.json
 </pre>
 
 <p>From the second request, you should see a response like:
