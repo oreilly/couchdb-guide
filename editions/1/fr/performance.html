@@ -14,19 +14,19 @@
 
 <p>Ce chapitre vous apprendra les moyens les plus rapides d’insérer et de récupérer des données avec CouchDB. Il expliquera aussi pourquoi différentes techniques conduisent à différents degrés d’efficacité.
 
-<p>Le message à retenir : les opérations de masse réduisent le temps de traitement du contexte (<em>overhead</em>), maximisent le débit et maximise l’utilisation de l’espace. Si vous ne pouvez par travailler par lots, nous vous donnerons quelques options permettant d’optimiser le débit et l’usage de l’espace. Enfin, nous décrirons l’interfaçage direct avec CouchDB en Erlang, ce qui peut être une bonne technique pour intégrer le stockage de CouchDB avec un serveur ne supportant pas le protocole HTTP, comme SMTP (courrier électronique) ou XMPP (messagerie instantannée).
+<p>Le message à retenir : les opérations massives réduisent le temps de traitement du contexte (<em>overhead</em>), maximisent le débit et maximisent l’utilisation de l’espace. Si vous ne pouvez par travailler par lots, nous vous donnerons quelques options permettant d’optimiser le débit et l’usage de l’espace. Enfin, nous décrirons l’interfaçage direct avec CouchDB en Erlang, ce qui peut être une bonne technique pour intégrer le stockage de CouchDB avec un serveur ne supportant pas le protocole HTTP, comme SMTP (courrier électronique) ou XMPP (messagerie instantanée).
 
-<h3 id="benchmarks">Une juste évaluation n’est pas triviale</h3>
+<h3 id="benchmarks">Une juste évaluation n’est pas facile à obtenir</h3>
 
-<p>Chaque application est différente. Les attentes en terme de performance ne sont pas nécessairement évidentes. À des cas d’utilisation différents, un affinage des paramètres différent. Le compromis habituel est la latence vis-à-vis du débit. La concurrence est un autre facteur. Nombreuses sont les bases de données qui se comportent différemment selon que vous ayez 100 clients  ou 1 0000, ou davantage. Certains profils de données requierent des opérations enchaînées, lesquelles accroissent le temps total nécessaire (la latence) pour le client aussi bien que la charge du serveur. Nous pensons que des modèles de données et d’accès plus simples peuvent apporter une grande différence lors du passage à l’échelle de votre application, comme dans les possibilités de recours à l’antémémoire (<em>cache</em> en anglais). Mais nous y reviendront plus tard.
+<p>Chaque application est différente. Les attentes en terme de performance ne sont pas nécessairement évidentes. À des cas d’utilisation différents, un affinage des paramètres différent. Le compromis habituel est la latence vis-à-vis du débit. La concurrence est un autre facteur. Nombreuses sont les bases de données qui se comportent différemment selon que vous avez 100 clients  ou 1 0000, ou davantage. Certains profils de données requièrent des opérations enchaînées, lesquelles accroissent le temps total nécessaire (la latence) pour le client aussi bien que la charge du serveur. Nous pensons que des modèles de données et d’accès plus simples peuvent apporter une grande différence lors du passage à l’échelle de votre application, comme dans les possibilités de recours à l’antémémoire (<em>cache</em> en anglais). Mais nous y reviendrons plus tard.
 
-<p>La conséquence : <em>de évaluations réalistes nécessistent une charge du monde réel.</em> Simuler la charge est difficile. Erlang tend à bien encaisser la charge, en particulier sur plusieurs cœurs, aussi avons-nous vu de nombreux tests qui ne parviennent pas à le pressuriser suffisamment pour trouver le point de rupture.
+<p>La conséquence : <em>des évaluations réalistes nécessitent une charge du monde réel.</em> Simuler la charge est difficile. Erlang tend à bien encaisser la charge, en particulier sur plusieurs cœurs, aussi avons-nous vu de nombreux tests qui ne parviennent pas à le pressuriser suffisamment pour trouver le point de rupture.
 
-<p>Examinons à quoi ressemble une application web typique. Ce n’est pas vraiment comme cela que Craigslist fonctionne (car nous ne savons pas comment Craigslist fonctionne), mais c’est une estimation suffisamment proche pour illustrer les problèmes rencontrés dans une évalutation.
+<p>Examinons à quoi ressemble une application web typique. Ce n’est pas vraiment comme cela que Craigslist fonctionne (car nous ne savons pas comment Craigslist fonctionne), mais c’est une estimation suffisamment proche pour illustrer les problèmes rencontrés dans une évaluation.
 
-<p>Vous avez un serveur web, quelques intergiciels (<em>middleware</em>) et une base de données. Une requête utilisateur arrive : le serveur web s’occupe de la couche réseau et de décoder la requête HTTP. Celle-ci est transmises à l’intergiciel qui trouve ce qu’il faut exécuter, puis lance qu’il faut pour traiter la requête. L’intergiciel peut communiquer avec votre base de données et avec d’autres ressources externes tels que des fichiers ou des services web distants. La requête retourne au serveur web, qui envoie le code HTML résultant. Celui-ci contient des références vers d’autres ressources disponibles sur votre serveur web (CSS, JS, images, etc.) ; le processus recommence pour chacune d’entre elles. De plus, le long de ce parcours, il existe des mécanismes d’antémémoire dont le but est d’éviter des recalculations coûteuses.
+<p>Vous avez un serveur web, quelques intergiciels (<em>middleware</em>) et une base de données. Une requête utilisateur arrive : le serveur web s’occupe de la couche réseau et de décoder la requête HTTP. Celle-ci est transmise à l’intergiciel qui trouve ce qu’il faut exécuter, puis lance qu’il faut pour traiter la requête. L’intergiciel peut communiquer avec votre base de données et avec d’autres ressources externes telles que des fichiers ou des services web distants. La requête retourne au serveur web, qui envoie le code HTML résultant. Celui-ci contient des références vers d’autres ressources disponibles sur votre serveur web (CSS, JS, images, etc.) ; le processus recommence pour chacune d’entre elles. De plus, le long de ce parcours, il existe des mécanismes d’antémémoire dont le but est d’éviter des recalculs coûteux.
 
-<p>Cela fait beaucoup de parties fluctuantes. Obtenir un profile de haut en bas pour l’ensemble des composants afin de trouver les goulots d’étranglement est assez complexe (mais sympa à avoir). Commençons à parler de chiffres. Les valeurs absolues ne sont pas importantes ; seuls la relation entre elles l’est. Disons qu’une requête prend 1,5 secondes (1 500 ms) pour être pleinement affichée dans votre navigateur.
+<p>Cela fait beaucoup de parties fluctuantes. Obtenir un profil de haut en bas pour l’ensemble des composants afin de trouver les goulots d’étranglement est assez complexe (mais sympa à avoir). Commençons à parler de chiffres. Les valeurs absolues ne sont pas importantes ; seule la relation entre elles l’est. Disons qu’une requête prend 1,5 seconde (1 500 ms) pour être pleinement affichée dans votre navigateur.
 
 <p>Dans un cas simple comme celui de Craigslist, il y a un fichier HTML initial, un fichier CSS, un fichier JS et le favicon. À l’exception du HTML, ce sont toutes des ressources statiques qui impliquent quelques lectures depuis le disque (ou la mémoire) avant de les envoyer au navigateur qui en exécute le rendu. On gagne du temps en gardant les choses petites (compression GZIP, haute compression JPEG) et en évitant de recevoir toutes les requêtes (antémémoire au niveau du navigateur). Rendre le serveur web plus rapide ne nous aide guère (oui, certains lèvent la main, mais nous ne nous concentrons pas sur les ressources statiques pour le moment). Disons que toutes les ressources statiques requièrent 500 ms pour être servies et affichées.
 
@@ -35,7 +35,7 @@
 <p>Pour améliorer l’expérience des clients, nous vous recommandons de lire <em>proper use of HTTP</em> de Steve Souder, un guru de la performance du web. Son outil YSlow est indispensable pour peaufiner un site web.
 </div>
 
-<p>Cela nous laisse 1 000 ms pour le HTML initial. Nous retranchons 200 ms pour la latence réseau (cf. <a href="why.html">chapitre 1, <em>Pourquoi CouchDB ?</em></a>). Disons ensuite que le traitement HTTP, le routage et l’exécution par l’intergiciel, ainsi que la base de données se partagent équitablement le reste du temps, 200 ms chacun.
+<p>Cela nous laisse 1 000 ms pour le HTML initial. Nous retranchons 200 ms pour la latence réseau (cf. <a href="why.html">chapitre 1, <em>Pourquoi CouchDB ?</em></a>). Disons ensuite que le traitement HTTP, le routage et l’exécution par l’intergiciel, ainsi que la base de données se partagent équitablement le reste du temps, 200 ms chacun.
 
 <p>Si vous souhaitez améliorer une partie de cette grande chaîne, c’est-à-dire votre application web et gagner 10 ms dans le temps d’accès à la base de données, c’est probablement une perte de temps (à moins que vous ayez des chiffres pour le démontrer).
 
@@ -45,31 +45,31 @@
 
 <p>Puisque vous savez désormais que les performances de la base de données ne sont qu’une petite partie de la performance du web, nous allons vous donner les moyens de tirer le maximum de CouchDB.
 
-<p>CouchDB a été conçu dès l’origine pour répondre à des cas d’utilisation où la concurrence entre clients est rude ; ces cas couvrent la majorité de la charge des applications web. Toutefois, nous pouvons avoir besoin d’importer une grande quantité de données ou de réaliser des transformations sur l’ensemble de la base. Ou encore, nous bâtissons une application Erlang qui a besoin de s’interfacer avec CouchDB en-dessous de HTTP.
+<p>CouchDB a été conçu dès l’origine pour répondre à des cas d’utilisation où la concurrence entre clients est rude ; ces cas couvrent la majorité de la charge des applications web. Toutefois, nous pouvons avoir besoin d’importer une grande quantité de données ou de réaliser des transformations sur l’ensemble de la base. Ou encore, nous bâtissons une application Erlang qui a besoin de s’interfacer avec CouchDB en dessous de HTTP.
 
 <h4 id="hardware">Matériel</h4>
 
 <p>Sans le moindre doute, on voudra savoir quel type de disques utiliser, combien de RAM, quel type de CPU, etc. En fait, CouchDB est suffisamment flexible pour fonctionner aussi bien sur un <em>smartphone</em> que sur une grappe de serveurs. Aussi, les réponses varieront.
 
-<p>Avoir beaucoup de RAM est une bonne chose, car CouchDB exploite intensivement l’antémémoire du système de fichiers. Les disques durs SSD (<em>Solid State Drive</em>) sont vraiment sympathique en ce qu’ils permettent d’écrire à la fin d’un fichier tout en lisant d’anciens blocs, le tout avec une surcharge minimale. De plus, comme ils sont de plus en plus accessibles, ils iront bien avec CouchDB.
+<p>Avoir beaucoup de RAM est une bonne chose, car CouchDB exploite intensivement l’antémémoire du système de fichiers. Les disques durs SSD (<em>Solid State Drive</em>) sont vraiment sympathiques en ce qu’ils permettent d’écrire à la fin d’un fichier tout en lisant d’anciens blocs, le tout avec une surcharge minimale. De plus, comme ils sont de plus en plus accessibles, ils iront bien avec CouchDB.
 
 <h4 id="implementation">Une note d’implantation</h4>
 
-<p>Nous ne reviendrons pas sur la maière dont un complète les arbres-B ici, mais la compréhension du format de données de CouchDB s’avère clé pour pressentir quelle stratégie fournira la meilleure performance. À chaque mise à jour, CouchDB charge les nœuds de l’arbre-B des documents concernés depuis le disque, ou une rangée de clés cernant l’endroit où le nouvel identifiant du document devrait se trouver.
+<p>Nous ne reviendrons pas sur la manière dont on complète les arbres-B ici, mais la compréhension du format de données de CouchDB s’avère clé pour pressentir quelle stratégie fournira la meilleure performance. À chaque mise à jour, CouchDB charge les nœuds de l’arbre-B des documents concernés depuis le disque, ou une rangée de clés cernant l’endroit où le nouvel identifiant du document devrait se trouver.
 
-<p>Cet appel devrait être satisfait par l’antémémoire du système de fichier, sauf quand les mises à jour concernent des sections de la base qui n’ont pas été consultés depuis longtemps. Dans ce cas, le disque doit être parcouru, ce qui peut bloquer les opérations d’écriture et présente d’autres effets de bord. « Prévenir les accès disque » : voilà le nom du jeu quand on parle de l’efficacité de CouchDB.
+<p>Cet appel devrait être satisfait par l’antémémoire du système de fichier, sauf quand les mises à jour concernent des sections de la base qui n’ont pas été consultées depuis longtemps. Dans ce cas, le disque doit être parcouru, ce qui peut bloquer les opérations d’écriture et présente d’autres effets de bord. « Prévenir les accès disque » : voilà le nom du jeu quand on parle de l’efficacité de CouchDB.
 
-<p>Nos utiliserons quelques nombres dans ce chapitre, lesquels proviennent d’un jeu de test JavaScript. Ce n’est pas ce qui se fait de plus adapté, mais la stratégie utilisée (compter le nombre de documents qui peuvent être sauvegardés en dix secondes) palie à la taille des en-têtes de JavaScript. Le matériel sur lequel ce test a été effectué est ancien : un bon vieu MacBook Intel Core 2 Duo (vous vous en souvenez ?).
+<p>Nos utiliserons quelques nombres dans ce chapitre, lesquels proviennent d’un jeu de test JavaScript. Ce n’est pas ce qui se fait de plus adapté, mais la stratégie utilisée (compter le nombre de documents qui peuvent être sauvegardés en dix secondes) palie à la taille des en-têtes de JavaScript. Le matériel sur lequel ce test a été effectué est ancien : un bon vieux MacBook Intel Core 2 Duo (vous vous en souvenez ?).
 
 <p>Vous pouvez lancer le banc d’essai vous-même en modifiant le répertoire <code>bench</code> de l’arbre de CouchDB et en lançant <code>./runner.sh</code> lorsque CouchDB écoute sur le port 5984.
 
 <h3 id="bulk">Insertions en masse avec des DocIDs monotones</h3>
 
-<p>L’insertion en masse est le meilleur moyen d’éviter les accès en lecture au système de fichier. Le caractère aléatoire des IDs rend nécessaire l’accès disque en lecture si le fichier inséré dépassé la taille de l’antémémoire. Ils conduisent aussi à un fichier plus gros car, dans une grande base de données, vous aurez rarement plusieurs documents dans une feuille de l’arbre-B.
+<p>L’insertion en masse est le meilleur moyen d’éviter les accès en lecture au système de fichier. Le caractère aléatoire des IDs rend nécessaire l’accès disque en lecture si le fichier inséré dépassé la taille de l’antémémoire. Ils conduisent aussi à un fichier plus gros, car, dans une grande base de données, vous aurez rarement plusieurs documents dans une feuille de l’arbre-B.
 
-<h4 id="examples">Exemple optimisés : vues et réplication</h4>
+<h4 id="examples">Exemples optimisés : vues et réplication</h4>
 
-<p>Si vous vous demandez à quoi ressemble un bon profil de perforances pour CouchDB, penchez-vous sur la manière dont sont construites les vues et dont la réplication est faite. Les réplications à déclenchement manuel appliquent les mises à jour sur la base de données par lot afin de minimiser l’impact des accès disque. Et actuellement, le tronc de développement 0.11.0 apporte, pour la génération des vues, une accélération de 3 à 5 fois supérieure à la version 0.10.
+<p>Si vous vous demandez à quoi ressemble un bon profil de performances pour CouchDB, penchez-vous sur la manière dont sont construites les vues et dont la réplication est faite. Les réplications à déclenchement manuel appliquent les mises à jour sur la base de données par lot afin de minimiser l’impact des accès disque. Et actuellement, le tronc de développement 0.11.0 apporte, pour la génération des vues, une accélération de 3 à 5 fois supérieure à la version 0.10.
 
 <p>Les vues chargent un lot de mises à jour depuis le disque, les passe à la moulinette du moteur de génération des vues, puis écrit le résultat. Chaque lot se compose de quelques centaines de documents, ce qui permet de profiter de l’efficacité des écritures massives décrites ci-après.
 
@@ -81,7 +81,7 @@
 
 <p>Le principal facteur qui impacte la performance des opérations de masse est la taille de la mise à jour, tant en terme de taille totale transférée qu’en nombre de documents à traiter.
 
-<p>Ci-dessous se trouvent des insertions massives successives à quatre niveau de granularité : 100 documents, 1 000, 5 000 et 10 000.
+<p>Ci-dessous se trouvent des insertions massives successives à quatre niveaux de granularité : 100 documents, 1 000, 5 000 et 10 000.
 
 <pre>
 bulk_doc_100
@@ -107,21 +107,21 @@ bulk_doc_10000
 2699.541078016737 docs/sec
 </pre>
 
-<p>Vous pouvez constater que les lots plus imposants permettent de meilleures performances, avec une limite supérieure qui s’établit à 2 700 documents par seconde dans le cas présent. Si nous enregistrions des documents plus volumineux, nous verrions la limite supérieure s’abaisser. Pour mémoire, tous les documents ressemblent à cela :  <code>{"foo":"bar"}</code>
+<p>Vous pouvez constater que les lots plus imposants permettent de meilleures performances, avec une limite supérieure qui s’établit à 2 700 documents par seconde dans le cas présent. Si nous enregistrions des documents plus volumineux, nous verrions la limite supérieure s’abaisser. Pour mémoire, tous les documents ressemblent à cela :  <code>{"foo":"bar"}</code>
 
-<p>Bien que 2 700 documents soit suffisant, nous voulons obtenir plus de puissance ! Il est temps d’effectuer des chargements parallèles.
+<p>Bien que 2 700 documents soient suffisants, nous voulons obtenir plus de puissance ! Il est temps d’effectuer des chargements parallèles.
 
-<p>À l’aide d’un autre script (couplant bash, <em>cURL</em> et <code>benchbulk.sh</code> dans le même répertoire), nous injectons des lots volumineux en parallèle dans CouchDB. Avec des lots de 1 000 documents, 10 à un instant donné, moyenné sur 10 rounds, je constate 3 650 documents par seconde sur un MacBook Pro. Benchbulk utilise aussi des identifiants séquentiels.
+<p>À l’aide d’un autre script (couplant bash, <em>cURL</em> et <code>benchbulk.sh</code> dans le même répertoire), nous injectons des lots volumineux en parallèle dans CouchDB. Avec des lots de 1 000 documents, 10 à un instant donné, moyenné sur 10 rounds, je constate 3 650 documents par seconde sur un MacBook Pro. Benchbulk utilise aussi des identifiants séquentiels.
 
 <p>Nous voyons qu’une utilisation adaptée de lots de documents et d’identifiants séquentiels, nous pouvons insérer plus de trois mille documents par seconde juste avec un script.
 
 <h3 id="batch">Traitement par lot (<em>batch</em>)</h3>
 
-<p>Le coût de l’indexation et la synchronisation du disque engendré par l’insertion d’un document peut être évitée par une option. Dans ce mode, CouchDB accumule les documents en mémoire jusqu’à ce qu’une limite soit atteinte, ou que l’utilisateur en ordonne l’écriture. Ce mode opératoire n’apporte pas les mêmes garanties d’intégrité et devrait être utilisé dans les seuls cas où la perte des dernières mises à jour n’est pas importante.
+<p>Le coût de l’indexation et la synchronisation du disque engendré par l’insertion d’un document peuvent être évités par une option. Dans ce mode, CouchDB accumule les documents en mémoire jusqu’à ce qu’une limite soit atteinte, ou que l’utilisateur en ordonne l’écriture. Ce mode opératoire n’apporte pas les mêmes garanties d’intégrité et devrait être utilisé dans les seuls cas où la perte des dernières mises à jour n’est pas importante.
 
-<p>Puisque le mode de traitement par lot stocke les mises à jour en mémoire (jusqu’à un ordre d’écriture), les mises à jour non écrites sur disque avant le crash de CouchDB seront perdues. Par défaut, CouchDB procède à l’écriture sur disque une fois par seconde donc, dans le pire des cas, vous avez perdu peu de choses. Afin d’indiquer la garantie d’intégrité réduite lorsque <code>batch=ok</code> est employé, le code de réponse HTTP est <em>202 Accepted</em>, opposé à <em>201 Created</em>.
+<p>Puisque le mode de traitement par lot stocke les mises à jour en mémoire (jusqu’à un ordre d’écriture), les mises à jour non écrites sur disque avant le plantage de CouchDB seront perdues. Par défaut, CouchDB procède à l’écriture sur disque une fois par seconde donc, dans le pire des cas, vous avez perdu peu de chose. Afin d’indiquer la garantie d’intégrité réduite lorsque <code>batch=ok</code> est employé, le code de réponse HTTP est <em>202 Accepted</em>, opposé à <em>201 Created</em>.
 
-<p>Le cas d’emploi idéal pour le mode de traitement par lots est l’application de journalisation (<em>logger</em> en anglais) dans laquelle vous avez des systèmes distribués qui sollicitent chacun CouchDB pour une écriture unitaire. Dans un scénario classique, la perte de quelques éléments de journalisation en de rares occurences est un compromis acceptable pour améliorer le débit d’écriture [NdT : donc le temps de réponse].
+<p>Le cas d’emploi idéal pour le mode de traitement par lots est l’application de journalisation (<em>logger</em> en anglais) dans laquelle vous avez des systèmes distribués qui sollicitent chacun CouchDB pour une écriture unitaire. Dans un scénario classique, la perte de quelques éléments de journalisation en de rares occurrences est un compromis acceptable pour améliorer le débit d’écriture [NdT : donc le temps de réponse].
 
 <p>Il existe un patron (<em>pattern</em>) pour garantir la fiabilité du stockage lorsqu’on utilise le mode de traitement par lots. C’est le même patron que dans le cas où une donnée doit être écrite de manière fiable sur plusieurs nœuds avant de considérer l’opération comme un succès et de répondre au client en ce sens. En bref, le serveur d’application (ou le client distant) sauvegarde sur Couch A en indiquant <code>batch=ok</code>, puis surveille les notifications de mises à jour de Couch B et ne détermine le succès que lorsque le flux <code>_changes</code> de Couch B inclut la mise à jour souhaitée. Nous avons décrit ce patron en détail au
 <a href="replication.html">chapitre 16, Réplication</a>.
@@ -132,13 +132,13 @@ batch_ok_doc_insert
 485.00299940011996 docs/sec
 </pre>
 
-<p>Ce banc d’essai JavaScript n’obtient que 500 documents à la seconde, soit six fois moin que l’API de masse. Cependant, il présente l’avantage de n’avoir pas besoin que le client assemble des lots.
+<p>Ce banc d’essai JavaScript n’obtient que 500 documents à la seconde, soit six fois moins que l’API par lots. Cependant, il présente l’avantage de n’avoir pas besoin que le client assemble des lots.
 
 <h3 id="single">Traitement unitaire</h3>
 
-<p>Pour CouchDB, la charge normale d’une application web prend la forme d’insertions simples. Puisque chaque insertion provient d’un client différent, et subit la surchage d’une requête et d’une réponse HTTP, elle a généralement le plus bas débit d’écriture.
+<p>Pour CouchDB, la charge normale d’une application web prend la forme d’insertions simples. Puisque chaque insertion provient d’un client différent, et subit la surcharge d’une requête et d’une réponse HTTP, elle a généralement le plus bas débit d’écriture.
 
-<p>Le pire des cas est possiblement celui d’un écrivain qui doit soumettre de nombreuses requêtes d’affilées, chacune dépendant du résultat de celle qui la précède. Ça sent déjà mauvais, rien qu’en décrivant le cas d’utilisation. Si vous vous trouvez dans ce cas, il y aura sans doute d’autres problèmes à régler en même temps.
+<p>Le pire des cas est possiblement celui d’un écrivain qui doit soumettre de nombreuses requêtes d'affilée, chacune dépendant du résultat de celle qui la précède. Ça sent déjà mauvais, rien qu’en décrivant le cas d’utilisation. Si vous vous trouvez dans ce cas, il y aura sans doute d’autres problèmes à régler en même temps.
 
 <p>Nous pouvons écrire 258 documents à la seconde avec un seul écrivain en série (presque le pire cas).
 
@@ -148,11 +148,11 @@ single_doc_insert
 257.9357157117189 docs/sec
 </pre>
 
-<p>Le retardement de l’écriture (<em>delayed commit</em> dans la configuration), au même titre que l’utilisation d’UUID séquentiels, est probablement le paramètre de configuration le plus important de CouchDB pour les performances. Quand il est positionné à vrai (par défaut), CouchDB permete à plusieurs opérations d’être apposées sur le disque sans réaliser un fsync à chaque fin d’opération. L’appel à fsync prend du temps (le disque peut avoir à se positionner, sur certaines plateforme, cela engendre un effacement des antémémoires, etc.), donc forcer l’appel à fsync après chaque opération impacte très fortement les performances de CouchDB pour les utilisations unitaires (par opposition aux utilisations par lots).
+<p>Le retardement de l’écriture (<em>delayed commit</em> dans la configuration), au même titre que l’utilisation d’UUID séquentiels, est probablement le paramètre de configuration le plus important de CouchDB pour les performances. Quand il est positionné à vrai (par défaut), CouchDB permet à plusieurs opérations d’être apposées sur le disque sans réaliser un fsync à chaque fin d’opération. L’appel à fsync prend du temps (le disque peut avoir à se positionner, sur certaines plateformes, cela engendre un effacement des antémémoires, etc.), donc forcer l’appel à fsync après chaque opération nuit très fortement aux performances de CouchDB pour les utilisations unitaires (par opposition aux utilisations par lots).
 
 <p>Le retardement de l’écriture devrait rester positionné à <code>true</code> dans les paramètres de configuration, sauf si vous vous trouvez dans un environnement où vous devez savoir quand les mises à jour ont bien été reçues (par exemple, dans le cas où CouchDB n’est qu’un maillon de la transaction). Par ailleurs, il est possible de forcer un fsync (par exemple, après quelques opérations) en faisant appel à l’API <code>_ensure_full_commit</code>.
 
-<p>Quand le retardement de l’écriture est désactivée, CouchDB écrit la donnée sur disque avant de répondre au client (sauf dans le mode de traitement par lots <code>batch=ok</code>). Le cheminement du code est plus simple (<em>it’s a simpler code path</em>), donc il présente moins de surcharge lors d’une utilisation à haut débit. Cependant, pour les clients individuels, cela peut sembler lent. Voici le même banc de test avec le retardement désactivé :
+<p>Quand le retardement de l’écriture est désactivé, CouchDB écrit la donnée sur disque avant de répondre au client (sauf dans le mode de traitement par lots <code>batch=ok</code>). Le cheminement du code est plus simple (<em>it’s a simpler code path</em>), donc il présente moins de surcharge lors d’une utilisation à haut débit. Cependant, pour les clients individuels, cela peut sembler lent. Voici le même banc de test avec le retardement désactivé :
 
 <pre>
 single_doc_insert
@@ -168,11 +168,11 @@ single_doc_insert
 
 <p>Hovercraft est une bibliothèque qui permet d’accéder à CouchDB en Erlang. Les bancs d’essai Hovercraft, qui s’affranchissent de la couche HTTP et JSON, devraient démontrer la performance maximale que l’on peut obtenir des sous-systèmes d’indexation et de gestion du disque de CouchDB.
 
-<p>Hovercraft se révèle pratique lorsque l’interface HTTP n’offre plus assez de possibilités ou s’avère redondante. Par exemple, enregistrer les messages instantannés de Jabber dans CouchDB peut se faire en utilisant ejabberd et Hovercraft. Par ailleurs, la manière la plus aisée de créer une queue de messages tolérante aux pannes est sans doute en combinant RabbitMQ et Hovercraft.
+<p>Hovercraft se révèle pratique lorsque l’interface HTTP n’offre plus assez de possibilités ou s’avère redondante. Par exemple, enregistrer les messages instantanés de Jabber dans CouchDB peut se faire en utilisant ejabberd et Hovercraft. Par ailleurs, la manière la plus aisée de créer une queue de messages tolérante aux pannes est sans doute en combinant RabbitMQ et Hovercraft.
 
-<p>Hovercraft a été extraite d’un projet de client qui utilise CouchDB pour stocker d’importants volumes de courriels en tant que pièce-jointe d’un document. HTTP n’offre pas de manière simple de conjuguer des mises à jour massives et des pièces-jointes binaires, c’est pourquoi Hovercraft a été utilisé pour connecter un serveur SMTP en Erlang à CouchDB directement. Il a ainsi été possible d’envoyer directement les pièces-jointes vers le disque dur tout en conservant l’efficacité des mises-à-jour d’index par lots.
+<p>Hovercraft a été extraite d’un projet de client qui utilise CouchDB pour stocker d’importants volumes de courriels en tant que pièce jointe d’un document. HTTP n’offre pas de manière simple de conjuguer des mises à jour massives et des pièces jointes binaires, c’est pourquoi Hovercraft a été utilisé pour connecter un serveur SMTP en Erlang à CouchDB directement. Il a ainsi été possible d’envoyer directement les pièces jointes vers le disque dur tout en conservant l’efficacité des mises à jour d’index par lots.
 
-<p>Hovercraft inclut une fonctionnalité de banc d’essai assez simple, aussi voyons combien de documents peuvent être obtenus à la seconde :
+<p>Hovercraft inclut une fonctionnalité de banc d’essai assez simple, aussi voyons combien de documents peuvent être obtenus à la seconde :
 
 <pre>
 &gt; hovercraft:lightning().
@@ -182,9 +182,9 @@ Inserted 100000 docs in 9.37 seconds with batch size of 1000.
 
 <h3 id="trades">Compromis</h3>
 
-<p>L’outil X peut avoir un temps de réponse de 5 ms et se révéler bien plus rapide que tous ses concurrents. La programmation est affaire de compromis et tout le monde est soumis aux mêmes lois.
+<p>L’outil X peut avoir un temps de réponse de 5 ms et se révéler bien plus rapide que tous ses concurrents. La programmation est affaire de compromis et tout le monde est soumis aux mêmes lois.
 
-<p>D’un point de vue extérieur, il pourrait sembler que tous ceux qui n’utilisent pas l’outil X n’ont rien compris. Cependant, la rapidité et la latence ne sont qu’une partie du tableau. Nous avons déjà établi que les utilisateurs de votre produit pourraient ne pas se rendre compte d’une latence qui passe de 5 à 50 ms. En outre, la vitesse peut s’obtenir au détriment d’autres choses, comme :
+<p>D’un point de vue extérieur, il pourrait sembler que tous ceux qui n’utilisent pas l’outil X n’ont rien compris. Cependant, la rapidité et la latence ne sont qu’une partie du tableau. Nous avons déjà établi que les utilisateurs de votre produit pourraient ne pas se rendre compte d’une latence qui passe de 5 à 50 ms. En outre, la vitesse peut s’obtenir au détriment d’autre chose, comme :
 
 <dl>
 
@@ -194,28 +194,28 @@ Inserted 100000 docs in 9.37 seconds with batch size of 1000.
 
 <dt>Parallélisme</dt>
 
-<dd>La structure de données de l’outil X est bien pensée et extrêmement rapide uniquement quand il n’y a qu’une seule requête à servir à l’instant <em>t</em> et, puisqu’elle est si rapide, on peut croire qu’elle sert plusieurs requêtes en parallèle. Cependant, au final, un grand nombre de requêtes concurrentes remplissent la file d’attente et les temps de réponse se dégradent. Ou, dit autrement, l’outil X peut se révéler exceptionner sur un seul CPU ou un seul cœur, mais pas sur plusieurs où il laisse vos imposants serveurs inoccupés.</dd>
+<dd>La structure de données de l’outil X est bien pensée et extrêmement rapide uniquement quand il n’y a qu’une seule requête à servir à l’instant <em>t</em> et, puisqu’elle est si rapide, on peut croire qu’elle sert plusieurs requêtes en parallèle. Cependant, au final, un grand nombre de requêtes concurrentes remplissent la file d’attente et les temps de réponse se dégradent. Ou, dit autrement, l’outil X peut se révéler exceptionnel sur un seul CPU ou sur un seul cœur, mais pas sur plusieurs où il laisse vos robustes serveurs inoccupés.</dd>
 
 <dt>Fiabilité</dt>
 
-<dd>S’assurer que les données sont bel et bien écrites est une opération coûteuse. S’assurer qu’un volume de stockage se trouve dans un état cohérent et non corrompu aussi. Il y a deux compromis ici : primo, les données sont conservées en mémoire avant d’être écrites sur disque afin d’augmenter le débit, auquel cas une panne électrique ou une défaillance engendre la perte des données, ce qui peut ne pas être acceptable pour votre application. Secundo, vous devez vérifier la cohérence des données au redémarrage, ce qui, sur un important volume de données, peut prendre des jours. Si vous pouvez vous permettre de rester hors-ligne, c’est bon, mais vous ne le pouvez peut-être pas.</dd>
+<dd>S’assurer que les données sont bel et bien écrites est une opération coûteuse. S’assurer qu’un volume de stockage se trouve dans un état cohérent et non corrompu aussi. Il y a deux compromis ici : primo, les données sont conservées en mémoire avant d’être écrites sur disque afin d’augmenter le débit, auquel cas une panne électrique ou une défaillance engendre la perte des données, ce qui peut ne pas être acceptable pour votre application. Secundo, vous devez vérifier la cohérence des données au redémarrage, ce qui, sur un important volume de données, peut prendre des jours. Si vous pouvez vous permettre de rester hors ligne, c’est bon, mais vous ne le pouvez peut-être pas.</dd>
 
 </dl>
 
-<p>Assurez-vous de cerner les besoins que vous avez et sélectionnez l’outil qui y répond plutôt que de choisir le plus attirant. Qui passe pour un idiot quand le site web est hors-ligne une journée durant à cause d’une réparation et que les clients sont impatients de pouvoir travailler, ou pire, que vous avez perdu leurs données ?
+<p>Assurez-vous de cerner les besoins que vous avez et sélectionnez l’outil qui y répond plutôt que de choisir le plus attirant. Qui passe pour un idiot quand le site web est hors ligne une journée durant à cause d’une réparation et que les clients sont impatients de pouvoir travailler, ou pire, que vous avez perdu leurs données ?
 
-<h4 id="numbers">Mais… mon patron veut des chiffres !</h4>
+<h4 id="numbers">Mais… mon patron veut des chiffres !</h4>
 
-<p>Vous souhaitez savoir lequel de ces bases de données, antémémoires, langages de programmation, structures de langage ou outil est le plus rapide, le plus robuste, le plus fort. Les chiffres sont géniaux : vous pouvez dessiner de jolis graphiques que votre encadrement peut comparer et qui vont leur permettre de prendre une décision.
+<p>Vous souhaitez savoir lequel de ces bases de données, antémémoires, langages de programmation, structures de langage ou outils est le plus rapide, le plus robuste, le plus fort. Les chiffres sont géniaux : vous pouvez dessiner de jolis graphiques que votre encadrement peut comparer et qui vont lui permettre de prendre une décision.
 
 <p>Mais la première chose qu’un bon directeur sait, c’est qu’il se base sur des données incomplètes, car des diagrammes basés sur des chiffres ne présentent qu’une vue restreinte de la réalité. Et les graphiques basés sur de mauvais profils sont des fantasmes.
 
-<p>Si vous devez sortir des chiffres, assurez-vous de savoir quelles informations sont et ne sont pas incluses dans vos résultats. Avant de transmettre ces données, assurez-vous que la personne qui va les interpréter le sait aussi. Là encore, la meilleur chose à faire est de pratiquer un test aussi proche que possible de la situation réelle. Et c’est n’est pas simple.
+<p>Si vous devez sortir des chiffres, assurez-vous de savoir quelles informations sont et ne sont pas incluses dans vos résultats. Avant de transmettre ces données, assurez-vous que la personne qui va les interpréter le sait aussi. Là encore, la meilleure chose à faire est de pratiquer un test aussi proche que possible de la situation réelle. Et ce n’est pas simple.
 
 <h4 id="arms">Appel au peuple</h4>
 
-<p>Nous sommes sur le marché des bases de données et du stockage de clé/valeur. Chaque solution a ses avantages en terme de données, de matériel, d’installation et de maintenance… Il y a tant de possibilités que vous pouvez sélectionner l’outil le plus proche de votre besoin. Mais comment le trouver ? Idéalement, vous téléchargez et installez chaque solution possible, créez un profil de test avec les données adéquates, procédez à des tests approfondis et comparez les résultats. Cela peut facilement prendre des semaines et ce temps-là, vous ne l’avez peut-être pas.
+<p>Nous sommes sur le marché des bases de données et du stockage de clé/valeur. Chaque solution a ses avantages en terme de données, de matériel, d’installation et de maintenance… Il y a tant de possibilités que vous pouvez sélectionner l’outil le plus proche de votre besoin. Mais comment le trouver ? Idéalement, vous téléchargez et installez chaque solution possible, créez un profil de test avec les données adéquates, procédez à des tests approfondis et comparez les résultats. Cela peut facilement prendre des semaines et ce temps-là, vous ne l’avez peut-être pas.
 
-<p>Nous voudrions demander aux développeurs de systèmes de stockage de compiler un jeu de profils de test que simulent différents cas d’utilisation de leurs système (des charges importantes en lecture et en écriture, la tolérance aux pannes, le fonctionnement en mode distribué, et bien d’autres encore). Un jeu de test de tolérance aux pannes devrait inclure les étapes nécessaires à rendre à nouveau disponible les données, en incluant par exemple le temps de reconstruction et de vérification. Nous voudrions que les utilisateurs de ces systèmes aident leurs développeurs à trouver comment mesurer de manière fiable les différents scénarios.
+<p>Nous voudrions demander aux concepteurs de systèmes de stockage de compiler un jeu de profils de test que simulent différents cas d’utilisation de leurs systèmes (des charges importantes en lecture et en écriture, la tolérance aux pannes, le fonctionnement en mode distribué, et bien d’autres encore). Un jeu de test de tolérance aux pannes devrait inclure les étapes nécessaires à rendre à nouveau disponibles les données, en incluant par exemple le temps de reconstruction et de vérification. Nous voudrions que les utilisateurs de ces systèmes aident leurs concepteurs à trouver comment mesurer de manière fiable les différents scénarios.
 
-<p>Nous travaillons sur CouchDB et nous aimerions vraiment avec un tel outillage ! Mieux encore ! les développeurs pourraient se mettre d’accord (une idée farfelue, pour sûr !) sur un jeu de bancs d’essais qui mesurent de manière objective les performances afin de faciliter les comparaisons. Nous savons que cela représente une charge de travail importante et que les résultats pourraient être sujets à questionnement, mais cela aiderait grandement nos utilisateurs à choisir l’outil qui convient à leur besoin.
+<p>Nous travaillons sur CouchDB et nous aimerions vraiment avec un tel outillage ! Mieux encore ! les concepteurs pourraient se mettre d’accord (une idée farfelue, pour sûr !) sur un jeu de bancs d’essai qui mesurent de manière objective les performances afin de faciliter les comparaisons. Nous savons que cela représente une charge de travail importante et que les résultats pourraient être sujets à questionnement, mais cela aiderait grandement nos utilisateurs à choisir l’outil qui convient à leur besoin.
