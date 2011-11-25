@@ -1,4 +1,4 @@
-<title>High Performance</title>
+<title>Haute performance</title>
 
 <meta charset="utf-8">
 
@@ -10,79 +10,78 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="performance">High Performance</h2>
+<h2 id="performance">Haute performance</h2>
 
-<p>This chapter will teach you the fastest ways to insert and query data with CouchDB. It will also explain why there is a wide range of performance across various techniques.
+<p>Ce chapitre vous apprendra les moyens les plus rapides d’insérer et de récupérer des données avec CouchDB. Il expliquera aussi pourquoi différentes techniques conduisent à différents degrés d’efficacité.
 
-<p>The take-home message: bulk operations result in lower overhead, higher throughput, and more space efficiency. If you can’t work in bulk in your application, we’ll also describe other options to get throughput and space benefits. Finally, we describe interfacing directly with CouchDB from Erlang, which can be a useful technique if you want to integrate CouchDB storage with a server for non-HTTP protocols, like SMTP (email) or XMPP (chat).
+<p>Le message à retenir : les opérations massives réduisent le temps de traitement du contexte (<em>overhead</em>), maximisent le débit et maximisent l’utilisation de l’espace. Si vous ne pouvez par travailler par lots, nous vous donnerons quelques options permettant d’optimiser le débit et l’usage de l’espace. Enfin, nous décrirons l’interfaçage direct avec CouchDB en Erlang, ce qui peut être une bonne technique pour intégrer le stockage de CouchDB avec un serveur ne supportant pas le protocole HTTP, comme SMTP (courrier électronique) ou XMPP (messagerie instantanée).
 
-<h3 id="benchmarks">Good Benchmarks Are Non-Trivial</h3>
+<h3 id="benchmarks">Une juste évaluation n’est pas facile à obtenir</h3>
 
-<p>Each application is different. Performance requirements are not always obvious. Different use cases need to tune different parameters. A classic trade-off is latency versus throughput. Concurrency is another factor. Many database platforms behave very differently with 100 clients than they do with 1,000 or more concurrent clients. Some data profiles require serialized operations, which increase total time (latency) for the client, and load on the server. We think simpler data and access patterns can make a big difference in the cacheability and scalability of your app, but we’ll get to that later.
+<p>Chaque application est différente. Les attentes en terme de performance ne sont pas nécessairement évidentes. À des cas d’utilisation différents, un affinage des paramètres différent. Le compromis habituel est la latence vis-à-vis du débit. La concurrence est un autre facteur. Nombreuses sont les bases de données qui se comportent différemment selon que vous avez 100 clients  ou 1 0000, ou davantage. Certains profils de données requièrent des opérations enchaînées, lesquelles accroissent le temps total nécessaire (la latence) pour le client aussi bien que la charge du serveur. Nous pensons que des modèles de données et d’accès plus simples peuvent apporter une grande différence lors du passage à l’échelle de votre application, comme dans les possibilités de recours à l’antémémoire (<em>cache</em> en anglais). Mais nous y reviendrons plus tard.
 
-<p>The upshot: <em>real benchmarks require real-world load.</em> Simulating load is hard. Erlang tends to perform better under load (especially on multiple cores), so we’ve often seen test rigs that can’t drive CouchDB hard enough to see where it falls over.
+<p>La conséquence : <em>des évaluations réalistes nécessitent une charge du monde réel.</em> Simuler la charge est difficile. Erlang tend à bien encaisser la charge, en particulier sur plusieurs cœurs, aussi avons-nous vu de nombreux tests qui ne parviennent pas à le pressuriser suffisamment pour trouver le point de rupture.
 
-<p>Let’s take a look at what a typical web app looks like. This is not exactly how Craigslist works (because we don’t know how Craigslist works), but it is a close enough approximation to illustrate problems with benchmarking.
+<p>Examinons à quoi ressemble une application web typique. Ce n’est pas vraiment comme cela que Craigslist fonctionne (car nous ne savons pas comment Craigslist fonctionne), mais c’est une estimation suffisamment proche pour illustrer les problèmes rencontrés dans une évaluation.
 
-<p>You have a web server, some middleware, and a database. A user request comes in, and the web server takes care of the networking and parses the HTTP request. The request gets handed to the middleware layer, which figures out what to run, then it runs whatever is needed to serve the request. The middleware might talk to your database and other external resources like files or remote web services. The request bounces back to the web server, which sends out any resulting HTML. The HTML includes references to other resources living on your web server (like CSS, JS, or image files), and the process starts anew for every resource. A little different each time, but in general, all requests are similar. And along the way there are caches to store intermediate results to avoid expensive recomputation.
+<p>Vous avez un serveur web, quelques intergiciels (<em>middleware</em>) et une base de données. Une requête utilisateur arrive : le serveur web s’occupe de la couche réseau et de décoder la requête HTTP. Celle-ci est transmise à l’intergiciel qui trouve ce qu’il faut exécuter, puis lance qu’il faut pour traiter la requête. L’intergiciel peut communiquer avec votre base de données et avec d’autres ressources externes telles que des fichiers ou des services web distants. La requête retourne au serveur web, qui envoie le code HTML résultant. Celui-ci contient des références vers d’autres ressources disponibles sur votre serveur web (CSS, JS, images, etc.) ; le processus recommence pour chacune d’entre elles. De plus, le long de ce parcours, il existe des mécanismes d’antémémoire dont le but est d’éviter des recalculs coûteux.
 
-<p>That’s a lot of moving parts. Getting a top-to-bottom profile of all components to figure out where bottlenecks lie is pretty complex (but nice to have). We start making up numbers now. The absolute values are not important; only numbers relative to each other are. Say a request takes 1.5 seconds (1,500 ms) to be fully rendered in a browser.
+<p>Cela fait beaucoup de parties fluctuantes. Obtenir un profil de haut en bas pour l’ensemble des composants afin de trouver les goulots d’étranglement est assez complexe (mais sympa à avoir). Commençons à parler de chiffres. Les valeurs absolues ne sont pas importantes ; seule la relation entre elles l’est. Disons qu’une requête prend 1,5 seconde (1 500 ms) pour être pleinement affichée dans votre navigateur.
 
-<p>In a simple case like Craigslist, there is the initial HTML, a CSS file, a JS file, and the favicon. Except for the HTML, these are all static resources and involve reading some data from a disk (or from memory) and serving it to the browser that then renders it. The most notable things to do for performance are keeping data small (GZIP compression, high JPG compression) and avoiding requests all together (HTTP-level caching in the browser). Making the web server any faster doesn’t buy us much (yeah, hand wavey, but we don’t want to focus on static resources here). Let’s say all static resources take 500 ms to serve and render.
+<p>Dans un cas simple comme celui de Craigslist, il y a un fichier HTML initial, un fichier CSS, un fichier JS et le favicon. À l’exception du HTML, ce sont toutes des ressources statiques qui impliquent quelques lectures depuis le disque (ou la mémoire) avant de les envoyer au navigateur qui en exécute le rendu. On gagne du temps en gardant les choses petites (compression GZIP, haute compression JPEG) et en évitant de recevoir toutes les requêtes (antémémoire au niveau du navigateur). Rendre le serveur web plus rapide ne nous aide guère (oui, certains lèvent la main, mais nous ne nous concentrons pas sur les ressources statiques pour le moment). Disons que toutes les ressources statiques requièrent 500 ms pour être servies et affichées.
 
 <div class="aside note">
 
-<p>Read all about improving client experience with proper use of HTTP from Steve Souders, web performance guru. His YSlow tool is indispensable for tuning a website.
-
+<p>Pour améliorer l’expérience des clients, nous vous recommandons de lire <em>proper use of HTTP</em> de Steve Souder, un guru de la performance du web. Son outil YSlow est indispensable pour peaufiner un site web.
 </div>
 
-<p>That leaves us with 1,000 ms for the initial HTML. We’ll chop off 200 ms for network latency (see <a href="why.html">Chapter 1, Why CouchDB?</a>). Let’s pretend HTTP parsing, middleware routing and execution, and database access share equally the rest of the time, 200 ms each.
+<p>Cela nous laisse 1 000 ms pour le HTML initial. Nous retranchons 200 ms pour la latence réseau (cf. <a href="why.html">chapitre 1, <em>Pourquoi CouchDB ?</em></a>). Disons ensuite que le traitement HTTP, le routage et l’exécution par l’intergiciel, ainsi que la base de données se partagent équitablement le reste du temps, 200 ms chacun.
 
-<p>If you now set out to improve one part of the big puzzle that is your web app and gain 10 ms in the database access time, this is probably time not well spent (unless you have the numbers to prove it).
+<p>Si vous souhaitez améliorer une partie de cette grande chaîne, c’est-à-dire votre application web et gagner 10 ms dans le temps d’accès à la base de données, c’est probablement une perte de temps (à moins que vous ayez des chiffres pour le démontrer).
 
-<p>However, breaking down a single request like this and looking for how much time is spent in each component is also misleading. Even if only a small percentage of the time is spent in your database under normal load, that doesn’t teach you what will happen during traffic spikes. If all requests are hitting the same database, then any locking there could block many web requests. Your database may have minimal impact on total query time, under normal load, but under spike load it may turn into a bottleneck, magnifying the effect of the spike on the application servers. CouchDB can minimize this by dedicating an Erlang process to each connection, ensuring that all clients are handled, even if latency goes up a bit.
+<p>Cependant, découper une requête unique comme celle-ci et regarder le partage du temps passé dans chaque composant est trompeur. En effet, même si le temps passé dans votre base représente un faible pourcentage en charge normale, cela ne vous indique pas le comportement lors des pics de trafic. Si toutes les requêtes sont adressées à la même base de données, alors n’importe quel verrou retarderait toutes les requêtes subséquentes. Votre base peut avoir un impact minimal durant le fonctionnement normal de votre application, mais, lors des pics de charge, elle peut devenir un goulot d’étranglement qui amplifie l’effet du pic et la charge du serveur. CouchDB peut minimiser cet effet en dédiant un processus Erlang à chaque connexion et assurer ainsi le service de tous les clients, même si la latence augmente quelque peu.
 
-<h3 id="high">High Performance CouchDB</h3>
+<h3 id="high">CouchDB et haute performance</h3>
 
-<p>Now that you see database performance is only a small part of overall web performance, we’ll give you some tips to squeeze the most out of CouchDB.
+<p>Puisque vous savez désormais que les performances de la base de données ne sont qu’une petite partie de la performance du web, nous allons vous donner les moyens de tirer le maximum de CouchDB.
 
-<p>CouchDB is designed from the ground up to service highly concurrent use cases, which make up the majority of web application load. However, sometimes we need to import a large batch of data into CouchDB or initiate transforms across an entire database. Or maybe we’re building a custom Erlang application that needs to link into CouchDB at a lower level than HTTP.
+<p>CouchDB a été conçu dès l’origine pour répondre à des cas d’utilisation où la concurrence entre clients est rude ; ces cas couvrent la majorité de la charge des applications web. Toutefois, nous pouvons avoir besoin d’importer une grande quantité de données ou de réaliser des transformations sur l’ensemble de la base. Ou encore, nous bâtissons une application Erlang qui a besoin de s’interfacer avec CouchDB en dessous de HTTP.
 
-<h4 id="hardware">Hardware</h4>
+<h4 id="hardware">Matériel</h4>
 
-<p>Invariably people will want to know what type of disk they should use, how much RAM, what sort of CPU, etc. The real answer is that CouchDB is flexible enough to run on everything from a smart phone to a cluster, so the answers will vary.
+<p>Sans le moindre doute, on voudra savoir quel type de disques utiliser, combien de RAM, quel type de CPU, etc. En fait, CouchDB est suffisamment flexible pour fonctionner aussi bien sur un <em>smartphone</em> que sur une grappe de serveurs. Aussi, les réponses varieront.
 
-<p>More RAM is better because CouchDB makes heavy use of the filesystem cache. CPU cores are more important for building views than serving documents. Solid State Drives (SSDs) are pretty sweet because they can append to a file while loading old blocks, with a minimum of overhead. As they get faster and cheaper, they’ll be really handy for CouchDB.
+<p>Avoir beaucoup de RAM est une bonne chose, car CouchDB exploite intensivement l’antémémoire du système de fichiers. Les disques durs SSD (<em>Solid State Drive</em>) sont vraiment sympathiques en ce qu’ils permettent d’écrire à la fin d’un fichier tout en lisant d’anciens blocs, le tout avec une surcharge minimale. De plus, comme ils sont de plus en plus accessibles, ils iront bien avec CouchDB.
 
-<h4 id="implementation">An Implementation Note</h4>
+<h4 id="implementation">Une note d’implantation</h4>
 
-<p>We’re not going to rehash append-only B-trees here, but understanding CouchDB’s data format is key to gaining an intuition about which strategies yield the best performance. Each time an update is made, CouchDB loads from disk the B-tree nodes that point to the updated documents or the key range where a new document’s <code>_id</code> would be found.
+<p>Nous ne reviendrons pas sur la manière dont on complète les arbres-B ici, mais la compréhension du format de données de CouchDB s’avère clé pour pressentir quelle stratégie fournira la meilleure performance. À chaque mise à jour, CouchDB charge les nœuds de l’arbre-B des documents concernés depuis le disque, ou une rangée de clés cernant l’endroit où le nouvel identifiant du document devrait se trouver.
 
-<p>This loading will normally come from the filesystem cache, except when updates are made to documents in regions of the tree that have not been touched in a long time. In those cases, the disk has to seek, which can block writing and have other ripple effects. Preventing these disk seeks is the name of the game in CouchDB performance.
+<p>Cet appel devrait être satisfait par l’antémémoire du système de fichier, sauf quand les mises à jour concernent des sections de la base qui n’ont pas été consultées depuis longtemps. Dans ce cas, le disque doit être parcouru, ce qui peut bloquer les opérations d’écriture et présente d’autres effets de bord. « Prévenir les accès disque » : voilà le nom du jeu quand on parle de l’efficacité de CouchDB.
 
-<p>We’ll use some numbers in this chapter that come from a JavaScript test suite. It’s not the most accurate, but the strategy it uses (counting the number of documents that can be saved in 10 seconds) makes up for the JavaScript overhead. The hardware the benchmarks were run on is modest: just an old white MacBook Intel Core 2 Duo (remember those?).
+<p>Nos utiliserons quelques nombres dans ce chapitre, lesquels proviennent d’un jeu de test JavaScript. Ce n’est pas ce qui se fait de plus adapté, mais la stratégie utilisée (compter le nombre de documents qui peuvent être sauvegardés en dix secondes) palie à la taille des en-têtes de JavaScript. Le matériel sur lequel ce test a été effectué est ancien : un bon vieux MacBook Intel Core 2 Duo (vous vous en souvenez ?).
 
-<p>You can run the benchmarks yourself by changing to the <code>bench/</code> directory of CouchDB’s trunk and running <code>./runner.sh</code> while CouchDB is running on port 5984.
+<p>Vous pouvez lancer le banc d’essai vous-même en modifiant le répertoire <code>bench</code> de l’arbre de CouchDB et en lançant <code>./runner.sh</code> lorsque CouchDB écoute sur le port 5984.
 
-<h3 id="bulk">Bulk Inserts and Mostly Monotonic DocIDs</h3>
+<h3 id="bulk">Insertions en masse avec des DocIDs monotones</h3>
 
-<p>Bulk inserts are the best way to have seekless writes. Random IDs force seeking after the file is bigger than can be cached. Random IDs also make for a bigger file because in a large database you’ll rarely have multiple documents in one B-tree leaf.
+<p>L’insertion en masse est le meilleur moyen d’éviter les accès en lecture au système de fichier. Le caractère aléatoire des IDs rend nécessaire l’accès disque en lecture si le fichier inséré dépassé la taille de l’antémémoire. Ils conduisent aussi à un fichier plus gros, car, dans une grande base de données, vous aurez rarement plusieurs documents dans une feuille de l’arbre-B.
 
-<h4 id="examples">Optimized Examples: Views and Replication</h4>
+<h4 id="examples">Exemples optimisés : vues et réplication</h4>
 
-<p>If you’re curious what a good performance profile is for CouchDB, look at how views and replication are done. Triggered replication applies updates to the database in large batches to minimize disk chatter. Currently the 0.11.0 development trunk boasts an additional 3–5x speed increase over 0.10’s view generation.
+<p>Si vous vous demandez à quoi ressemble un bon profil de performances pour CouchDB, penchez-vous sur la manière dont sont construites les vues et dont la réplication est faite. Les réplications à déclenchement manuel appliquent les mises à jour sur la base de données par lot afin de minimiser l’impact des accès disque. Et actuellement, le tronc de développement 0.11.0 apporte, pour la génération des vues, une accélération de 3 à 5 fois supérieure à la version 0.10.
 
-<p>Views load a batch of updates from disk, pass them through the view engine, and then write the view rows out. Each batch is a few hundred documents, so the writer can take advantage of the bulk efficiencies we see in the next section.
+<p>Les vues chargent un lot de mises à jour depuis le disque, les passe à la moulinette du moteur de génération des vues, puis écrit le résultat. Chaque lot se compose de quelques centaines de documents, ce qui permet de profiter de l’efficacité des écritures massives décrites ci-après.
 
-<h3 id="inserts">Bulk Document Inserts</h3>
+<h3 id="inserts">Insertion massive de documents</h3>
 
-<p>The fastest mode for importing data into CouchDB via HTTP is the <code>_bulk_docs</code> endpoint. The bulk documents API accepts a collection of documents in a single <code>POST</code> request and stores them all to CouchDB in a single index operation.
+<p>Le moyen le plus rapide d’importer des données dans CouchDB par HTTP est de passer par <code>_bulk_docs</code>. L’API de masse accepte un ensemble de documents dans une unique requête <code>POST</code> et les stocke tous dans CouchDB avec une seule opération d’indexation. 
 
-<p>Bulk docs is the API to use when you are importing a corpus of data using a scripting language. It can be 10 to 100 times faster than individual bulk updates and is just as easy to work with from most languages.
+<p>L’API de masse est à utiliser lorsque vous importez un corpus de documents à l’aide d’un script. Elle peut être 10 à 100 fois plus rapide que des insertions unitaires et s’avère simple à utiliser avec la plupart des langages.
 
-<p>The main factor that influences performance of bulk operations is the size of the update, both in terms of total data transferred as well as the number of documents included in an update.
+<p>Le principal facteur qui impacte la performance des opérations de masse est la taille de la mise à jour, tant en terme de taille totale transférée qu’en nombre de documents à traiter.
 
-<p>Here are sequential bulk document inserts at four different granularities, from an array of 100 documents, up through 1,000, 5,000, and 10,000:
+<p>Ci-dessous se trouvent des insertions massives successives à quatre niveaux de granularité : 100 documents, 1 000, 5 000 et 10 000.
 
 <pre>
 bulk_doc_100
@@ -108,23 +107,24 @@ bulk_doc_10000
 2699.541078016737 docs/sec
 </pre>
 
-<p>You can see that larger batches yield better performance, with an upper limit in this test of 2,700 documents/second. With larger documents, we might see that smaller batches are more useful. For references, all the documents look like this: <code>{"foo":"bar"}</code>
+<p>Vous pouvez constater que les lots plus imposants permettent de meilleures performances, avec une limite supérieure qui s’établit à 2 700 documents par seconde dans le cas présent. Si nous enregistrions des documents plus volumineux, nous verrions la limite supérieure s’abaisser. Pour mémoire, tous les documents ressemblent à cela :  <code>{"foo":"bar"}</code>
 
-<p>Although 2,700 documents per second is fine, we want more power! Next up, we’ll explore running bulk documents in parallel.
+<p>Bien que 2 700 documents soient suffisants, nous voulons obtenir plus de puissance ! Il est temps d’effectuer des chargements parallèles.
 
-<p>With a different script (using bash and <em>cURL</em> with <code>benchbulk.sh</code> in the same directory), we’re inserting large batches of documents in parallel to CouchDB. With batches of 1,000 docs, 10 at any given time, averaged over 10 rounds, I see about 3,650 documents per second on a MacBook Pro. Benchbulk also uses sequential IDs.
+<p>À l’aide d’un autre script (couplant bash, <em>cURL</em> et <code>benchbulk.sh</code> dans le même répertoire), nous injectons des lots volumineux en parallèle dans CouchDB. Avec des lots de 1 000 documents, 10 à un instant donné, moyenné sur 10 rounds, je constate 3 650 documents par seconde sur un MacBook Pro. Benchbulk utilise aussi des identifiants séquentiels.
 
-<p>We see that with proper use of bulk documents and sequential IDs, we can insert more than 3,000 docs per second just using scripting languages.
+<p>Nous voyons qu’une utilisation adaptée de lots de documents et d’identifiants séquentiels, nous pouvons insérer plus de trois mille documents par seconde juste avec un script.
 
-<h3 id="batch">Batch Mode</h3>
+<h3 id="batch">Traitement par lot (<em>batch</em>)</h3>
 
-<p>To avoid the indexing and disk sync overhead associated with individual document writes, there is an option that allows CouchDB to build up batches of documents in memory, flushing them to disk when a certain threshold has been reached or when triggered by the user. The batch option does not give the same data integrity guarantees that normal updates provide, so it should only be used when the potential loss of recent updates is acceptable.
+<p>Le coût de l’indexation et la synchronisation du disque engendré par l’insertion d’un document peuvent être évités par une option. Dans ce mode, CouchDB accumule les documents en mémoire jusqu’à ce qu’une limite soit atteinte, ou que l’utilisateur en ordonne l’écriture. Ce mode opératoire n’apporte pas les mêmes garanties d’intégrité et devrait être utilisé dans les seuls cas où la perte des dernières mises à jour n’est pas importante.
 
-<p>Because batch mode only stores updates in memory until a flush occurs, updates that are saved to CouchDB directly proceeding a crash can be lost. By default, CouchDB flushes the in-memory updates once per second, so in the worst case, data loss is still minimal. To reflect the reduced integrity guarantees when <code>batch=ok</code> is used, the HTTP response code is 202 Accepted, as opposed to 201 Created.
+<p>Puisque le mode de traitement par lot stocke les mises à jour en mémoire (jusqu’à un ordre d’écriture), les mises à jour non écrites sur disque avant le plantage de CouchDB seront perdues. Par défaut, CouchDB procède à l’écriture sur disque une fois par seconde donc, dans le pire des cas, vous avez perdu peu de chose. Afin d’indiquer la garantie d’intégrité réduite lorsque <code>batch=ok</code> est employé, le code de réponse HTTP est <em>202 Accepted</em>, opposé à <em>201 Created</em>.
 
-<p>The ideal use for batch mode is for logging type applications, where you have many distributed writers each storing discrete events to CouchDB. In a normal logging scenario, losing a few updates on rare occasions is worth the trade-off for increased storage throughput.
+<p>Le cas d’emploi idéal pour le mode de traitement par lots est l’application de journalisation (<em>logger</em> en anglais) dans laquelle vous avez des systèmes distribués qui sollicitent chacun CouchDB pour une écriture unitaire. Dans un scénario classique, la perte de quelques éléments de journalisation en de rares occurrences est un compromis acceptable pour améliorer le débit d’écriture [NdT : donc le temps de réponse].
 
-<p>There is a pattern for reliable storage using batch mode. It’s the same pattern as is used when data needs to be stored reliably to multiple nodes before acknowledging success to the saving client. In a nutshell, the application server (or remote client) saves to Couch A using <code>batch=ok</code>, and then watches update notifications from Couch B, only considering the save successful when Couch B’s <code>_changes</code> stream includes the relevant update. We covered this pattern in detail in <a href="replication.html">Chapter 16, Replication</a>.
+<p>Il existe un patron (<em>pattern</em>) pour garantir la fiabilité du stockage lorsqu’on utilise le mode de traitement par lots. C’est le même patron que dans le cas où une donnée doit être écrite de manière fiable sur plusieurs nœuds avant de considérer l’opération comme un succès et de répondre au client en ce sens. En bref, le serveur d’application (ou le client distant) sauvegarde sur Couch A en indiquant <code>batch=ok</code>, puis surveille les notifications de mises à jour de Couch B et ne détermine le succès que lorsque le flux <code>_changes</code> de Couch B inclut la mise à jour souhaitée. Nous avons décrit ce patron en détail au
+<a href="replication.html">chapitre 16, Réplication</a>.
 
 <pre>
 batch_ok_doc_insert
@@ -132,15 +132,15 @@ batch_ok_doc_insert
 485.00299940011996 docs/sec
 </pre>
 
-<p>This JavaScript benchmark only gets around 500 documents per second, six times slower than the bulk document API. However, it has the advantage that clients don’t need to build up bulk batches.
+<p>Ce banc d’essai JavaScript n’obtient que 500 documents à la seconde, soit six fois moins que l’API par lots. Cependant, il présente l’avantage de n’avoir pas besoin que le client assemble des lots.
 
-<h3 id="single">Single Document Inserts</h3>
+<h3 id="single">Traitement unitaire</h3>
 
-<p>Normal web app load for CouchDB comes in the form of single document inserts. Because each insert comes from a distinct client, and has the overhead of an entire HTTP request and response, it generally has the lowest throughput for writes.
+<p>Pour CouchDB, la charge normale d’une application web prend la forme d’insertions simples. Puisque chaque insertion provient d’un client différent, et subit la surcharge d’une requête et d’une réponse HTTP, elle a généralement le plus bas débit d’écriture.
 
-<p>Probably the slowest possible use case for CouchDB is the case of a writer that has to make many serialized writes against the database. Imagine a case where each write depends on the result of the previous write so that only one writer can run. This sounds like a bad case from the description alone. If you find yourself in this position, there are probably other problems to address as well.
+<p>Le pire des cas est possiblement celui d’un écrivain qui doit soumettre de nombreuses requêtes d'affilée, chacune dépendant du résultat de celle qui la précède. Ça sent déjà mauvais, rien qu’en décrivant le cas d’utilisation. Si vous vous trouvez dans ce cas, il y aura sans doute d’autres problèmes à régler en même temps.
 
-<p>We can write about 258 documents per second with a single writer in serial (pretty much the worst-case scenario writer).
+<p>Nous pouvons écrire 258 documents à la seconde avec un seul écrivain en série (presque le pire cas).
 
 <pre>
 single_doc_insert
@@ -148,11 +148,11 @@ single_doc_insert
 257.9357157117189 docs/sec
 </pre>
 
-<p>Delayed commit (along with sequential UUIDs) is probably the most important CouchDB configuration setting for performance. When it is set to true (the default), CouchDB allows operations to be run against the disk without an explicit fsync after each operation. Fsync operations take time (the disk may have to seek, on some platforms the hard disk cache buffer is flushed, etc.), so requiring an fsync for each update deeply limits CouchDB’s performance for non-bulk writers.
+<p>Le retardement de l’écriture (<em>delayed commit</em> dans la configuration), au même titre que l’utilisation d’UUID séquentiels, est probablement le paramètre de configuration le plus important de CouchDB pour les performances. Quand il est positionné à vrai (par défaut), CouchDB permet à plusieurs opérations d’être apposées sur le disque sans réaliser un fsync à chaque fin d’opération. L’appel à fsync prend du temps (le disque peut avoir à se positionner, sur certaines plateformes, cela engendre un effacement des antémémoires, etc.), donc forcer l’appel à fsync après chaque opération nuit très fortement aux performances de CouchDB pour les utilisations unitaires (par opposition aux utilisations par lots).
 
-<p>Delayed commit should be left set to <code>true</code> in the configuration settings, unless you are in an environment where you absolutely need to know when updates have been received (such as when CouchDB is running as part of a larger transaction). It is also possible to trigger an fsync (e.g., after a few operations) using the <code>_ensure_full_commit</code> API.
+<p>Le retardement de l’écriture devrait rester positionné à <code>true</code> dans les paramètres de configuration, sauf si vous vous trouvez dans un environnement où vous devez savoir quand les mises à jour ont bien été reçues (par exemple, dans le cas où CouchDB n’est qu’un maillon de la transaction). Par ailleurs, il est possible de forcer un fsync (par exemple, après quelques opérations) en faisant appel à l’API <code>_ensure_full_commit</code>.
 
-<p>When delayed commit is disabled, CouchDB writes data to the actual disk before it responds to the client (except in <code>batch=ok</code> mode). It’s a simpler code path, so it has less overhead when running at high throughput levels. However, for individual clients, it can seem slow. Here’s the same benchmark in full commit mode:
+<p>Quand le retardement de l’écriture est désactivé, CouchDB écrit la donnée sur disque avant de répondre au client (sauf dans le mode de traitement par lots <code>batch=ok</code>). Le cheminement du code est plus simple (<em>it’s a simpler code path</em>), donc il présente moins de surcharge lors d’une utilisation à haut débit. Cependant, pour les clients individuels, cela peut sembler lent. Voici le même banc de test avec le retardement désactivé :
 
 <pre>
 single_doc_insert
@@ -160,19 +160,19 @@ single_doc_insert
 4.583042741855135 docs/sec
 </pre>
 
-<p>Look at how slow <code>single_doc_insert</code> is with full-commit enabled—four or five documents per second! That’s 100% a result of the fact that Mac OS X has a real fsync, so be thankful! Don’t worry; the full commit story gets better as we move into bulk operations.
+<p>Regarder combien <code>single_doc_insert</code> est lent sans retardement d’écriture : quatre ou cinq documents à la seconde ! C’est parce que Mac OS X a un vrai fsync, donc soyez contents ! Ne vous inquiétez pas, l’histoire complète du retardement d’écriture devient plus intéressante quand on l’applique aux traitements par lots.
 
-<p>On the other hand, we’re getting better times for large bulks with delayed commit off, which lets us know that <em>tuning for your application</em> will always bring better results than following a cookbook.
+<p>D’autre part, nous obtenons de meilleurs temps pour les traitements par lots en désactivant le retardement d’écriture, ce qui nous indique que <em>le peaufinage pour votre application</em> apportera toujours de meilleurs résultats que de suivre une recette de cuisine.
 
 <h3 id="hovercraft">Hovercraft</h3>
 
-<p>Hovercraft is a library for accessing CouchDB from within Erlang. Hovercraft benchmarks should show the fastest possible performance of CouchDB’s disk and index subsystems, as it avoids all HTTP connection and JSON conversion overhead.
+<p>Hovercraft est une bibliothèque qui permet d’accéder à CouchDB en Erlang. Les bancs d’essai Hovercraft, qui s’affranchissent de la couche HTTP et JSON, devraient démontrer la performance maximale que l’on peut obtenir des sous-systèmes d’indexation et de gestion du disque de CouchDB.
 
-<p>Hovercraft is useful primarily when the HTTP interface doesn’t allow for enough control, or is otherwise redundant. For instance, persisting Jabber instant messages to CouchDB might use ejabberd and Hovercraft. The easiest way to create a failure-tolerant message queue is probably a combination of RabbitMQ and Hovercraft.
+<p>Hovercraft se révèle pratique lorsque l’interface HTTP n’offre plus assez de possibilités ou s’avère redondante. Par exemple, enregistrer les messages instantanés de Jabber dans CouchDB peut se faire en utilisant ejabberd et Hovercraft. Par ailleurs, la manière la plus aisée de créer une queue de messages tolérante aux pannes est sans doute en combinant RabbitMQ et Hovercraft.
 
-<p>Hovercraft was extracted from a client project that used CouchDB to store massive amounts of email as document attachments. HTTP doesn’t have an easy mechanism to allow a combination of bulk updates with binary attachments, so we used Hovercraft to connect an Erlang SMTP server directly to CouchDB, to stream attachments directly to disk while maintaining the efficiency of bulk index updates.
+<p>Hovercraft a été extraite d’un projet de client qui utilise CouchDB pour stocker d’importants volumes de courriels en tant que pièce jointe d’un document. HTTP n’offre pas de manière simple de conjuguer des mises à jour massives et des pièces jointes binaires, c’est pourquoi Hovercraft a été utilisé pour connecter un serveur SMTP en Erlang à CouchDB directement. Il a ainsi été possible d’envoyer directement les pièces jointes vers le disque dur tout en conservant l’efficacité des mises à jour d’index par lots.
 
-<p>Hovercraft includes a basic benchmarking feature, and we see that we can get many documents per second.
+<p>Hovercraft inclut une fonctionnalité de banc d’essai assez simple, aussi voyons combien de documents peuvent être obtenus à la seconde :
 
 <pre>
 &gt; hovercraft:lightning().
@@ -180,42 +180,42 @@ Inserted 100000 docs in 9.37 seconds with batch size of 1000.
 (10672 docs/sec)
 </pre>
 
-<h3 id="trades">Trade-Offs</h3>
+<h3 id="trades">Compromis</h3>
 
-<p>Tool X might give you 5 ms response times, an order of magnitude faster than anything else on the market. Programming is all about trade-offs, and everybody is bound by the same laws.
+<p>L’outil X peut avoir un temps de réponse de 5 ms et se révéler bien plus rapide que tous ses concurrents. La programmation est affaire de compromis et tout le monde est soumis aux mêmes lois.
 
-<p>On the outside, it might appear that everybody who is not using Tool X is a fool. But speed and latency are only part of the picture. We already established that going from 5 ms to 50 ms might not even be noticeable by anyone using your product. Speed may come at the expense of other things, such as:
+<p>D’un point de vue extérieur, il pourrait sembler que tous ceux qui n’utilisent pas l’outil X n’ont rien compris. Cependant, la rapidité et la latence ne sont qu’une partie du tableau. Nous avons déjà établi que les utilisateurs de votre produit pourraient ne pas se rendre compte d’une latence qui passe de 5 à 50 ms. En outre, la vitesse peut s’obtenir au détriment d’autre chose, comme :
 
 <dl>
 
-<dt>Memory</dt>
+<dt>La mémoire</dt>
 
-<dd>Instead of doing computations over and over, Tool X might have a cute caching layer that saves recomputation by storing results in memory. If you are CPU bound, that might be good; if you are memory bound, it might not. A trade-off.</dd>
+<dd>Au lieu de réaliser encore et toujours les mêmes calculs, l’outil X peut disposer d’une bonne couche d’antémémoire qui lui évite les recalculs en stockant le résultat en mémoire. Si vous êtes limités par votre CPU, c’est peut-être une bonne chose, mais si vous êtes en limite de mémoire, ça l’est tout de suite moins. Compromis.</dd>
 
-<dt>Concurrency</dt>
+<dt>Parallélisme</dt>
 
-<dd>The clever data structures in Tool X are extremely fast when only one request at a time is processed, and because it is so fast most of the time, it appears as if it would process multiple requests in parallel. Eventually, though, a high number of concurrent requests fill up the request queue and response time suffers. A variation on this is that Tool X might work exceptionally well on a single CPU or core, but not on many, leaving your beefy servers idling.</dd>
+<dd>La structure de données de l’outil X est bien pensée et extrêmement rapide uniquement quand il n’y a qu’une seule requête à servir à l’instant <em>t</em> et, puisqu’elle est si rapide, on peut croire qu’elle sert plusieurs requêtes en parallèle. Cependant, au final, un grand nombre de requêtes concurrentes remplissent la file d’attente et les temps de réponse se dégradent. Ou, dit autrement, l’outil X peut se révéler exceptionnel sur un seul CPU ou sur un seul cœur, mais pas sur plusieurs où il laisse vos robustes serveurs inoccupés.</dd>
 
-<dt>Reliability</dt>
+<dt>Fiabilité</dt>
 
-<dd>Making sure data is actually stored is an expensive operation. Making sure a data store is in a consistent state and not corrupted is another. There are two trade-offs here. First, buffers store data in memory before committing it to disk to ensure a higher data throughput. In the event of a power loss or crash (of hard- or software), the data is gone. This may or may not be acceptable for your application. Second, a consistency check is required to run after a failure, and if you have a lot of data, this can take days. If you can afford to be offline, that’s OK, but maybe you can’t afford it.</dd>
+<dd>S’assurer que les données sont bel et bien écrites est une opération coûteuse. S’assurer qu’un volume de stockage se trouve dans un état cohérent et non corrompu aussi. Il y a deux compromis ici : primo, les données sont conservées en mémoire avant d’être écrites sur disque afin d’augmenter le débit, auquel cas une panne électrique ou une défaillance engendre la perte des données, ce qui peut ne pas être acceptable pour votre application. Secundo, vous devez vérifier la cohérence des données au redémarrage, ce qui, sur un important volume de données, peut prendre des jours. Si vous pouvez vous permettre de rester hors ligne, c’est bon, mais vous ne le pouvez peut-être pas.</dd>
 
 </dl>
 
-<p>Make sure to understand what requirements you have and pick the tool that complies instead of picking the one that has the prettiest numbers. Who’s the fool when your web application is offline for a fixup for a day while your customers impatiently wait to get their jobs done or, worse, you lose their data?
+<p>Assurez-vous de cerner les besoins que vous avez et sélectionnez l’outil qui y répond plutôt que de choisir le plus attirant. Qui passe pour un idiot quand le site web est hors ligne une journée durant à cause d’une réparation et que les clients sont impatients de pouvoir travailler, ou pire, que vous avez perdu leurs données ?
 
-<h4 id="numbers">But…My Boss Wants Numbers!</h4>
+<h4 id="numbers">Mais… mon patron veut des chiffres !</h4>
 
-<p>You want to know which one of these databases, caches, programming languages, language constructs, or tools is faster, harder, or stronger. Numbers are cool—you can draw pretty graphs that management types can compare and make decisions from.
+<p>Vous souhaitez savoir lequel de ces bases de données, antémémoires, langages de programmation, structures de langage ou outils est le plus rapide, le plus robuste, le plus fort. Les chiffres sont géniaux : vous pouvez dessiner de jolis graphiques que votre encadrement peut comparer et qui vont lui permettre de prendre une décision.
 
-<p>But the first thing a good executive knows is that she is operating on insufficient data, as diagrams drawn from numbers are a very distilled view of reality. And graphs from numbers that are made up by bad profiling are effectively fantasies.
+<p>Mais la première chose qu’un bon directeur sait, c’est qu’il se base sur des données incomplètes, car des diagrammes basés sur des chiffres ne présentent qu’une vue restreinte de la réalité. Et les graphiques basés sur de mauvais profils sont des fantasmes.
 
-<p>If you are going to produce numbers, make sure you understand how much information is and isn’t covered by your results. Before passing the numbers on, make sure the receiving person knows it too. Again, the best thing to do is test with something as close to real-world load as possible. And that isn’t easy.
+<p>Si vous devez sortir des chiffres, assurez-vous de savoir quelles informations sont et ne sont pas incluses dans vos résultats. Avant de transmettre ces données, assurez-vous que la personne qui va les interpréter le sait aussi. Là encore, la meilleure chose à faire est de pratiquer un test aussi proche que possible de la situation réelle. Et ce n’est pas simple.
 
-<h4 id="arms">A Call to Arms</h4>
+<h4 id="arms">Appel au peuple</h4>
 
-<p>We’re in the market for databases and key/value stores. Every solution has a sweet spot in terms of data, hardware, setup, and operation, and there are enough permutations that you can pick the one that is closest to your problem. But how to find out? Ideally, you download and install all possible candidates, create a profiling test suite with proper testing data, make extensive tests, and compare the results. This can easily take weeks, and you might not have that much time.
+<p>Nous sommes sur le marché des bases de données et du stockage de clé/valeur. Chaque solution a ses avantages en terme de données, de matériel, d’installation et de maintenance… Il y a tant de possibilités que vous pouvez sélectionner l’outil le plus proche de votre besoin. Mais comment le trouver ? Idéalement, vous téléchargez et installez chaque solution possible, créez un profil de test avec les données adéquates, procédez à des tests approfondis et comparez les résultats. Cela peut facilement prendre des semaines et ce temps-là, vous ne l’avez peut-être pas.
 
-<p>We would like to ask developers of storage systems to compile a set of profiling suites that simulate different usage patterns of their systems (read-heavy and write-heavy loads, fault tolerance, distributed operation, and many more). A fault-tolerance suite should include the steps necessary to get data live again, such as any rebuild or checkup time. We would like users of these systems to help their developers find out how to reliably measure different scenarios.
+<p>Nous voudrions demander aux concepteurs de systèmes de stockage de compiler un jeu de profils de test que simulent différents cas d’utilisation de leurs systèmes (des charges importantes en lecture et en écriture, la tolérance aux pannes, le fonctionnement en mode distribué, et bien d’autres encore). Un jeu de test de tolérance aux pannes devrait inclure les étapes nécessaires à rendre à nouveau disponibles les données, en incluant par exemple le temps de reconstruction et de vérification. Nous voudrions que les utilisateurs de ces systèmes aident leurs concepteurs à trouver comment mesurer de manière fiable les différents scénarios.
 
-<p>We are working on CouchDB, and we’d like very much to have such a suite! Even better, developers could agree (a far-fetched idea, to be sure) on a set of benchmarks that objectively measure performance for easy comparison. We know this is a lot of work and the results may still be questionable, but it’ll help our users a great deal when figuring out what to use.
+<p>Nous travaillons sur CouchDB et nous aimerions vraiment avec un tel outillage ! Mieux encore ! les concepteurs pourraient se mettre d’accord (une idée farfelue, pour sûr !) sur un jeu de bancs d’essai qui mesurent de manière objective les performances afin de faciliter les comparaisons. Nous savons que cela représente une charge de travail importante et que les résultats pourraient être sujets à questionnement, mais cela aiderait grandement nos utilisateurs à choisir l’outil qui convient à leur besoin.
