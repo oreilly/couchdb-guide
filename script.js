@@ -11,9 +11,10 @@ var languages = {
 var l10n = {
     "en": {
         "draftEdition": "Draft edition",
-        "draftNotice": "This edition of the book is a work in progress. Please\
-            <a href='http://github.com/oreilly/couchdb-guide/issues'>create a\
-            ticket</a> for any corrections or suggestions you may have.",
+        "draftNotice": "This edition of the book is a work in progress.<br> Please\
+            create <a href='https://github.com/oreilly/couchdb-guide/pulls'>a \
+            pull request</a> or <a href='http://github.com/oreilly/couchdb-guide/issues'>\
+            report an issue</a> for any corrections or suggestions you may have.",
         "edition": "Edition",
         "editionNotice": "This is an outdated edition of the book. Please use\
             the <a href='%s'>latest edition</a> for more up-to-date\
