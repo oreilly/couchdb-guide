@@ -77,7 +77,9 @@ var l10n = {
 };
 
 var scripts = [
-    "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js",
+    "http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js",
+    "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js",
+    "/script/all/jquery.sausage.js",
     "http://www.google-analytics.com/ga.js"
 ];
 
@@ -312,6 +314,40 @@ function autolink() {
     });
 }
 
+function chop() {
+    var $content = $(".content");
+    var $sections = $("<div/>");
+    var $as = $content.find("a.anchor");
+    var j = -1;
+    $as.each(function(i, el) {
+        $sections.append("<section/>"); 
+    });
+    $content.children().each(function(i, el) {
+        var $el = $(el);
+        var $section;
+        if ($el.hasClass("anchor")) {
+            j++;
+        }
+        $section = $sections.find("section").eq(j) || $sections;
+        $section.append($(el).clone());
+    });
+    $content.html($sections);
+}
+
+function sausage() {
+    if ($("section").length < 1) {
+        return;
+    }
+    $(window).sausage({
+        page: "section",
+        content: function(i, $page) {
+            return "<span class='sausage-span'>"
+                + $page.find(".anchor").first().text()
+                + "</span>";
+        }
+    });
+}
+
 function get_lang() {
     var matches = document.location.href.match(urls[0][0]);
     if (matches && matches.length > 2) {
@@ -340,6 +376,8 @@ document.onready = function() {
         template();
         build();
         autolink();
+        chop();
+        sausage();
         track();
     } catch (error) {
         // uh oh

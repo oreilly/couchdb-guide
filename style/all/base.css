@@ -262,6 +262,9 @@ container: 12*60px (unit) + 13*16px (gutter) = 928px = 58em = 100%
   float: left;
   margin-right: 2.6%;
 }
+.content section {
+  margin-bottom: 3em;
+}
 
 /* sidebar */
 .sidebar {
