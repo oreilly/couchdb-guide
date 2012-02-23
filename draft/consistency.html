@@ -98,6 +98,12 @@
 
 <p>A table in a relational database is a single data structure. If you want to modify a table—say, update a row—the database system must ensure that nobody else is trying to update that row and that nobody can read from that row while it is being updated. The common way to handle this uses what’s known as a <em>lock</em>. If multiple clients want to access a table, the first client gets the lock, making everybody else wait. When the first client’s request is processed, the next client is given access while everybody else waits, and so on. This serial execution of requests, even when they arrived in parallel, wastes a significant amount of your server’s processing power. Under high load, a relational database can spend more time figuring out who is allowed to do what, and in which order, than it does doing any actual work.
 
+<div class="aside note">
+
+<p> Note that modern relational databases avoid locks by implementing MVCC under the hood, but hide it from the end user, requiring them to coordinate concurrent changes of single rows or fields.
+
+</div>
+
 <p>Instead of locks, CouchDB uses <em>Multi-Version Concurrency Control (MVCC)</em> to manage concurrent access to the database. <a href="#figure/3">Figure 3, “MVCC means no locking”</a> illustrates the differences between MVCC and traditional locking mechanisms. MVCC means that CouchDB can run at full speed, all the time, even under high load. Requests are run in parallel, making excellent use of every last drop of processing power your server has to offer.
 
 <div class="figure" id="figure/3">
