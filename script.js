@@ -80,7 +80,7 @@ var l10n = {
 var scripts = [
     "http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js",
     "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js",
-    "/script/all/jquery.sausage.js",
+    "script/all/jquery.sausage.js",
     "http://www.google-analytics.com/ga.js"
 ];
 
