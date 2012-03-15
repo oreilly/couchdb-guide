@@ -1,0 +1,221 @@
+<title>High Performance</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="security.html">
+
+<link rel="next" href="recipes.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="performance">High Performance</h2>
+
+<p>This chapter will teach you the fastest ways to insert and query data with CouchDB. It will also explain why there is a wide range of performance across various techniques.
+
+<p>The take-home message: bulk operations result in lower overhead, higher throughput, and more space efficiency. If you can’t work in bulk in your application, we’ll also describe other options to get throughput and space benefits. Finally, we describe interfacing directly with CouchDB from Erlang, which can be a useful technique if you want to integrate CouchDB storage with a server for non-HTTP protocols, like SMTP (email) or XMPP (chat).
+
+<h3 id="benchmarks">Good Benchmarks Are Non-Trivial</h3>
+
+<p>Each application is different. Performance requirements are not always obvious. Different use cases need to tune different parameters. A classic trade-off is latency versus throughput. Concurrency is another factor. Many database platforms behave very differently with 100 clients than they do with 1,000 or more concurrent clients. Some data profiles require serialized operations, which increase total time (latency) for the client, and load on the server. We think simpler data and access patterns can make a big difference in the cacheability and scalability of your app, but we’ll get to that later.
+
+<p>The upshot: <em>real benchmarks require real-world load.</em> Simulating load is hard. Erlang tends to perform better under load (especially on multiple cores), so we’ve often seen test rigs that can’t drive CouchDB hard enough to see where it falls over.
+
+<p>Let’s take a look at what a typical web app looks like. This is not exactly how Craigslist works (because we don’t know how Craigslist works), but it is a close enough approximation to illustrate problems with benchmarking.
+
+<p>You have a web server, some middleware, and a database. A user request comes in, and the web server takes care of the networking and parses the HTTP request. The request gets handed to the middleware layer, which figures out what to run, then it runs whatever is needed to serve the request. The middleware might talk to your database and other external resources like files or remote web services. The request bounces back to the web server, which sends out any resulting HTML. The HTML includes references to other resources living on your web server (like CSS, JS, or image files), and the process starts anew for every resource. A little different each time, but in general, all requests are similar. And along the way there are caches to store intermediate results to avoid expensive recomputation.
+
+<p>That’s a lot of moving parts. Getting a top-to-bottom profile of all components to figure out where bottlenecks lie is pretty complex (but nice to have). We start making up numbers now. The absolute values are not important; only numbers relative to each other are. Say a request takes 1.5 seconds (1,500 ms) to be fully rendered in a browser.
+
+<p>In a simple case like Craigslist, there is the initial HTML, a CSS file, a JS file, and the favicon. Except for the HTML, these are all static resources and involve reading some data from a disk (or from memory) and serving it to the browser that then renders it. The most notable things to do for performance are keeping data small (GZIP compression, high JPG compression) and avoiding requests all together (HTTP-level caching in the browser). Making the web server any faster doesn’t buy us much (yeah, hand wavey, but we don’t want to focus on static resources here). Let’s say all static resources take 500 ms to serve and render.
+
+<div class="aside note">
+
+<p>Read all about improving client experience with proper use of HTTP from Steve Souders, web performance guru. His YSlow tool is indispensable for tuning a website.
+
+</div>
+
+<p>That leaves us with 1,000 ms for the initial HTML. We’ll chop off 200 ms for network latency (see <a href="why.html">Chapter 1, Why CouchDB?</a>). Let’s pretend HTTP parsing, middleware routing and execution, and database access share equally the rest of the time, 200 ms each.
+
+<p>If you now set out to improve one part of the big puzzle that is your web app and gain 10 ms in the database access time, this is probably time not well spent (unless you have the numbers to prove it).
+
+<p>However, breaking down a single request like this and looking for how much time is spent in each component is also misleading. Even if only a small percentage of the time is spent in your database under normal load, that doesn’t teach you what will happen during traffic spikes. If all requests are hitting the same database, then any locking there could block many web requests. Your database may have minimal impact on total query time, under normal load, but under spike load it may turn into a bottleneck, magnifying the effect of the spike on the application servers. CouchDB can minimize this by dedicating an Erlang process to each connection, ensuring that all clients are handled, even if latency goes up a bit.
+
+<h3 id="high">High Performance CouchDB</h3>
+
+<p>Now that you see database performance is only a small part of overall web performance, we’ll give you some tips to squeeze the most out of CouchDB.
+
+<p>CouchDB is designed from the ground up to service highly concurrent use cases, which make up the majority of web application load. However, sometimes we need to import a large batch of data into CouchDB or initiate transforms across an entire database. Or maybe we’re building a custom Erlang application that needs to link into CouchDB at a lower level than HTTP.
+
+<h4 id="hardware">Hardware</h4>
+
+<p>Invariably people will want to know what type of disk they should use, how much RAM, what sort of CPU, etc. The real answer is that CouchDB is flexible enough to run on everything from a smart phone to a cluster, so the answers will vary.
+
+<p>More RAM is better because CouchDB makes heavy use of the filesystem cache. CPU cores are more important for building views than serving documents. Solid State Drives (SSDs) are pretty sweet because they can append to a file while loading old blocks, with a minimum of overhead. As they get faster and cheaper, they’ll be really handy for CouchDB.
+
+<h4 id="implementation">An Implementation Note</h4>
+
+<p>We’re not going to rehash append-only B-trees here, but understanding CouchDB’s data format is key to gaining an intuition about which strategies yield the best performance. Each time an update is made, CouchDB loads from disk the B-tree nodes that point to the updated documents or the key range where a new document’s <code>_id</code> would be found.
+
+<p>This loading will normally come from the filesystem cache, except when updates are made to documents in regions of the tree that have not been touched in a long time. In those cases, the disk has to seek, which can block writing and have other ripple effects. Preventing these disk seeks is the name of the game in CouchDB performance.
+
+<p>We’ll use some numbers in this chapter that come from a JavaScript test suite. It’s not the most accurate, but the strategy it uses (counting the number of documents that can be saved in 10 seconds) makes up for the JavaScript overhead. The hardware the benchmarks were run on is modest: just an old white MacBook Intel Core 2 Duo (remember those?).
+
+<p>You can run the benchmarks yourself by changing to the <code>bench/</code> directory of CouchDB’s trunk and running <code>./runner.sh</code> while CouchDB is running on port 5984.
+
+<h3 id="bulk">Bulk Inserts and Mostly Monotonic DocIDs</h3>
+
+<p>Bulk inserts are the best way to have seekless writes. Random IDs force seeking after the file is bigger than can be cached. Random IDs also make for a bigger file because in a large database you’ll rarely have multiple documents in one B-tree leaf.
+
+<h4 id="examples">Optimized Examples: Views and Replication</h4>
+
+<p>If you’re curious what a good performance profile is for CouchDB, look at how views and replication are done. Triggered replication applies updates to the database in large batches to minimize disk chatter. Currently the 0.11.0 development trunk boasts an additional 3–5x speed increase over 0.10’s view generation.
+
+<p>Views load a batch of updates from disk, pass them through the view engine, and then write the view rows out. Each batch is a few hundred documents, so the writer can take advantage of the bulk efficiencies we see in the next section.
+
+<h3 id="inserts">Bulk Document Inserts</h3>
+
+<p>The fastest mode for importing data into CouchDB via HTTP is the <code>_bulk_docs</code> endpoint. The bulk documents API accepts a collection of documents in a single <code>POST</code> request and stores them all to CouchDB in a single index operation.
+
+<p>Bulk docs is the API to use when you are importing a corpus of data using a scripting language. It can be 10 to 100 times faster than individual bulk updates and is just as easy to work with from most languages.
+
+<p>The main factor that influences performance of bulk operations is the size of the update, both in terms of total data transferred as well as the number of documents included in an update.
+
+<p>Here are sequential bulk document inserts at four different granularities, from an array of 100 documents, up through 1,000, 5,000, and 10,000:
+
+<pre>
+bulk_doc_100
+4400 docs
+437.37574552683895 docs/sec
+</pre>
+
+<pre>
+bulk_doc_1000
+17000 docs
+1635.4016354016355 docs/sec
+</pre>
+
+<pre>
+bulk_doc_5000
+30000 docs
+2508.1514923501377 docs/sec
+</pre>
+
+<pre>
+bulk_doc_10000
+30000 docs
+2699.541078016737 docs/sec
+</pre>
+
+<p>You can see that larger batches yield better performance, with an upper limit in this test of 2,700 documents/second. With larger documents, we might see that smaller batches are more useful. For references, all the documents look like this: <code>{"foo":"bar"}</code>
+
+<p>Although 2,700 documents per second is fine, we want more power! Next up, we’ll explore running bulk documents in parallel.
+
+<p>With a different script (using bash and <em>cURL</em> with <code>benchbulk.sh</code> in the same directory), we’re inserting large batches of documents in parallel to CouchDB. With batches of 1,000 docs, 10 at any given time, averaged over 10 rounds, I see about 3,650 documents per second on a MacBook Pro. Benchbulk also uses sequential IDs.
+
+<p>We see that with proper use of bulk documents and sequential IDs, we can insert more than 3,000 docs per second just using scripting languages.
+
+<h3 id="batch">Batch Mode</h3>
+
+<p>To avoid the indexing and disk sync overhead associated with individual document writes, there is an option that allows CouchDB to build up batches of documents in memory, flushing them to disk when a certain threshold has been reached or when triggered by the user. The batch option does not give the same data integrity guarantees that normal updates provide, so it should only be used when the potential loss of recent updates is acceptable.
+
+<p>Because batch mode only stores updates in memory until a flush occurs, updates that are saved to CouchDB directly proceeding a crash can be lost. By default, CouchDB flushes the in-memory updates once per second, so in the worst case, data loss is still minimal. To reflect the reduced integrity guarantees when <code>batch=ok</code> is used, the HTTP response code is 202 Accepted, as opposed to 201 Created.
+
+<p>The ideal use for batch mode is for logging type applications, where you have many distributed writers each storing discrete events to CouchDB. In a normal logging scenario, losing a few updates on rare occasions is worth the trade-off for increased storage throughput.
+
+<p>There is a pattern for reliable storage using batch mode. It’s the same pattern as is used when data needs to be stored reliably to multiple nodes before acknowledging success to the saving client. In a nutshell, the application server (or remote client) saves to Couch A using <code>batch=ok</code>, and then watches update notifications from Couch B, only considering the save successful when Couch B’s <code>_changes</code> stream includes the relevant update. We covered this pattern in detail in <a href="replication.html">Chapter 16, Replication</a>.
+
+<pre>
+batch_ok_doc_insert
+4851 docs
+485.00299940011996 docs/sec
+</pre>
+
+<p>This JavaScript benchmark only gets around 500 documents per second, six times slower than the bulk document API. However, it has the advantage that clients don’t need to build up bulk batches.
+
+<h3 id="single">Single Document Inserts</h3>
+
+<p>Normal web app load for CouchDB comes in the form of single document inserts. Because each insert comes from a distinct client, and has the overhead of an entire HTTP request and response, it generally has the lowest throughput for writes.
+
+<p>Probably the slowest possible use case for CouchDB is the case of a writer that has to make many serialized writes against the database. Imagine a case where each write depends on the result of the previous write so that only one writer can run. This sounds like a bad case from the description alone. If you find yourself in this position, there are probably other problems to address as well.
+
+<p>We can write about 258 documents per second with a single writer in serial (pretty much the worst-case scenario writer).
+
+<pre>
+single_doc_insert
+2584 docs
+257.9357157117189 docs/sec
+</pre>
+
+<p>Delayed commit (along with sequential UUIDs) is probably the most important CouchDB configuration setting for performance. When it is set to true (the default), CouchDB allows operations to be run against the disk without an explicit fsync after each operation. Fsync operations take time (the disk may have to seek, on some platforms the hard disk cache buffer is flushed, etc.), so requiring an fsync for each update deeply limits CouchDB’s performance for non-bulk writers.
+
+<p>Delayed commit should be left set to <code>true</code> in the configuration settings, unless you are in an environment where you absolutely need to know when updates have been received (such as when CouchDB is running as part of a larger transaction). It is also possible to trigger an fsync (e.g., after a few operations) using the <code>_ensure_full_commit</code> API.
+
+<p>When delayed commit is disabled, CouchDB writes data to the actual disk before it responds to the client (except in <code>batch=ok</code> mode). It’s a simpler code path, so it has less overhead when running at high throughput levels. However, for individual clients, it can seem slow. Here’s the same benchmark in full commit mode:
+
+<pre>
+single_doc_insert
+46 docs
+4.583042741855135 docs/sec
+</pre>
+
+<p>Look at how slow <code>single_doc_insert</code> is with full-commit enabled—four or five documents per second! That’s 100% a result of the fact that Mac OS X has a real fsync, so be thankful! Don’t worry; the full commit story gets better as we move into bulk operations.
+
+<p>On the other hand, we’re getting better times for large bulks with delayed commit off, which lets us know that <em>tuning for your application</em> will always bring better results than following a cookbook.
+
+<h3 id="hovercraft">Hovercraft</h3>
+
+<p>Hovercraft is a library for accessing CouchDB from within Erlang. Hovercraft benchmarks should show the fastest possible performance of CouchDB’s disk and index subsystems, as it avoids all HTTP connection and JSON conversion overhead.
+
+<p>Hovercraft is useful primarily when the HTTP interface doesn’t allow for enough control, or is otherwise redundant. For instance, persisting Jabber instant messages to CouchDB might use ejabberd and Hovercraft. The easiest way to create a failure-tolerant message queue is probably a combination of RabbitMQ and Hovercraft.
+
+<p>Hovercraft was extracted from a client project that used CouchDB to store massive amounts of email as document attachments. HTTP doesn’t have an easy mechanism to allow a combination of bulk updates with binary attachments, so we used Hovercraft to connect an Erlang SMTP server directly to CouchDB, to stream attachments directly to disk while maintaining the efficiency of bulk index updates.
+
+<p>Hovercraft includes a basic benchmarking feature, and we see that we can get many documents per second.
+
+<pre>
+&gt; hovercraft:lightning().
+Inserted 100000 docs in 9.37 seconds with batch size of 1000.
+(10672 docs/sec)
+</pre>
+
+<h3 id="trades">Trade-Offs</h3>
+
+<p>Tool X might give you 5 ms response times, an order of magnitude faster than anything else on the market. Programming is all about trade-offs, and everybody is bound by the same laws.
+
+<p>On the outside, it might appear that everybody who is not using Tool X is a fool. But speed and latency are only part of the picture. We already established that going from 5 ms to 50 ms might not even be noticeable by anyone using your product. Speed may come at the expense of other things, such as:
+
+<dl>
+
+<dt>Memory</dt>
+
+<dd>Instead of doing computations over and over, Tool X might have a cute caching layer that saves recomputation by storing results in memory. If you are CPU bound, that might be good; if you are memory bound, it might not. A trade-off.</dd>
+
+<dt>Concurrency</dt>
+
+<dd>The clever data structures in Tool X are extremely fast when only one request at a time is processed, and because it is so fast most of the time, it appears as if it would process multiple requests in parallel. Eventually, though, a high number of concurrent requests fill up the request queue and response time suffers. A variation on this is that Tool X might work exceptionally well on a single CPU or core, but not on many, leaving your beefy servers idling.</dd>
+
+<dt>Reliability</dt>
+
+<dd>Making sure data is actually stored is an expensive operation. Making sure a data store is in a consistent state and not corrupted is another. There are two trade-offs here. First, buffers store data in memory before committing it to disk to ensure a higher data throughput. In the event of a power loss or crash (of hard- or software), the data is gone. This may or may not be acceptable for your application. Second, a consistency check is required to run after a failure, and if you have a lot of data, this can take days. If you can afford to be offline, that’s OK, but maybe you can’t afford it.</dd>
+
+</dl>
+
+<p>Make sure to understand what requirements you have and pick the tool that complies instead of picking the one that has the prettiest numbers. Who’s the fool when your web application is offline for a fixup for a day while your customers impatiently wait to get their jobs done or, worse, you lose their data?
+
+<h4 id="numbers">But…My Boss Wants Numbers!</h4>
+
+<p>You want to know which one of these databases, caches, programming languages, language constructs, or tools is faster, harder, or stronger. Numbers are cool—you can draw pretty graphs that management types can compare and make decisions from.
+
+<p>But the first thing a good executive knows is that she is operating on insufficient data, as diagrams drawn from numbers are a very distilled view of reality. And graphs from numbers that are made up by bad profiling are effectively fantasies.
+
+<p>If you are going to produce numbers, make sure you understand how much information is and isn’t covered by your results. Before passing the numbers on, make sure the receiving person knows it too. Again, the best thing to do is test with something as close to real-world load as possible. And that isn’t easy.
+
+<h4 id="arms">A Call to Arms</h4>
+
+<p>We’re in the market for databases and key/value stores. Every solution has a sweet spot in terms of data, hardware, setup, and operation, and there are enough permutations that you can pick the one that is closest to your problem. But how to find out? Ideally, you download and install all possible candidates, create a profiling test suite with proper testing data, make extensive tests, and compare the results. This can easily take weeks, and you might not have that much time.
+
+<p>We would like to ask developers of storage systems to compile a set of profiling suites that simulate different usage patterns of their systems (read-heavy and write-heavy loads, fault tolerance, distributed operation, and many more). A fault-tolerance suite should include the steps necessary to get data live again, such as any rebuild or checkup time. We would like users of these systems to help their developers find out how to reliably measure different scenarios.
+
+<p>We are working on CouchDB, and we’d like very much to have such a suite! Even better, developers could agree (a far-fetched idea, to be sure) on a set of benchmarks that objectively measure performance for easy comparison. We know this is a lot of work and the results may still be questionable, but it’ll help our users a great deal when figuring out what to use.

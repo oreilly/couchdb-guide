@@ -1,0 +1,69 @@
+<title>Scaling Basics</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="lists.html">
+
+<link rel="next" href="replication.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="scaling">Scaling Basics</h2>
+
+<p>Scaling is an overloaded term. Finding a discrete definition is tricky. Everyone and her grandmother have their own idea of what scaling means. Most definitions are valid, but they can be contradicting. To make things even worse, there are a lot of misconceptions about scaling. To really define it, one needs a scalpel to find out the important bits.
+
+<p>First, scaling doesn’t refer to a specific technique or technology; scaling, or <em>scalability</em>, is an attribute of a specific architecture. What is being <em>scaled</em> varies for nearly every project.
+
+<blockquote>
+
+<p>Scaling is specialization.
+
+<p class="attribution">&mdash;Joe Stump, Lead Architect of Digg.com and SimpleGeo.com
+
+</blockquote>
+
+<p>Joe’s quote is the one that we find to be the most accurate description of scaling. It is also wishy-washy, but that is the nature of scaling. An example: a website like Facebook.com— with a whole lot of users and data associated with those users and with more and more users coming in every day—might want to scale over user data that typically lives in a database. In contrast, Flickr.com at its core is like Facebook with users and data for users, but in Flickr’s case, the data that grows fastest is images uploaded by users. These images do not necessarily live in a database, so scaling image storage is Flickr’s path to growth.
+
+<div class="aside note">
+
+<p>It is common to think of scaling as <em>scaling out</em>. This is shortsighted. Scaling can also mean <em>scaling in</em>—that is, being able to use fewer computers when demand declines. More on that later.
+
+</div>
+
+<p>These are just two services. There are a lot more, and every one has different things they want to scale. CouchDB is a database; we are not going to cover every aspect of scaling any system. We concentrate on the bits that are interesting to you, the CouchDB user. We have identified three general properties that you can scale with CouchDB:
+
+<ul>
+
+<li>Read requests</li>
+
+<li>Write requests</li>
+
+<li>Data</li>
+
+</ul>
+
+<h3 id="reads">Scaling Read Requests</h3>
+
+<p>A read request retrieves a piece of information from the database. It passes the following stations within CouchDB. First, the HTTP server module needs to accept the request. For that, it opens a socket to send data over. The next station is the HTTP request handle module that analyzes the request and directs it to the appropriate submodule in CouchDB. For single documents, the request then gets passed to the database module where the data for the document is looked up on the filesystem and returned all the way up again.
+
+<p>All this takes processing time and enough sockets (or file descriptors) must be available. The storage backend of the server must be able to fulfill all read requests. There are a few more things that can limit a system to accept more read requests; the basic point here is that a single server can process only so many concurrent requests. If your applications generate more requests, you need to set up a second server that your application can read from.
+
+<p>The nice thing about read requests is that they can be cached. Often-used items can be held in memory and can be returned at a much higher level than the one that is your bottleneck. Requests that can use this cache don’t ever hit your database and are thus virtually toll-free. <a href="balancing.html">Chapter 18, Load Balancing</a> explains this scenario.
+
+<h3 id="writes">Scaling Write Requests</h3>
+
+<p>A write request is like a read request, only a little worse. It not only reads a piece of data from disk, it writes it back after modifying it. Remember, the nice thing about reads is that they’re cacheable. Writes: not so much. A cache must be notified when a write changes data, or clients must be told to not use the cache. If you have multiple servers for scaling reads, a write must occur on all servers. In any case, you need to work harder with a write. <a href="clustering.html">Chapter 19, Clustering</a> covers methods for scaling write requests across servers.
+
+<h3 id="data">Scaling Data</h3>
+
+<p>The third way of scaling is scaling data. Today’s hard drives are cheap and have a lot of capacity, and they will only get better in the future, but there is only so much data a single server can make sensible use of. It must maintain one more indexes to the data that uses disk space again. Creating backups will take longer and other maintenance tasks become a pain.
+
+<p>The solution is to chop the data into manageable chunks and put each chunk on a separate server. All servers with a chunk now form a <em>cluster</em> that holds all your data. <a href="clustering.html">Chapter 19, Clustering</a> takes a look at creating and using these clusters.
+
+<p>While we are taking separate looks at scaling of reads, writes, and data, these rarely occur isolated. Decisions to scale one will affect the others. We will describe individual as well as combined solutions in the following chapters.
+
+<h3 id="basics">Basics First</h3>
+
+<p>Replication is the basis for all of the three scaling methods. Before we go scaling, <a href="replication.html">Chapter 16, Replication</a> will familiarize you with CouchDB’s excellent replication feature.
