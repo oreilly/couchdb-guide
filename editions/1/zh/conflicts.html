@@ -1,0 +1,266 @@
+<title>Conflict Management</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="replication.html">
+
+<link rel="next" href="balancing.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="conflicts">Conflict Management</h2>
+
+<p>Suppose you are sitting in a coffee shop working on your book. J. Chris comes over and tells you about his new phone. The new phone came with a new number, and you have J. Chris dictate it while you change it using your laptop’s address book application.
+
+<p>Luckily, your address book is built on CouchDB, so when you come home, all you need to do to get your home computer up-to-date with J. Chris’s number is replicate your address book from your laptop. Neat, eh? What’s more, CouchDB has a mechanism to maintain continuous replication, so you can keep a whole set of computers in sync with the same data, whenever a network connection is available.
+
+<p>Let’s change the scenario a little bit. Since J. Chris didn’t anticipate meeting you at the coffee shop, he also sent you an email with the new number. At the time you weren’t using WiFi because you wanted concentrate on your work, so you didn’t read his email until you got home. But it was a long day and by then you had forgotten that you changed the number in the address book on your laptop. When you read the email at home, you simply copy-and-pasted the number into the address book on your home computer. Now—and here’s the twist—it turns out you entered the wrong number in your laptop’s address book.
+
+<p>You now have a document in each of the databases that has different information. This situation is called a <em>conflict</em>. Conflicts occur in distributed systems. They are a natural state of your data. How does CouchDB’s replication system deal with conflicts?
+
+<p>When you replicate two databases in CouchDB and you have conflicting changes, CouchDB will detect this and will flag the affected document with the special attribute <code>"_conflicts":true</code>. Next, CouchDB determines which of the changes will be stored as the latest revision (remember, documents in CouchDB are versioned). The version that gets picked to be the latest revision is the <em>winning revision</em>. The <em>losing revision</em> gets stored as the previous revision.
+
+<p>CouchDB does not attempt to merge the conflicting revision. Your application dictates how the merging should be done. The choice of picking the winning revision is arbitrary. In the case of the phone number, there is no way for a computer to decide on the <em>right</em> revision. This is not specific to CouchDB; no other software can do this (ever had your phone’s sync-contacts tool ask you which contact from which source to take?).
+
+<p>Replication guarantees that conflicts are detected and that each instance of CouchDB makes the same choice regarding winners and losers, independent of all the other instances. There is no group decision made; instead, a deterministic algorithm determines the order of the conflicting revision. After replication, all instances taking part have the same data. The data set is said to be in a <em>consistent state</em>. If you ask any instance for a document, you will get the same answer regardless which one you ask.
+
+<p>Whether or not CouchDB picked the version that your application needs, you need to go and resolve the conflict, just as you need to resolve a conflict in a version control system like Subversion. Simply create a version that you want to be the latest by either picking the latest, or the previous, or both (by merging them) and save it as the now latest revision. Done. Replicate again and your resolution will populate over to all other instances of CouchDB. Your conflict resolving on one node could lead to further conflicts, all of which will need to be addressed, but eventually, you will end up with a conflict-free database on all nodes.
+
+<h3 id="brain">The Split Brain</h3>
+
+<p>This is an interesting conflicts scenario in that we helped a BBC build a solution for it that is now in production. The basic setup is this: to guarantee that the company’s website is online 24/7, even in the event of the loss of a data center, it has multiple data centers backing up the website. The “loss” of a data center is a rare occasion, but it can be as simple as a network outage, where the data center is still alive and well but can’t be reached by anyone.
+
+<p>The “split brain” scenario is where two (for simplicity’s sake we’ll stick to two) data centers are up and well connected to end users, but the connection between the data centers—which is most likely not the same connection that end users use to talk to the computers in the data center—fails.
+
+<p>The inter data center connection is used to keep both centers <em>in sync</em> so that either one can take over for the other in case of a failure. If that link goes down, you end up with two halves of a system that act independently—the split brain.
+
+<p>As long as all end users can get to their data, the split brain is not scary. Resolving the split brain situation by bringing up the connection that links the data centers and starting synchronization again is where it gets hairy. Arbitrary conflict resolution, like CouchDB does by default, can lead to unwanted effects on the user’s side. Data could revert to an earlier stage and leave the impression that changes weren’t reliably saved, when in fact they were.
+
+<h3 id="resolution">Conflict Resolution by Example</h3>
+
+<p>Let’s go through an illustrated example of how conflicts emerge and how to solve them in super slow motion. <a href="#figure/1">Figure 1, “Conflict management by example: step 1”</a> illustrates the basic setup: we have two CouchDB databases, and we are replicating from database A to database B. To keep this simple, we assume triggered replication and not continuous replication, and we don’t replicate back from database B to A. All other replication scenarios can be reduced to this setup, so this explains everything we need to know.
+
+<div class="figure" id="figure/1">
+
+<img src="conflicts/01.png">
+
+<p class="caption">Figure 1. Conflict management by example: step 1
+
+</div>
+
+<p>We start out by creating a document in database A (<a href="#figure/2">Figure 2, “Conflict management by example: step 2”</a>). Note the clever use of imagery to identify a specific revision of a document. Since we are not using continuous replication, database B won’t know about the new document for now.
+
+<div class="figure" id="figure/2">
+
+<img src="conflicts/02.png">
+
+<p class="caption">Figure 2. Conflict management by example: step 2
+
+</div>
+
+<p>We now trigger replication and tell it to use database A as the source and database B as the target (<a href="#figure/3">Figure 3, “Conflict management by example: step 3”</a>). Our document gets copied over to database B. To be precise, the latest revision of our document gets copied over.
+
+<div class="figure" id="figure/3">
+
+<img src="conflicts/03.png">
+
+<p class="caption">Figure 3. Conflict management by example: step 3
+
+</div>
+
+<p>Now we go to database B and update the document (<a href="#figure/4">Figure 4, “Conflict management by example: step 4”</a>). We change some values and upon change, CouchDB generates a new revision for us. Note that this revision has a new image. Node A is ignorant of any activity.
+
+<div class="figure" id="figure/4">
+
+<img src="conflicts/04.png">
+
+<p class="caption">Figure 4. Conflict management by example: step 4
+
+</div>
+
+<p>Now we make a change to our document in database A by changing some other values (<a href="#figure/5">Figure 5, “Conflict management by example: step 5”</a>). See how it makes a different image for us to see the difference? It is important to note that this is still the same document. It’s just that there are two different revisions of that same document in each database.
+
+<div class="figure" id="figure/5">
+
+<img src="conflicts/05.png">
+
+<p class="caption">Figure 5. Conflict management by example: step 5
+
+</div>
+
+<p>Now we trigger replication again from database A to database B as before (<a href="#figure/6">Figure 6, “Conflict management by example: step 6”</a>). By the way, it doesn’t make a difference if the two databases live in the same CouchDB server or on different servers connected over a network.
+
+<div class="figure" id="figure/6">
+
+<img src="conflicts/06.png">
+
+<p class="caption">Figure 6. Conflict management by example: step 6
+
+</div>
+
+<p>When replicating, CouchDB detects that there are two different revisions for the same document, and it creates a conflict (<a href="#figure/7">Figure 7, “Conflict management by example: step 7”</a>). A document conflict means that there are now two latest revisions for this document.
+
+<div class="figure" id="figure/7">
+
+<img src="conflicts/07.png">
+
+<p class="caption">Figure 7. Conflict management by example: step 7
+
+</div>
+
+<p>Finally, we tell CouchDB which version we would like to be the latest revision by resolving the conflict (<a href="#figure/8">Figure 8, “Conflict management by example: step 8”</a>). Now both databases have the same data.
+
+<div class="figure" id="figure/8">
+
+<img src="conflicts/08.png">
+
+<p class="caption">Figure 8. Conflict management by example: step 8
+
+</div>
+
+<p>Other possible outcomes include choosing the other revision and replicating that decision back to database A, or creating yet another revision in database B that includes parts of both conflicting revisions (a <em>merge</em>) and replicating that back to database A.
+
+<h3 id="working">Working with Conflicts</h3>
+
+<p>Now that we’ve walked through replication with pretty pictures, let’s get our hands dirty and see what the API calls and responses for this and other scenarios look like. We’ll be continuing <a href="api.html">Chapter 4, The Core API</a> by using <code>curl</code> on the command line to make raw API requests.
+
+<p>First, we create two databases that we can use for replication. These live on the same CouchDB instance, but they might as well live on a remote instance—CouchDB doesn’t care. To save us some typing, we create a shell variable for our CouchDB base URL that we want to talk to. We then create two databases, <code>db</code> and <code>db-replica</code>:
+
+<pre>
+HOST="http://127.0.0.1:5984"
+
+&gt; curl -X PUT $HOST/db
+{"ok":true}
+
+&gt; curl -X PUT $HOST/db-replica
+{"ok":true}
+</pre>
+
+<p>In the next step, we create a simple document <code>{"count":1}</code> in <code>db</code> and trigger replication to <code>db-replica</code>:
+
+<pre>
+&gt; curl -X PUT $HOST/db/foo -d '{"count":1}'
+{"ok":true,"id":"foo","rev":"1-74620ecf527d29daaab9c2b465fbce66"}
+
+&gt; curl -X POST $HOST/_replicate -d '{"source":"db","target":"http://127.0.0.1:5984/db-replica"}'
+{"ok":true,...,"docs_written":1,"doc_write_failures":0}]}
+</pre>
+
+<p>We skip a bit of the output of the replication session (see <a href="replication.html">Chapter 16, Replication</a> for details). If you see <code>"docs_written":1</code> and <code>"doc_write_failures":0</code>, our document made it over to <code>db-replica</code>. We now update the document to <code>{"count":2}</code> in <code>db-replica</code>. Note that we now need to include the correct <code>_rev</code> property.
+
+<pre>
+&gt; curl -X PUT $HOST/db-replica/foo -d '{"count":2,"_rev":"1-74620ecf527d29daaab9c2b465fbce66"}'
+{"ok":true,"id":"foo","rev":"2-de0ea16f8621cbac506d23a0fbbde08a"}
+</pre>
+
+<p>Next, we create the conflict! We change our document on <code>db</code> to <code>{"count":3}</code>. Our document is now logically in conflict, but CouchDB doesn’t know about it until we replicate again:
+
+<pre>
+&gt; curl -X PUT $HOST/db/foo -d '{"count":3,"_rev":"1-74620ecf527d29daaab9c2b465fbce66"}'
+{"ok":true,"id":"foo","rev":"2-7c971bb974251ae8541b8fe045964219"}
+
+&gt; curl -X POST $HOST/_replicate -d '{"source":"db","target":"http://127.0.0.1:5984/db-replica"}'
+{"ok":true,..."docs_written":1,"doc_write_failures":0}]}
+</pre>
+
+<p>To see that we have a conflict, we create a simple view in <code>db-replica</code>. The map function looks like this:
+
+<pre>
+function(doc) {
+  if(doc._conflicts) {
+    emit(doc._conflicts, null);
+  }
+}
+</pre>
+
+<p>When we query this view, we get this result:
+
+<pre>
+{"total_rows":1,"offset":0,"rows":[
+{"id":"foo","key":["2-7c971bb974251ae8541b8fe045964219"],"value":null}
+]}
+</pre>
+
+<p>The <code>key</code> here corresponds to the <code>doc._conflicts</code> property of our document in <code>db-replica</code>. It is an array listing all <em>conflicting revisions</em>. We see that the revision we wrote on <code>db</code> (<code>{"count":3}</code>) is in conflict. CouchDB’s automatic promotion of one revision to be the winning revision chose our first change (<code>{"count":2}</code>). To verify that, we just request that document from <code>db-replica</code>:
+
+<pre>
+&gt; curl -X GET $HOST/db-replica/foo
+{"_id":"foo","_rev":"2-de0ea16f8621cbac506d23a0fbbde08a","count":2}
+</pre>
+
+<p>To resolve the conflict, we need to determine which one we want to keep.
+
+<div class="aside note">
+
+<p><strong>How Does CouchDB Decide Which Revision to Use?</strong>
+
+<p>CouchDB guarantees that each instance that sees the same conflict comes up with the same winning and losing revisions. It does so by running a deterministic algorithm to pick the winner. The application should not rely on the details of this algorithm and must always resolve conflicts. We’ll tell you how it works anyway.
+
+<p>Each revision includes a list of previous revisions. The revision with the longest revision history list becomes the winning revision. If they are the same, the <code>_rev</code> values are compared in ASCII sort order, and the highest wins. So, in our example, <code>2-de0ea16f8621cbac506d23a0fbbde08a</code> beats <code>2-7c971bb974251ae8541b8fe045964219</code>.
+
+<p>One advantage of this algorithm is that CouchDB nodes do not have to talk to each other to agree on winning revisions. We already learned that the network is prone to errors and avoiding it for conflict resolution makes CouchDB very robust.
+
+</div>
+
+<p>Let’s say we want to keep the highest value. This means we don’t agree with CouchDB’s automatic choice. To do this, we first overwrite the target document with our value and then simply delete the revision we don’t like:
+
+<pre>
+&gt; curl -X DELETE $HOST/db-replica/foo?rev=2-de0ea16f8621cbac506d23a0fbbde08a
+{"ok":true,"id":"foo","rev":"3-bfe83a296b0445c4d526ef35ef62ac14"}
+
+&gt; curl -X PUT $HOST/db-replica/foo -d '{"count":3,"_rev":"2-7c971bb974251ae8541b8fe045964219"}'
+{"ok":true,"id":"foo","rev":"3-5d0319b075a21b095719bc561def7122"}
+</pre>
+
+<p>CouchDB creates yet another revision that reflects our decision. Note that the <code>3-</code> didn’t get incremented this time. We didn’t create a new version of the document body; we just deleted a conflicting revision. To see that all is well, we check whether our revision ended up in the document.
+
+<pre>
+&gt; curl -X GET $HOST/db-replica/foo
+{"_id":"foo","_rev":"3-5d0319b075a21b095719bc561def7122","count":3}
+</pre>
+
+<p>We also verify that our document is no longer in conflict by querying our conflicts view again, and we see that there are no more conflicts:
+
+<pre>
+{"total_rows":0,"offset":0,"rows":[
+]}
+</pre>
+
+<p>Finally, we replicate from <code>db-replica</code> back to <code>db</code> by simply swapping <code>source</code> and <code>target</code> in our request to <code>_replicate</code>:
+
+<pre>
+&gt; curl -X POST $HOST/_replicate -d '{"target":"db","source":"http://127.0.0.1:5984/db-replica"}'
+</pre>
+
+<p>We see that our revision ends up in <code>db</code>, too:
+
+<pre>
+&gt; curl -X GET $HOST/db/foo
+{"_id":"foo","_rev":"3-5d0319b075a21b095719bc561def7122","count":3}
+</pre>
+
+<p>And we’re done.
+
+<h3 id="deterministic">Deterministic Revision IDs</h3>
+
+<p>Let’s have a look at this revision ID: <code>3-5d0319b075a21b095719bc561def7122</code>. Parts of the format might look familiar. The first part is an integer followed by a dash (<code>3-</code>). The integer increments for each new revision the document receives. Updates to the same document on multiple instances create their own independent increments. When replicating, CouchDB knows that there are two different revisions (like in our previous example) by looking at the second part.
+
+<p>The second part is an md5-hash over a set of document properties: the JSON body, the attachments, and the <code>_deleted</code> flag. This allows CouchDB to save on replication time in case you make the same change to the same document on two instances. Earlier versions (0.9 and back) used random integers to specify revisions, and making the same change on two instances would result in two different revision IDs, creating a conflict where it was not really necessary. CouchDB 0.10 and above uses deterministic revision IDs using the md5 hash.
+
+<p>For example, let’s create two documents, <code>a</code> and <code>b</code>, with the same contents:
+
+<pre>
+&gt; curl -X PUT $HOST/db/a -d '{"a":1}'
+{"ok":true,"id":"a","rev":"1-23202479633c2b380f79507a776743d5"}
+
+&gt; curl -X PUT $HOST/db/b -d '{"a":1}'
+{"ok":true,"id":"b","rev":"1-23202479633c2b380f79507a776743d5"}
+</pre>
+
+<p>Both revision IDs are the same, a consequence of the deterministic algorithm used by CouchDB.
+
+<h3 id="wrap">Wrapping Up</h3>
+
+<p>This concludes our tour of the conflict management system. You should now be able to create distributed setups that deal with conflicts in a proper way.
