@@ -1,4 +1,4 @@
-<title>Transforming Views with List Functions</title>
+<title>Rendering Content Based-On Multiple Documents with List Functions</title>
 
 <meta charset="utf-8">
 
@@ -10,16 +10,53 @@
 
 <script src="../script.js"></script>
 
-<h2 id="transforming">Transforming Views with List Functions</h2>
+<h2 id="transforming">Rendering Content Based-On Multiple Documents with List Functions</h2>
 
-<p>Just as show functions convert documents to arbitrary output formats, CouchDB <em>list functions</em> allow you to render the output of view queries in any format. The powerful iterator API allows for flexibility to filter and aggregate rows on the fly, as well as output raw transformations for an easy way to make Atom feeds, HTML lists, CSV files, config files, or even just modified JSON.
+<p>Just as <em>show  functions</em> convert an <strong>individual</strong> document into an arbitrary output format, CouchDB <em>list functions</em> are used to render documents as a <strong>group</strong>. 
+
+<p>A list function is invoked with a URL specifying both the list function name and also the underlying view which will provide and organize the data.
+
+<p>For example, given this simple view, which indexes documents by "user_id":
+<pre>
+http://mysite/mydb/_design/myapp/_view/mydocs-by-user
+</pre>
+<pre>
+function(doc) {
+  if (doc.user_id) {
+    emit(doc.user_id, null);
+  }
+};
+</pre>
+
+
+<p>
+This list function renders the list of users in a simple HTML page:
+<pre>
+http://mysite/mydb/_design/myapp/_list/mylist/mydocs-by-user
+</pre>
+<pre>
+function(doc, req) {   
+    provides("html", function() {
+        html = "&lthtml&gt&ltbody&gt&ltol&gt\n";
+        while (row = getRow()) {
+            html += "&ltli&gt" + row.key + ":" + row.value + "&lt/li&gt\n";
+        }   
+        html += "&lt/ol&gt&lt/body&gt&lt/head&gt";
+        return html;
+    }); 
+}
+</pre>
+
+<p>Note that a list function can be used with a variety of views, or might be tailored to produce an elaborate page from a view designed specifically to organize data for it.
+
+<p>The powerful iterator API allows for flexibility to filter and aggregate rows on the fly, as well as output raw transformations for an easy way to make Atom feeds, HTML lists, CSV files, config files, or even just modified JSON.
 
 <p>List functions are stored under the <code>lists</code> field of a design document. Here’s an example design document that contains two list functions:
 
 <pre>
 {
   "_id" : "_design/foo",
-  "_rev" : "1-67at7bg",
+  "_rev" : "1-67aGt7bg",
   "lists" : {
     "bar" : "function(head, req) { var row; while (row = getRow()) { ... } }",
     "zoom" : "function() { return 'zoom!' }",
