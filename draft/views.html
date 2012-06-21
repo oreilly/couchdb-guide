@@ -111,7 +111,7 @@ function(doc) {
 
 <p>The view result is stored in a B-tree, just like the structure that is responsible for holding your documents. View B-trees are stored in their own file, so that for high-performance CouchDB usage, you can keep views on their own disk. The B-tree provides very fast lookups of rows by key, as well as efficient streaming of rows in a key range. In our example, a single view can answer all questions that involve time: “Give me all the blog posts from last week” or “last month” or “this year.” Pretty neat. Read more about how CouchDB’s B-trees work in <a href="btree.html">Appendix F, The Power of B-trees</a>.
 
-<p>When we query our view, we get back a list of all documents sorted by date. Each row also includes the post title so we can construct links to posts. Figure 1 is just a graphical representation of the view result. The actual result is JSON-encoded and contains a little more metadata:
+<p>When we query our view, we get back a list of all documents sorted by date. Each row also includes the post title so we can construct links to posts. Table 1 is just a graphical representation of the view result. The actual result is JSON-encoded and contains a little more metadata:
 
 <pre>
 {
