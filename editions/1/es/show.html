@@ -1,0 +1,298 @@
+<title>Show Functions</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="validation.html">
+
+<link rel="next" href="transforming.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="show">Show Functions</h2>
+
+<p>CouchDB’s JSON documents are great for programmatic access in most environments. Almost all languages have HTTP and JSON libraries, and in the unlikely event that yours doesn’t, writing them is fairly simple. However, there is one important use case that JSON documents don’t cover: building plain old HTML web pages. Browsers are powerful, and it’s exciting that we can build Ajax applications using only CouchDB’s JSON and HTTP APIs, but this approach is not appropriate for most public-facing websites.
+
+<p>HTML is the <em>lingua franca</em> of the web, for good reasons. By rendering our JSON documents into HTML pages, we make them available and accessible for a wider variety of uses. With the pure Ajax approach, visually impaired visitors to our blog stand a chance of not seeing any useful content at all, as popular screen-reading browsers have a hard time making sense of pages when the content is changed on the fly via JavaScript. Another important concern for authors is that their writing be indexed by search engines. Maintaining a high-quality blog doesn’t do much good if readers can’t find it via a web search. Most search engines do not execute JavaScript found within a page, so to them an Ajax blog looks devoid of content. We also mustn’t forget that HTML is likely more friendly as an archive format in the long term than the platform-specific JavaScript and JSON approach we used in previous chapters. Also, by serving plain HTML, we make our site snappier, as the browser can render meaningful content with fewer round-trips to the server. These are just a few of the reasons it makes sense to provide web content as HTML.
+
+<p>The traditional way to accomplish the goal of rendering HTML from database records is by using a middle-tier application server, such as Ruby on Rails or Django, which loads the appropriate records for a user request, runs a template function using them, and returns the resulting HTML to the visitor’s browser. The basics of this don’t change in CouchDB’s case; wrapping JSON views and documents with an application server is relatively straightforward. Rather than using browser-side JavaScript to load JSON from CouchDB and rendering dynamic pages, Rails or Django (or your framework of choice) could make those same HTTP requests against CouchDB, render the output to HTML, and return it to the browser. We won’t cover this approach in this book, as it is specific to particular languages and frameworks, and surveying the different options would take more space than you want to read.
+
+<p>CouchDB includes functionality designed to make it possible to do most of what an application tier would do, without relying on additional software. The appeal of this approach is that CouchDB can serve the whole application without dependencies on a complex environment such as might be maintained on a production web server. Because CouchDB is designed to run on client computers, where the environment is out of the control of application developers, having some built-in templating capabilities greatly expands the potential uses of these applications. When your application can be served by a standard CouchDB instance, you gain deployment ease and flexibility.
+
+<h3 id="api">The Show Function API</h3>
+
+<p>Show functions, as they are called, have a constrained API designed to ensure cacheability and side effect–free operation. This is in stark contrast to other application servers, which give the programmer the freedom to run any operation as the result of any request. Let’s look at a few example show functions.
+
+<p>The most basic show function looks something like this:
+
+<pre>
+function(doc, req) {
+  return '&lt;h1&gt;' + doc.title + '&lt;/h1&gt;';
+}
+</pre>
+
+<p>When run with a document that has a field called <code>title</code> with the content “Hello World,” this function will send an HTTP response with the default Content-Type of <code>text/html</code>, the UTF-8 character encoding, and the body <code>&lt;h1&gt;Hello World&lt;/h1&gt;</code>.
+
+<p>The simplicity of the request/response cycle of a show function is hard to overstate. The most common question we hear is, “How can I load another document so that I can render its content as well?” The short answer is that you can’t. The longer answer is that for some applications you might use a list function to render a view result as HTML, which gives you the opportunity to use more than one document as the input of your function.
+
+<p>The basic function from a document and a request to a response, with no side effects and no alternative inputs, stays the same even as we start using more advanced features. Here’s a more complex show function illustrating the ability to set custom headers:
+
+<pre>
+function(doc, req) {
+  return {
+    body : '&lt;foo&gt;' + doc.title + '&lt;/foo&gt;',
+    headers : {
+      "Content-Type" : "application/xml",
+      "X-My-Own-Header": "you can set your own headers"
+    }
+  }
+}
+</pre>
+
+<p>If this function were called with the same document as we used in the previous example, the response would have a Content-Type of <code>application/xml</code> and the body <code>&lt;foo&gt;Hello World&lt;/foo&gt;</code>. You should be able to see from this how you’d be able to use show functions to generate any output you need, from any of your documents.
+
+<p>Popular uses of show functions are for outputting HTML page, CSV files, or XML needed for compatibility with a particular interface. The CouchDB test suite even illustrates using show functions to output a PNG image. To output binary data, there is the option to return a Base64-encoded string, like this:
+
+<pre>
+function(doc, req) {
+  return {
+    base64 :
+      ["iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAsV",
+        "BMVEUAAAD////////////////////////5ur3rEBn////////////////wDBL/",
+        "AADuBAe9EB3IEBz/7+//X1/qBQn2AgP/f3/ilpzsDxfpChDtDhXeCA76AQH/v7",
+        "/84eLyWV/uc3bJPEf/Dw/uw8bRWmP1h4zxSlD6YGHuQ0f6g4XyQkXvCA36MDH6",
+        "wMH/z8/yAwX64ODeh47BHiv/Ly/20dLQLTj98PDXWmP/Pz//39/wGyJ7Iy9JAA",
+        "AADHRSTlMAbw8vf08/bz+Pv19jK/W3AAAAg0lEQVR4Xp3LRQ4DQRBD0QqTm4Y5",
+        "zMxw/4OleiJlHeUtv2X6RbNO1Uqj9g0RMCuQO0vBIg4vMFeOpCWIWmDOw82fZx",
+        "vaND1c8OG4vrdOqD8YwgpDYDxRgkSm5rwu0nQVBJuMg++pLXZyr5jnc1BaH4GT",
+        "LvEliY253nA3pVhQqdPt0f/erJkMGMB8xucAAAAASUVORK5CYII="].join(''),
+    headers : {
+      "Content-Type" : "image/png"
+    }
+  };
+}
+</pre>
+
+<p>This function outputs a 16×16 pixel version of the CouchDB logo. The JavaScript code necessary to generate images from document contents would likely be quite complex, but the ability to send Base64-encoded binary data means that query servers written in other languages like C or PHP have the ability to output any data type.
+
+<h3 id="constraints">Side Effect–Free</h3>
+
+<p>We’ve mentioned that a key constraint of show functions is that they are side effect–free. This means that you can’t use them to update documents, kick off background processes, or trigger any other function. In the big picture, this is a <em>good thing</em>, as it allows CouchDB to give performance and reliability guarantees that standard web frameworks can’t. Because a show function will always return the same result given the same input and can’t change anything about the environment in which it runs, its output can be cached and intelligently reused. In a high-availability deployment with proper caching, this means that a given show function will be called only once for any particular document, and the CouchDB server may not even be contacted for subsequent requests.
+
+<p>Working without side effects can be a little bit disorienting for developers who are used to the anything-goes approach offered by most application servers. It’s considered best practice to ensure that actions run in response to GET requests are side effect–free and cacheable, but rarely do we have the discipline to achieve that goal. CouchDB takes a different tack: because it’s a database, not an application server, we think it’s more important to enforce best practices (and ensure that developers don’t write functions that adversely effect the database server) than offer absolute flexibility. Once you’re used to working within these constraints, they start to make a lot of sense. (There’s a reason they are considered best practices.)
+
+<h3 id="design">Design Documents</h3>
+
+<p>Before we look into show functions themselves, we’ll quickly review how they are stored in design documents. CouchDB looks for show functions stored in a top-level field called <code>shows</code>, which is named like this to be parallel with <code>views</code>, <code>lists</code>, and <code>filters</code>. Here’s an example design document that defines two show functions:
+
+<pre>
+{
+  "_id" : "_design/show-function-examples",
+  "shows" : {
+    "summary" : "function(doc, req){ ... }",
+    "detail" : "function(doc, req){ ... }"
+  }
+}
+</pre>
+
+<p>There’s not much to note here except the fact that design documents can define multiple show functions. Now let’s see how these functions are run.
+
+<h3 id="querying">Querying Show Functions</h3>
+
+<p>We’ve described the show function API, but we haven’t yet seen how these functions are run.
+
+<p>The show function lives inside a design document, so to invoke it we append the name of the function to the design document itself, and then the ID of the document we want to render:
+
+<pre>
+GET /mydb/_design/mydesign/_show/myshow/72d43a93eb74b5f2
+</pre>
+
+<p>Because show functions (and the others like list, etc.) are available as resources within the design document path, all resources provided by a particular design document can be found under a common root, which makes custom application proxying simpler. We’ll see an example of this in <a href="index.html#part/iii">Part III, “Example Application”</a>.
+
+<p>If the document with ID <code>72d43a93eb74b5f2</code> does not exist, the request will result in an HTTP 500 Internal Server Error response. This seems a little harsh; why does it happen? If we query a show function with a document ID that doesn’t point to an existing document, the <code>doc</code> argument in the function is <code>null</code>. Then the show function tries to access it, and the JavaScript interpreter doesn’t like that. So it bails out. To secure against these errors, or to handle non-existing documents in a custom way (e.g., a wiki could display a “create new page” page), you can wrap the code in our function with <code>if(doc !== null) { ... }</code>.
+
+<p>However, show functions can also be called without a document ID at all, like this:
+
+<pre>
+GET /mydb/_design/mydesign/_show/myshow
+</pre>
+
+<p>In this case, the <code>doc</code> argument to the function has the value <code>null</code>. This option is useful in cases where the show function can make sense without a document. For instance, in the example application we’ll explore in <a href="index.html#part/iii">Part III, “Example Application”</a>, we use the same show function to provide for editing existing blog posts when a DocID is given, as well as for composing new blog posts when no DocID is given. The alternative would be to maintain an alternate resource (likely a static HTML attachment) with parallel functionality. As programmers, we strive not to repeat ourselves, which motivated us to give show functions the ability to run without a document ID.
+
+<h4 id="resources">Design Document Resources</h4>
+
+<p>In addition to the ability to run show functions, other resources are available within the design document path. This combination of features within the design document resource means that applications can be deployed without exposing the full CouchDB API to visitors, with only a simple proxy to rewrite the paths. We won’t go into full detail here, but the gist of it is that end users would run the previous query from a path like this:
+
+<pre>
+GET /_show/myshow/72d43a93eb74b5f2
+</pre>
+
+<p>Under the covers, an HTTP proxy can be programmed to prepend the database and design document portion of the path (in this case, <code>/mydb/_design/mydesign</code>) so that CouchDB sees the standard query. With such a system in place, end users can access the application only via functions defined on the design document, so developers can enforce constraints and prevent access to raw JSON document and view data. While it doesn’t provide 100% security, using custom rewrite rules is an effective way to control the access end users have to a CouchDB application. This technique has been used in production by a few websites at the time of this writing.
+
+<h4 id="parameters">Query Parameters</h4>
+
+<p>The request object (including helpfully parsed versions of query parameters) is available to show functions as well. By way of illustration, here’s a show function that returns different data based on the URL query parameters:
+
+<pre>
+function(req, doc) {
+  return "&lt;p&gt;Aye aye, " + req.parrot + "!&lt;/p&gt;";
+}
+</pre>
+
+<p>Requesting this function with a query parameter will result in the query parameter being used in the output:
+
+<pre>
+GET /mydb/_design/mydesign/_show/myshow?parrot=Captain
+</pre>
+
+<p>In this case, we’ll see the output: <code>&lt;p&gt;Aye aye, Captain!&lt;/p&gt;</code>
+
+<p>Allowing URL parameters into the function does not affect cacheability, as each unique invocation results in a distinct URL. However, making heavy use of this feature will lower your cache effectiveness. Query parameters like this are most useful for doing things like switching the mode or the format of the show function output. It’s recommended that you avoid using them for things like inserting custom content (such as requesting the user’s nickname) into the response, as that will mean each users’s data must be cached separately.
+
+<h4 id="accept">Accept Headers</h4>
+
+<p>Part of the HTTP spec allows for clients to give hints to the server about which media types they are capable of accepting. At this time, the JavaScript query server shipped with CouchDB 0.10.0 contains helpers for working with Accept headers. However, web browser support for Accept headers is <em>very poor</em>, which has prompted frameworks such as Ruby on Rails to remove their support for them. CouchDB may or may not follow suit here, but the fact remains that you are discouraged from relying on Accept headers for applications that will be accessed via web browsers.
+
+<p>There is a suite of helpers for Accept headers present that allow you to specify the format in a query parameter as well. For instance:
+
+<pre>
+GET /db/_design/app/_show/post
+Accept: application/xml
+</pre>
+
+<p>is equivalent to a similar URL with mismatched Accept headers. This is because browsers don’t use sensible Accept headers for feed URLs. Browsers 1, Accept headers 0. Yay browsers.
+
+<pre>
+GET /db/_design/app/_show/post?format=xml
+Accept: x-foo/whatever
+</pre>
+
+<p>The request function allows developers to switch response Content-Types based on the client’s request. The next example adds the ability to return either HTML, XML, or a developer-designated media type: <code>x-foo/whatever</code>.
+
+<p>CouchDB’s <code>main.js</code> library provides the <code>("format", render_function)</code> function, which makes it easy for developers to handle client requests for multiple MIME types in one form function.
+
+<p>This function also shows off the use of <code>registerType(name, mime_types)</code>, which adds new types to mapping objects used by <code>respondWith</code>. The end result is ultimate flexibility for developers, with an easy interface for handling different types of requests. <code>main.js</code> uses a JavaScript port of <em>Mimeparse</em>, an open source reference implementation, to provide this service.
+
+<h3 id="etags">Etags</h3>
+
+<p>We’ve mentioned that show function requests are side effect–free and cacheable, but we haven’t discussed the mechanism used to accomplish this. <em>Etags</em> are a standard HTTP mechanism for indicating whether a cached copy of an HTTP response is still current. Essentially, when the client makes its first request to a resource, the response is accompanied by an Etag, which is an opaque string token unique to the version of the resource requested. The second time the client makes a request against the same resource, it sends along the original Etag with the request. If the server determines that the Etag still matches the resource, it can avoid sending the full response, instead replying with a message that essentially says, “You have the latest version already.”
+
+<p>When implemented properly, the use of Etags can cut down significantly on server load. CouchDB provides an Etag header, so that by using an HTTP proxy cache like Squid, you’ll instantly remove load from CouchDB.
+
+<h3 id="templates">Functions and Templates</h3>
+
+<p>CouchDB’s process runner looks only at the functions stored under <code>show</code>, but we’ll want to keep the template HTML separate from the content negotiation logic. The <code>couchapp</code> script handles this for us, using the <code>!code</code> and <code>!json</code> handlers.
+
+<p>Let’s follow the show function logic through the files that Sofa splits it into. Here’s Sofa’s <code>edit</code> show function:
+
+<pre>
+function(doc, req) {
+  // !json templates.edit
+  // !json blog
+  // !code vendor/couchapp/path.js
+  // !code vendor/couchapp/template.js
+
+  // we only show html
+  return template(templates.edit, {
+    doc : doc,
+    docid : toJSON((doc &amp;&amp; doc._id) || null),
+    blog : blog,
+    assets : assetPath(),
+    index : listPath('index','recent-posts',{descending:true,limit:8})
+  });
+}
+</pre>
+
+<p>This should look pretty straightforward. First, we have the function’s <em>head</em>, or <em>signature</em>, that tells us we are dealing with a function that takes two arguments: <code>doc</code> and <code>req</code>.
+
+<p>The next four lines are comments, as far as JavaScript is concerned. But these are special documents. The CouchApp upload script knows how to read these special comments on top of the show function. They include <em>macros</em>; a macro starts with a bang (<code>!</code>) and a name. Currently, CouchApp supports the two macros <code>!json</code> and <code>!code</code>.
+
+<h4 id="json">The !json Macro</h4>
+
+<p>The <code>!json</code> macro takes one argument: the path to a file in the CouchApp directory hierarchy in the <em>dot notation</em>. Instead of a slash (<code>/</code>) or backslash (<code>\</code>), you use a dot (<code>.</code>). The <code>!json</code> macro then reads the contents of the file and puts them into a variable that has the same name as the file’s path in dot notation.
+
+<p>For example, if you use the macro like this:
+
+<pre>
+  // !json template.edit
+</pre>
+
+<p>CouchDB will read the file <code>template/edit.*</code> and place its contents into a variable:
+
+<pre>
+  var template.edit = "contents of edit.*"
+</pre>
+
+<p>When specifying the path, you omit the file’s extension. That way you can read <code>.json</code>, <code>.js</code>, or <code>.html</code> files, or any other files into variables in your functions. Because the macro matches files with any extensions, you can’t have two files with the same name but different extensions.
+
+<p>In addition, you can specify a directory and CouchApp will load all the files in this directory and any subdirectory. So this:
+
+<pre>
+  // !json template
+</pre>
+
+<p>creates:
+
+<pre>
+  var template.edit = "contents of edit.*"
+  var teplate.post = "contents of post.*"
+</pre>
+
+<p>Note that the macro also takes care of creating the top-level <code>template</code> variable. We just omitted that here for brevity. The <code>!json</code> macro will generate only valid JavaScript.
+
+<h4 id="code">The !code Macro</h4>
+
+<p>The <code>!code</code> macro is similar to the <code>!json</code> macro, but it serves a slightly different purpose. Instead of making the contents of one or more files available as variables in your functions, it replaces itself with the contents of the file referenced in the argument to the macro.
+
+<p>This is useful for sharing library functions between CouchDB functions (map/reduce/show/list/validate) without having to maintain their source code in multiple places.
+
+<p>Our example shows this line:
+
+<pre>
+  // !code vendor/couchapp/path.js
+</pre>
+
+<p>If you look at the CouchApp sources, there is a file in <code>vendor/couchapp/path.js</code> that includes a bunch of useful function related to the URL path of a request. In the example just shown, CouchApp will replace the line with the contents of <code>path.js</code>, making the functions locally available to the show function.
+
+<p>The <code>!code</code> macro can load only a single file at a time.
+
+<h3 id="learning">Learning Shows</h3>
+
+<p>Before we dig into the full code that will render the post permalink pages, let’s look at some <em>Hello World</em> form examples. The first one shows just the function arguments and the simplest possible return value. See <a href="#figure/1">Figure 1, “Basic form function”</a>.
+
+<div class="figure" id="figure/1">
+
+<img src="show/01.png">
+
+<p class="caption">Figure 1. Basic form function
+
+</div>
+
+<p>A <em>show function</em> is a JavaScript function that converts a document and some details about the HTTP request into an HTTP response. Typically it will be used to construct HTML, but it is also capable of returning Atom feeds, images, or even just filtered JSON. The document argument is just like the documents passed to map functions.
+
+<h3 id="using">Using Templates</h3>
+
+<p>The only thing missing from the show function development experience is the ability to render HTML without ruining your eyes looking at a whole lot of string manipulation, among other unpleasantries. Most programming environments solve this problem with templates; for example, documents that look like HTML but have portions of their content filled out dynamically.
+
+<p>Dynamically combining template strings and data in JavaScript is a solved problem. However, it hasn’t caught on, partly because JavaScript doesn’t have very good support for multi-line “heredoc” strings. After all, once you get through escaping quotes and leaving out newlines, it’s not much fun to edit HTML templates inlined into JavaScript code. We’d much rather keep our templates in separate files, where we can avoid all the escaping work, and they can be syntax-highlighted by our editor.
+
+<p>The <code>couchapp</code> script has a couple of helpers to make working with templates and library code stored in design documents less painful. In the function shown in <a href="#figure/2">Figure 2, “The blog post template”</a>, we use them to load a blog post template, as well as the JavaScript function responsible for rendering it.
+
+<div class="figure" id="figure/2">
+
+<img src="show/02.png">
+
+<p class="caption">Figure 2. The blog post template
+
+</div>
+
+<p>As you can see, we take the opportunity in the function to strip JavaScript tags from the form post. That regular expression is not secure, and the blogging application is meant to be written to only by its owners, so we should probably drop the regular expression and simplify the function to avoid transforming the document, instead passing it directly to the template. Or we should port a known-good sanitization routine from another language and provide it in the templates library.
+
+<h3 id="writing">Writing Templates</h3>
+
+<p>Working with templates, instead of trying to cram all the presentation into one file, makes editing forms a little more relaxing. The templates are stored in their own file, so you don’t have to worry about JavaScript or JSON encoding, and your text editor can highlight the template’s HTML syntax. CouchDB’s JavaScript query server includes the E4X extensions for JavaScript, which can be helpful for XML templates but do not work well for HTML. We’ll explore E4X templates in <a href="lists.html">Chapter 14, Viewing Lists of Blog Posts</a> when we cover forms for views, which makes providing an Atom feed of view results easy and memory efficient.
+
+<p>Trust us when we say that looking at this HTML page is much more relaxing than trying to understand what a raw JavaScript one is trying to do. The template library we’re using in the example blog is by John Resig and was chosen for simplicity. It could easily be replaced by one of many other options, such as the Django template language, available in JavaScript.
+
+<p>This is a good time to note that CouchDB’s architecture is designed to make it simple to swap out languages for the query servers. With a query server written in Lisp, Python, or Ruby (or any language that supports JSON and <em>stdio</em>), you could have an even wider variety of templating options. However, the CouchDB team recommends sticking with JavaScript as it provides the highest level of support and interoperability, though other options are available.

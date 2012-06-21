@@ -1,0 +1,143 @@
+<title>Design Documents</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="api.html">
+
+<link rel="next" href="views.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="design">Design Documents</h2>
+
+<p><em>Design documents</em> are a special type of CouchDB document that contains application code. Because it runs inside a database, the application API is highly structured. We’ve seen JavaScript views and other functions in the previous chapters. In this section, we’ll take a look at the function APIs, and talk about how functions in a design document are related within applications.
+
+<p>This part (<a href="index.html#part/ii">Part II, “Developing with CouchDB”</a>, Chapters <a href="design.html">Chapter 5, Design Documents</a> through <a href="transforming.html">Chapter 9, Transforming Views with List Functions</a>) lays the foundation for <a href="index.html#part/iii">Part III, “Example Application”</a>, where we take what we’ve learned and build a small blog application to further develop an understanding of how CouchDB applications are built. The application is called Sofa, and on a few occasions we discuss it this part. If you are unclear on what we are referring to, do not worry, we’ll get to it in <a href="index.html#part/iii">Part III, “Example Application”</a>.
+
+<h3 id="modeling">Document Modeling</h3>
+
+<p>In our experience, there are two main kinds of documents. The first kind is like something a word processor would save, or a user profile. With that sort of data, you want to denormalize as much as you possibly can. Basically, you want to be able to load the document in one request and get something that makes sense enough to display.
+
+<p>A technique exists for creating “virtual” documents by using views to collate data together. You could use this to store each attribute of your user profiles in a different document, but I wouldn’t recommend it. Virtual documents are useful in cases where the presented view will be created by merging the work of different authors; for instance, the reference example, a blog post, and its comments in one query. A blog post titled “<a href="http://www.cmlenz.net/archives/2007/10/couchdb-joins">CouchDB Joins</a>,” by Christopher Lenz, covers this in more detail.
+
+<p>This virtual document idea takes us to the other kind of document—the event log. Use this in cases where you don’t trust user input or where you need to trigger an asynchronous job. This records the user action as an event, so only minimal validation needs to occur at save time. It’s when you load the document for further work that you’d check for complex relational-style constraints.
+
+<p>You can treat documents as state machines, with a combination of user input and background processing managing document state. You’d use a view by state to pull out the relevant document—changing its state would move it in the view.
+
+<p>This approach is also useful for logging—combined with the <code>batch=ok</code> performance hint, CouchDB should make a fine log store, and reduce views are ideal for finding things like average response time or highly active users.
+
+<h3 id="server">The Query Server</h3>
+
+<p>CouchDB’s default query server (the software package that executes design document functions) is written in JavaScript, but there are views servers available for nearly any language you can imagine. Implementing a new language is a matter of handling a few JSON commands from a simple line-based program.
+
+<p>In this section, we’ll review existing functionality like MapReduce views, update validation functions, and show and list transforms. We’ll also briefly describe capabilities available on CouchDB’s roadmap, like replication filters, update handlers for parsing non-JSON input, and a rewrite handler for making application URLs more palatable. Since CouchDB is an open source project, we can’t really say when each planned feature will become available, but it’s our hope that everything described here is available by the time you read this. We’ll make it clear in the text when we’re talking about things that aren’t yet in the CouchDB trunk.
+
+<h3 id="documents">Applications Are Documents</h3>
+
+<p>CouchDB is designed to work best when there is a one-to-one correspondence between applications and design documents.
+
+<p>A <em>design document</em> is a CouchDB document with an <code>id</code> that begins with <code>_design/</code>. For instance, the example blog application, Sofa, is stored in a design document with the ID <code>_design/sofa</code> (see <a href="#figure/1">Figure 1, “Anatomy of our design document”</a>). Design documents are just like any other CouchDB document—they replicate along with the other documents in their database and track edit conflicts with the <code>rev</code> parameter.
+
+<p>As we’ve seen, design documents are normal JSON documents, denoted by the fact that their DocID is prefixed with <code>_design/</code>.
+
+<p>CouchDB looks for views and other application functions here. The static HTML pages of our application are served as attachments to the design document. Views and validations, however, aren’t stored as attachments; rather, they are directly included in the design document’s JSON body.
+
+<div class="figure" id="figure/1">
+
+<img src="design/01.png">
+
+<p class="caption">Figure 1. Anatomy of our design document
+
+</div>
+
+<p>CouchDB’s MapReduce queries are stored in the <code>views</code> field. This is how Futon displays and allows you to edit MapReduce queries. View indexes are stored on a per–design document basis, according to a fingerprint of the function’s text contents. This means that if you edit attachments, validations, or any other non-view (or language) fields on the design document, the views will not be regenerated. However, if you change a map or a reduce function, the view index will be deleted and a new index built for the new view functions.
+
+<p>CouchDB has the capability to render responses in formats other than raw JSON. The design doc fields <code>show</code> and <code>list</code> contain functions used to transform raw JSON into HTML, XML, or other Content-Types. This allows CouchDB to serve Atom feeds without any additional middleware. The <code>show</code> and <code>list</code> functions are a little like “actions” in traditional web frameworks—they run some code based on a request and render a response. However, they differ from actions in that they may not have side effects. This means that they are largely restricted to handling <code>GET</code> requests, but it also means they can be cached by HTTP proxies like Varnish.
+
+<p>Because application logic is contained in a single document, code upgrades can be accomplished with CouchDB replication. This also opens the possibility for a single database to host multiple applications. The interface a newspaper editor needs is vastly different from what a reader desires, although the data is largely the same. They can both be hosted by the same database, in different design documents.
+
+<p>A CouchDB database can contain many design documents. Example design DocIDs are:
+
+<pre>
+_design/calendar
+_design/contacts
+_design/blog
+_design/admin
+</pre>
+
+<p>In the full CouchDB URL structure, you’d be able to <code>GET</code> the design document JSON at URLs like:
+
+<pre>
+http://localhost:5984/mydb/_design/calendar
+http://127.0.0.1:5984/mydb/_design/contacts
+http://127.0.0.1:5984/mydb/_design/blog
+http://127.0.0.1:5984/mydb/_design/admin
+</pre>
+
+<p>We show this to note that design documents have a special case, as they are the only documents whose URLs can be used with a literal slash. We’ve done this because nobody likes to see <code>%2F</code> in their browser’s location bar. In all other cases, a slash in a DocID must be escaped when used in a URL. For instance, the DocID <code>movies/jaws</code> would appear in the URL like this: <code>http://127.0.0.1:5984/mydb/movies%2Fjaws</code>.
+
+<p>We’ll build the first iteration of the example application without using <code>show</code> or <code>list</code>, because writing Ajax queries against the JSON API is a better way to teach CouchDB as a database. The APIs we explore in the first iteration are the same APIs you’d use to analyze log data, archive assets, or manage persistent queues.
+
+<p>In the second iteration, we’ll upgrade our example blog so that it can function with client-side JavaScript turned off. For now, sticking to Ajax queries gives more transparency into how CouchDB’s JSON/HTTP API works. JSON is a subset of JavaScript, so working with it in JavaScript keeps the impedance mismatch low, while the browser’s <em>XMLHttpRequest (XHR)</em> object handles the HTTP details for us.
+
+<p>CouchDB uses the <code>validate_doc_update</code> function to prevent invalid or unauthorized document updates from proceeding. We use it in the example application to ensure that blog posts can be authored only by logged-in users. CouchDB’s validation functions also can’t have any side effects, and they have the opportunity to block not only end user document saves, but also replicated documents from other nodes. We’ll talk about validation in depth in <a href="index.html#part/iii">Part III, “Example Application”</a>.
+
+<p>The raw images, JavaScript, CSS, and HTML assets needed by Sofa are stored in the <code>_attachments</code> field, which is interesting in that by default it shows only the stubs, rather than the full content of the files. Attachments are available on all CouchDB documents, not just design documents, so asset management applications have as much flexibility as they could need. If a set of resources is required for your application to run, they should be attached to the design document. This means that a new user can easily bootstrap your application on an empty database.
+
+<p>The other fields in the design document shown in <a href="#figure/1">Figure 1, “Anatomy of our design document”</a> (and in the design documents we’ll be using) are used by CouchApp’s upload process (see <a href="standalone.html">Chapter 10, Standalone Applications</a> for more information on CouchApp). The <code>signatures</code> field allows us to avoid updating attachments that have not changed between the disk and the database. It does this by comparing file content hashes. The <code>lib</code> field is used to hold additional JavaScript code and JSON data to be inserted at deploy time into view, show, and validation functions. We’ll explain CouchApp in the next chapter.
+
+<h3 id="basic">A Basic Design Document</h3>
+
+<p>In the next section we’ll get into advanced techniques for working with design documents, but before we finish here, let’s look at a very basic design document. All we’ll do is define a single view, but it should be enough to show you how design documents fit into the larger system.
+
+<p>First, add the following text (or something like it) to a text file called <code>mydesign.json</code> using your editor:
+
+<pre>
+{
+  "_id" : "_design/example",
+  "views" : {
+    "foo" : {
+      "map" : "function(doc){ emit(doc._id, doc._rev)}"
+    }
+  }
+}
+</pre>
+
+<p>Now use <code>curl</code> to <code>PUT</code> the file to CouchDB (we’ll create a database first for good measure):
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/basic
+curl -X PUT http://127.0.0.1:5984/basic/_design/example -d @mydesign.json
+</pre>
+
+<p>From the second request, you should see a response like:
+
+<pre>
+{"ok":true,"id":"_design/example","rev":"1-230141dfa7e07c3dbfef0789bf11773a"}
+</pre>
+
+<p>Now we can query the view we’ve defined, but before we do that, we should add a few documents to the database so we have something to view. Running the following command a few times will add empty documents:
+
+<pre>
+curl -X POST http://127.0.0.1:5984/basic -d '{}'
+</pre>
+
+<p>Now to query the view:
+
+<pre>
+curl http://127.0.0.1:5984/basic/_design/example/_view/foo
+</pre>
+
+<p>This should give you a list of all the documents in the database (except the design document). You’ve created and used your first design document!
+
+<h3 id="future">Looking to the Future</h3>
+
+<p>There are other design document functions that are being introduced at the time of this writing, including <code>_update</code> and <code>_filter</code> that we aren’t covering in depth here. Filter functions are covered in <a href="notifications.html">Chapter 20, Change Notifications</a>. Imagine a web service that <code>POSTs</code> an XML blob at a URL of your choosing when particular events occur. PayPal’s instant payment notification is one of these. With an <code>_update</code> handler, you can <code>POST</code> these directly in CouchDB and it can parse the XML into a JSON document and save it. The same goes for CSV, multi-part form, or any other format.
+
+<p>The bigger picture we’re working on is like an app server, but different in one crucial regard: rather than let the developer do whatever he wants (loop a list of DocIDs and make queries, make queries based on the results of other queries, etc.), we’re defining “safe” transformations, such as view, show, list, and update. By safe, we mean that they have well-known performance characteristics and otherwise fit into CouchDB’s architecture in a streamlined way.
+
+<p>The goal here is to provide a way to build standalone apps that can also be easily indexed by search engines and used via screen readers. Hence, the push for plain old HTML. You can pretty much rely on JavaScript getting executed (except when you can’t). Having HTML resources means CouchDB is suitable for public-facing web apps.
+
+<p>On the horizon are a rewrite handler and a database event handler, as they seem to flesh out the application capabilities nicely. A rewrite handler would allow your application to present its own URL space, which would make integration into existing systems a bit easier. An event handler would allow you to run asynchronous processes when the database changes, so that, for instance, a document update can trigger a workflow, multi-document validation, or message queue.
