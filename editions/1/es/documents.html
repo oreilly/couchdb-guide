@@ -1,0 +1,368 @@
+<title>Storing Documents</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="managing.html">
+
+<link rel="next" href="formats.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="documents">Storing Documents</h2>
+
+<p><em>Documents</em> are CouchDB’s central data structure. To best understand and use CouchDB, you need to <em>think in documents</em>. This chapter walks you though the lifecycle of designing and saving a document. We’ll follow up by reading documents and aggregating and querying them with views. In the next section, you’ll see how CouchDB can also transform documents into other formats.
+
+<p>Documents are self-contained units of data. You might have heard the term <em>record</em> to describe something similar. Your data is usually made up of small native types such as integers and strings. Documents are the first level of abstraction over these native types. They provide some structure and logically group the primitive data. The height of a person might be encoded as an integer (<code>176</code>), but this integer is usually part of a larger structure that contains a label (<code>"height": 176</code>) and related data (<code>{"name":"Chris", "height": 176}</code>).
+
+<p>How many data items you put into your documents depends on your application and a bit on how you want to use views (later), but generally, a document roughly corresponds to an object instance in your programming language. Are you running an online shop? You will have <em>items</em> and <em>sales</em> and <em>comments</em> for your items. They all make good candidates for objects and, subsequently, documents.
+
+<p>Documents differ subtly from garden-variety objects in that they usually have authors and CRUD operations (create, read, update, delete). Document-based software (like the word processors and spreadsheets of yore) builds its storage model around saving documents so that authors get back what they created. Similarly, in a CouchDB application you may find yourself giving greater leeway to the presentation layer. If, instead of adding timestamps to your data in a controller, you allow the user to control them, you get draft status and the ability to publish articles in the future for free (by viewing published documents using an <code>endkey</code> of <em>now</em>).
+
+<p>Validation functions are available so that you don’t have to worry about bad data causing errors in your system. Often in document-based software, the client application edits and manipulates the data, saving it back. As long as you give the user the document she asked you to save, she’ll be happy.
+
+<p>Say your users can comment on the item (“lovely book”); you have the option to store the comments as an array, on the item document. This makes it trivial to find the item’s comments, but, as they say, “it doesn’t scale.” A popular item could have tens of comments, or even hundreds or more.
+
+<p>Instead of storing a list on the item document, in this case it may be better to model comments into a collection of documents. There are patterns for accessing collections, which CouchDB makes easy. You likely want to show only 10 or 20 at a time and provide <em>previous</em> and <em>next</em> links. By handling comments as individual entities, you can group them with views. A group could be the entire collection or slices of 10 or 20, sorted by the item they apply to so that it’s easy to grab the set you need.
+
+<p>A rule of thumb: break up into documents everything that you will be handling separately in your application. Items are single, and comments are single, but you don’t need to break them into smaller pieces. Views are a convenient way to group your documents in meaningful ways.
+
+<p>Let’s go through building our example application to show you in practice how to work with documents.
+
+<h3 id="format">JSON Document Format</h3>
+
+<p>The first step in designing any application (once you know what the program is for and have the user interaction nailed down) is deciding on the format it will use to represent and store data. Our example blog is written in JavaScript. A few lines back we said documents roughly represent your data objects. In this case, there is a an exact correspondence. CouchDB borrowed the JSON data format from JavaScript; this allows us to use documents directly as native objects when programming. This is really convenient and leads to fewer problems down the road (if you ever worked with an ORM system, you might know what we are hinting at).
+
+<p>Let’s draft a JSON format for blog posts. We know we’ll need each post to have an author, a title, and a body. We know we’d like to use document IDs to find documents so that URLs are search engine–friendly, and we’d also like to list them by creation date.
+
+<p>It should be pretty straightforward to see how JSON works. Curly braces (<code>{}</code>) wrap objects, and objects are key/value lists. Keys are strings that are wrapped in double quotes (<code>""</code>). Finally, a value is a string, an integer, an object, or an array (<code>[]</code>). Keys and values are separated by a colon (<code>:</code>), and multiple keys and values by comma (<code>,</code>). That’s it. For a complete description of the JSON format, see <a href="json.html">Appendix E, JSON Primer</a>.
+
+<p><a href="#figure/1">Figure 1, “The JSON post format”</a> shows a document that meets our requirements. The cool thing is we just made it up on the spot. We didn’t go and define a schema, and we didn’t define how things should look. We just created a document with whatever we needed. Now, requirements for objects change all the time during the development of an application. Coming up with a different document that meets new, evolved needs is just as easy.
+
+<div class="figure" id="figure/1">
+
+<img src="documents/01.png">
+
+<p class="caption">Figure 1. The JSON post format
+
+</div>
+
+<blockquote>
+
+<p>Do I really look like a guy with a plan? You know what I am? I’m a dog chasing cars. I wouldn’t know what to do with one if I caught it. You know, I just do things. The mob has plans, the cops have plans, Gordon’s got plans. You know, they’re schemers. Schemers trying to control their little worlds. I’m not a schemer. I try to show the schemers how pathetic their attempts to control things really are.
+
+<p class="attribution">&mdash;The Joker, <em>The Dark Knight</em>
+
+</blockquote>
+
+<p>Let’s examine the document in a little more detail. The first two members (<code>_id</code> and <code>_rev</code>) are for CouchDB’s housekeeping and act as identification for a particular <em>instance</em> of a document. <code>_id</code> is easy: if I store something in CouchDB, it creates the <code>_id</code> and returns it to me. I can use the <code>_id</code> to build the URL where I can get my something back.
+
+<div class="aside note">
+
+<p>Your document’s <code>_id</code> defines the URL the document can be found under. Say you have a database <code>movies</code>. All documents can be found somewhere under the URL <code>/movies</code>, but where exactly?
+
+<p>If you store a document with the <code>_id</code> <code>Jabberwocky</code> (<code>{"_id":"Jabberwocky"}</code>) into your <code>movies</code> database, it will be available under the URL <code>/movies/Jabberwocky</code>. So if you send a GET request to <code>/movies/Jabberwocky</code>, you will get back the JSON that makes up your document (<code>{"_id":"Jabberwocky"}</code>).
+
+</div>
+
+<p>The <code>_rev</code> (or <em>revision ID</em>) describes a version of a document. Each change creates a new document version (that again is self-contained) and updates the <code>_rev</code>. This becomes useful because, when saving a document, you must provide an up-to-date <code>_rev</code> so that CouchDB knows you’ve been working against the latest document version.
+
+<p>We touched on this in <a href="consistency.html">Chapter 2, Eventual Consistency</a>. The revision ID acts as a gatekeeper for writes to a document in CouchDB’s MVCC system. A document is a shared resource; many clients can read and write them at the same time. To make sure two writing clients don’t step on each other’s feet, each client must provide what it believes is the latest revision ID of a document along with the proposed changes. If the on-disk revision ID matches the provided <code>_rev</code>, CouchDB will accept the change. If it doesn’t, the update will be rejected. The client should read the latest version, integrate the changes, and try saving again.
+
+<p>This mechanism ensures two things: a client can only overwrite a version it knows, and it can’t trip over changes made by other clients. This works without CouchDB having to manage explicit <em>locks</em> on any document. This ensures that no client has to wait for another client to complete any work. Updates are serialized, so CouchDB will never attempt to write documents faster than your disk can spin, and it also means that two mutually conflicting writes can’t be written at the same time.
+
+<h3 id="data">Beyond _id and _rev: Your Document Data</h3>
+
+<p>Now that you thoroughly understand the role of <code>_id</code> and <code>_rev</code> on a document, let’s look at everything else we’re storing.
+
+<pre>
+{
+  "_id":"Hello-Sofa",
+  "_rev":"2-2143609722",
+  "type":"post",
+</pre>
+
+<p>The first thing is the type of the document. Note that this is an application-level parameter, not anything particular to CouchDB. The type is just an arbitrarily named key/value pair as far as CouchDB is concerned. For us, as we’re adding blog posts to Sofa, it has a little deeper meaning. Sofa uses the <code>type</code> field to determine which validations to apply. It can then rely on documents of that type being valid in the views and the user interface. This removes the need to check for every field and nested JSON value before using it. This is purely by convention, and you can make up your own or infer the type of a document by its structure (“has an array with three elements”—a.k.a. <em>duck typing</em>). We just thought this was easy to follow and hope you agree.
+
+<pre>
+  "author":"jchris",
+  "title":"Hello Sofa",
+</pre>
+
+<p>The <code>author</code> and <code>title</code> fields are set when the post is created. The <code>title</code> field can be changed, but the <code>author</code> field is locked by the validation function for security. Only the author may edit the post.
+
+<pre>
+  "tags":["example","blog post","json"],
+</pre>
+
+<p>Sofa’s tag system just stores them as an array on the document. This kind of denormalization is a particularly good fit for CouchDB.
+
+<pre>
+  "format":"markdown",
+  "body":"some markdown text",
+  "html":"&lt;p&gt;the html text&lt;/p&gt;",
+</pre>
+
+<p>Blog posts are composed in the <a href="http://daringfireball.net/projects/markdown/">Markdown HTML format</a> to make them easy to author. The Markdown format as typed by the user is stored in the <code>body</code> field. Before the blog post is saved, Sofa converts it to HTML in the client’s browser. There is an interface for previewing the Markdown conversion, so you can be sure it will display as you like.
+
+<pre>
+  "created_at":"2009/05/25 06:10:40 +0000"
+}
+</pre>
+
+<p>The <code>created_at</code> field is used to order blog posts in the Atom feed and on the HTML index page.
+
+<h3 id="edit">The Edit Page</h3>
+
+<p>The first page we need to build in order to get one of these blog entries into our post is the interface for creating and editing posts.
+
+<p>Editing is more complex than just rendering posts for visitors to read, but that means once you’ve read this chapter, you’ll have seen most of the techniques we touch on in the other chapters.
+
+<p>The first thing to look at is the <em>show function</em> used to render the HTML page. If you haven’t already, read <a href="show.html">Chapter 8, Show Functions</a> to learn about the details of the API. We’ll just look at this code in the context of Sofa, so you can see how it all fits together.
+
+<pre>
+function(doc, req) {
+  // !json templates.edit
+  // !json blog
+  // !code vendor/couchapp/path.js
+  // !code vendor/couchapp/template.js
+</pre>
+
+<p>Sofa’s edit page show function is very straightforward. In the previous section, we showed the important templates and libraries we’ll use. The important line is the <code>!json</code> macro, which loads the <code>edit.html</code> template from the <code>templates</code> directory. These macros are run by CouchApp, as Sofa is being deployed to CouchDB. For more information about the macros, see <a href="formats.html">Chapter 13, Showing Documents in Custom Formats</a>.
+
+<pre>
+  // we only show html
+  return template(templates.edit, {
+    doc : doc,
+    docid : toJSON((doc &amp;&amp; doc._id) || null),
+    blog : blog,
+    assets : assetPath(),
+    index : listPath('index','recent-posts',{descending:true,limit:8})
+  });
+}
+</pre>
+
+<p>The rest of the function is simple. We’re just rendering the HTML template with data culled from the document. In the case where the document does not yet exist, we make sure to set the <code>docid</code> to <code>null</code>. This allows us to use the same template both for creating new blog posts as well as editing existing ones.
+
+<h4 id="scaffold">The HTML Scaffold</h4>
+
+<p>The only missing piece of this puzzle is the HTML that it takes to save a document like this.
+
+<p>In your browser, visit <code>http://127.0.0.1:5984/blog/_design/sofa/_show/edit</code> and, using your text editor, open the source file <code>templates/edit.html</code> (or view source in your browser). Everything is ready to go; all we have to do is wire up CouchDB using in-page JavaScript. See <a href="#figure/2">Figure 2, “HTML listing for edit.html”</a>.
+
+<p>Just like any web application, the important part of the HTML is the form for accepting edits. The edit form captures a few basic data items: the post title, the body (in Markdown format), and any tags the author would like to apply.
+
+<pre>
+&lt;!-- form to create a Post --&gt;
+&lt;form id="new-post" action="new.html" method="post"&gt;
+  &lt;h1&gt;Create a new post&lt;/h1&gt;
+  &lt;p&gt;&lt;label&gt;Title&lt;/label&gt;
+    &lt;input type="text" size="50" name="title"&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;label for="body"&gt;Body&lt;/label&gt;
+    &lt;textarea name="body" rows="28" cols="80"&gt;
+    &lt;/textarea&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;input id="preview" type="button" value="Preview"/&gt;
+    &lt;input type="submit" value="Save &amp;rarr;"/&gt;&lt;/p&gt;
+&lt;/form&gt;
+</pre>
+
+<p>We start with just a raw HTML document, containing a normal HTML form. We use JavaScript to convert user input into a JSON document and save it to CouchDB. In the spirit of focusing on CouchDB, we won’t dwell on the JavaScript here. It’s a combination of Sofa-specific application code, CouchApp’s JavaScript helpers, and jQuery for interface elements. The basic story is that it watches for the user to click “Save,” and then applies some callbacks to the document before sending it to CouchDB.
+
+<div class="figure" id="figure/2">
+
+<img src="documents/02.png">
+
+<p class="caption">Figure 2. HTML listing for edit.html
+
+</div>
+
+<h3 id="saving">Saving a Document</h3>
+
+<p>The JavaScript that drives blog post creation and editing centers around the HTML form from <a href="#figure/2">Figure 2, “HTML listing for edit.html”</a>. The CouchApp jQuery plug-in provides some abstraction, so we don’t have to concern ourselves with the details of how the form is converted to a JSON document when the user hits the submit button. <code>$.CouchApp</code> also ensures that the user is logged in and makes her information available to the application. See <a href="#figure/3">Figure 3, “JavaScript callbacks for edit.html”</a>.
+
+<pre>
+$.CouchApp(function(app) {
+  app.loggedInNow(function(login) {
+</pre>
+
+<p>The first thing we do is ask the CouchApp library to make sure the user is logged in. Assuming the answer is yes, we’ll proceed to set up the page as an editor. This means we apply a JavaScript event handler to the form and specify callbacks we’d like to run on the document, both when it is loaded and when it saved.
+
+<div class="figure" id="figure/3">
+
+<img src="documents/03.png">
+
+<p class="caption">Figure 3. JavaScript callbacks for edit.html
+
+</div>
+
+<pre>
+    // w00t, we're logged in (according to the cookie)
+    $("#header").prepend('&lt;span id="login"&gt;'+login+'&lt;/span&gt;');
+    // setup CouchApp document/form system, adding app-specific callbacks
+    var B = new Blog(app);
+</pre>
+
+<p>Now that we know the user is logged in, we can render his username at the top of the page. The variable <code>B</code> is just a shortcut to some of the Sofa-specific blog rendering code. It contains methods for converting blog post bodies from Markdown to HTML, as well as a few other odds and ends. We pulled these functions into <code>blog.js</code> so we could keep them out of the way of main code.
+
+<pre>
+    var postForm = app.docForm("form#new-post", {
+      id : &lt;%= docid %&gt;,
+      fields : ["title", "body", "tags"],
+      template : {
+        type : "post",
+        format : "markdown",
+        author : login
+      },
+</pre>
+
+<p>CouchApp’s <code>app.docForm()</code> helper is a function to set up and maintain a correspondence between a CouchDB document and an HTML form. Let’s look at the first three arguments passed to it by Sofa. The <code>id</code> argument tells <code>docForm()</code> where to save the document. This can be null in the case of a new document. We set <code>fields</code> to an array of form elements that will correspond directly to JSON fields in the CouchDB document. Finally, the <code>template</code> argument is given a JavaScript object that will be used as the starting point, in the case of a new document. In this case, we ensure that the document has a type equal to “post,” and that the default format is Markdown. We also set the author to be the login name of the current user.
+
+<pre>
+      onLoad : function(doc) {
+        if (doc._id) {
+          B.editing(doc._id);
+          $('h1').html('Editing &lt;a href="../post/'+doc._id+'"&gt;'+doc._id+'&lt;/a&gt;');
+          $('#preview').before('&lt;input type="button" id="delete"
+              value="Delete Post"/&gt; ');
+          $("#delete").click(function() {
+            postForm.deleteDoc({
+              success: function(resp) {
+                $("h1").text("Deleted "+resp.id);
+                $('form#new-post input').attr('disabled', true);
+              }
+            });
+            return false;
+          });
+        }
+        $('label[for=body]').append(' &lt;em&gt;with '+(doc.format||'html')+'&lt;/em&gt;');
+</pre>
+
+<p>The <code>onLoad</code> callback is run when the document is loaded from CouchDB. It is useful for decorating the document before passing it to the form, or for setting up other user interface elements. In this case, we check to see if the document already has an ID. If it does, that means it’s been saved, so we create a button for deleting it and set up the callback to the delete function. It may look like a lot of code, but it’s pretty standard for Ajax applications. If there is one criticism to make of this section, it’s that the logic for creating the delete button could be moved to the <code>blog.js</code> file so we can keep more user-interface details out of the main flow.
+
+<pre>
+      },
+      beforeSave : function(doc) {
+        doc.html = B.formatBody(doc.body, doc.format);
+        if (!doc.created_at) {
+          doc.created_at = new Date();
+        }
+        if (!doc.slug) {
+          doc.slug = app.slugifyString(doc.title);
+          doc._id = doc.slug;
+        }
+        if(doc.tags) {
+          doc.tags = doc.tags.split(",");
+          for(var idx in doc.tags) {
+            doc.tags[idx] = $.trim(doc.tags[idx]);
+          }
+        }
+      },
+</pre>
+
+<p>The <code>beforeSave()</code> callback to <code>docForm</code> is run after the user clicks the submit button. In Sofa’s case, it manages setting the blog post’s timestamp, transforming the title into an acceptable document ID (for prettier URLs), and processing the document tags from a string into an array. It also runs the Markdown-to-HTML conversion in the browser so that once the document is saved, the rest of the application has direct access to the HTML.
+
+<pre>
+      success : function(resp) {
+        $("#saved").text("Saved _rev: "+resp.rev).fadeIn(500).fadeOut(3000);
+        B.editing(resp.id);
+      }
+    });
+</pre>
+
+<p>The last callback we use in Sofa is the <code>success</code> callback. It is fired when the document is successfully saved. In our case, we use it to flash a message to the user that lets her know she’s succeeded, as well as to add a link to the blog post so that when you create a blog post for the first time, you can click through to see its permalink page.
+
+<p>That’s it for the <code>docForm()</code> callbacks.
+
+<pre>
+    $("#preview").click(function() {
+      var doc = postForm.localDoc();
+      var html = B.formatBody(doc.body, doc.format);
+      $('#show-preview').html(html);
+      // scroll down
+      $('body').scrollTo('#show-preview', {duration: 500});
+    });
+</pre>
+
+<p>Sofa has a function to preview blog posts before saving them. Since this doesn’t affect how the document is saved, the code that watches for events from the “preview” button is not applied within the <code>docForm()</code> callbacks.
+
+<pre>
+  }, function() {
+    app.go('&lt;%= assets %&gt;/account.html#'+document.location);
+  });
+});
+</pre>
+
+<p>The last bit of code here is triggered when the user is not logged in. All it does is redirect him to the account page so that he can log in and try editing again.
+
+<h4 id="validation">Validation</h4>
+
+<p>Hopefully, you can see how the previous code will send a JSON document to CouchDB when the user clicks save. That’s great for creating a user interface, but it does nothing to protect the database from unwanted updates. This is where validation functions come into play. With a proper validation function, even a determined hacker cannot get unwanted documents into your database. Let’s look at how Sofa’s works. For more on validation functions, see <a href="validation.html">Chapter 7, Validation Functions</a>.
+
+<pre>
+function (newDoc, oldDoc, userCtx) {
+  // !code lib/validate.js
+</pre>
+
+<p>This line imports a library from Sofa that makes the rest of the function much more readable. It is just a wrapper around the basic ability to mark requests as either <code>forbidden</code> or <code>unauthorized</code>. In this chapter, we’ve concentrated on the business logic of the validation function. Just be aware that unless you use Sofa’s <code>validate.js</code>, you’ll need to work with the more primitive logic that the library abstracts.
+
+<pre>
+  unchanged("type");
+  unchanged("author");
+  unchanged("created_at");
+</pre>
+
+<p>These lines do just what they say. If the document’s <code>type</code>, <code>author</code>, or <code>created_at</code> fields are changed, they throw an error saying the update is forbidden. Note that these lines make no assumptions about the content of these fields. They merely state that updates must not change the content from one revision of the document to the next.
+
+<pre>
+  if (newDoc.created_at) dateFormat("created_at");
+</pre>
+
+<p>The <code>dateFormat</code> helper makes sure that the date (if one is provided) is in the format that Sofa’s views expect.
+
+<pre>
+  // docs with authors can only be saved by their author
+  // admin can author anything...
+  if (!isAdmin(userCtx) &amp;&amp; newDoc.author &amp;&amp; newDoc.author != userCtx.name) {
+      unauthorized("Only "+newDoc.author+" may edit this document.");
+  }
+</pre>
+
+<p>If the person saving the document is an admin, let the edit proceed. Otherwise, make certain that the author and the person saving the document are the same. This ensures that authors may edit only their own posts.
+
+<pre>
+  // authors and admins can always delete
+  if (newDoc._deleted) return true;
+</pre>
+
+<p>The next block of code will check the validity of various types of documents. However, deletions will normally not be valid according to those specifications, because their content is just <code>_deleted: true</code>, so we short-circut the validation function here.
+
+<pre>
+  if (newDoc.type == 'post') {
+    require("created_at", "author", "body", "html", "format", "title", "slug");
+    assert(newDoc.slug == newDoc._id, "Post slugs must be used as the _id.")
+  }
+}
+</pre>
+
+<p>Finally, we have the validation for the actual post document itself. Here we require the fields that are particular to the post document. Because we’ve validated that they are present, we can count on them in views and user interface code.
+
+<h4 id="first">Save Your First Post</h4>
+
+<p>Let’s see how this all works together! Fill out the form with some practice data, and hit “save” to see a success response.
+
+<p><a href="#figure/4">Figure 4, “JSON over HTTP to save the blog post”</a> shows how JavaScript has used HTTP to <em>PUT</em> the document to a URL constructed of the database name plus the document ID. It also shows how the document is just sent as a JSON string in the body of the PUT request. If you were to <em>GET</em> the document URL, you’d see the same set of JSON data, with the addition of the <code>_rev</code> parameter as applied by CouchDB.
+
+<div class="figure" id="figure/4">
+
+<img src="documents/04.png">
+
+<p class="caption">Figure 4. JSON over HTTP to save the blog post
+
+</div>
+
+<p>To see the JSON version of the document you’ve saved, you can also browse to it in Futon. Visit <em>http://127.0.0.1:5984/_utils/database.html?blog/_all_docs</em> and you should see a document with an ID corresponding to the one you just saved. Click it to see what Sofa is sending to CouchDB.
+
+<h3 id="wrap">Wrapping Up</h3>
+
+<p>We’ve covered how to design JSON formats for your application, how to enforce those designs with validation functions, and the basics of how documents are saved. In the next chapter, we’ll show how to load documents from CouchDB and display them in the browser.

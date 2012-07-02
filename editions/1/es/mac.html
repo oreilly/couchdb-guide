@@ -1,0 +1,79 @@
+<title>Installing on Mac OS X</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="unix.html">
+
+<link rel="next" href="windows.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="mac">Installing on Mac OS X</h2>
+
+<h3 id="couchdbx">CouchDBX</h3>
+
+<p>The easiest way to get started with CouchDB on Mac OS X is by downloading <a href="http://janl.github.com/couchdbx/">CouchDBX</a>. This unofficial application doesn’t install anything to your system and can be run with a single double-click. Note, however, that for more serious use, it is recommended that you do a traditional installation with something like <a href="http://github.com/mxcl/homebrew/">Homebrew</a>.
+
+<h3 id="homebrew">Homebrew</h3>
+
+<p>Homebrew is a recent addition to the software management tools on Mac OS X. Its premise is zero configuration, heavy optimizations, and a beer theme. Get Homebrew from <a href="http://github.com/mxcl/homebrew">http://github.com/mxcl/homebrew</a>. The installation instructions are minimal. Once you are set up, run:
+
+<pre>
+brew install couchdb
+</pre>
+
+<p>in the Terminal and wait until it is done. To start CouchDB, simply run:
+
+<pre>
+couchdb
+</pre>
+
+<p>to see all the startup options available to you, run:
+
+<pre>
+couchdb -h
+</pre>
+
+<p>This tells you how to run CouchDB in the background, among other useful hints.
+
+<p>To verify that CouchDB is indeed running, open your browser and visit <a href="http://127.0.0.1:5984/_utils/index.html">http://127.0.0.1:5984/_utils/index.html</a>.
+
+<h3 id="macports">MacPorts</h3>
+
+<p>MacPorts is the de facto package management tool for Mac OS X. While not an official part of the operating system, it can be used to simplify the process of installing FLOSS software on your machine. Before you can install CouchDB with MacPorts, you need to download and install <a href="http://www.macports.org/install.php">MacPorts</a>.
+
+<p>Make sure your MacPorts installation is up-to-date by running:
+
+<pre>
+sudo port selfupdate
+</pre>
+
+<p>You can install CouchDB with MacPorts by running:
+
+<pre>
+sudo port install couchdb
+</pre>
+
+<p>This command will install all of the necessary dependencies for CouchDB. If a dependency was already installed, MacPorts will not take care of upgrading the dependency to the newest version. To make sure that all of the dependencies are up-to-date, you should also run:
+
+<pre>
+sudo port upgrade couchdb
+</pre>
+
+<p>Mac OS X has a service management framework called <code>launchd</code> that can be used to start, stop, or manage system daemons. You can use this to start CouchDB automatically when the system boots up. If you want to add CouchDB to your <code>launchd</code> configuration, you should run:
+
+<pre>
+sudo launchctl load -w /opt/local/Library/LaunchDaemons/org.apache.couchdb.plist
+</pre>
+
+<p>After running this command, CouchDB should be available at:
+
+<blockquote>
+
+<a href="http://127.0.0.1:5984/_utils/index.html">http://127.0.0.1:5984/_utils/index.html</a>
+
+</blockquote>
+
+<p>CouchDB will also be started and stopped along with the operating system.
