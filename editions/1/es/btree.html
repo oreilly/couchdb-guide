@@ -1,0 +1,61 @@
+<title>The Power of B-trees</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="json.html">
+
+<link rel="next" href="colophon.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="btree">The Power of B-trees</h2>
+
+<p>CouchDB uses a data structure called a B-tree to index its documents and views. We’ll look at B-trees enough to understand the types of queries they support and how they are a good fit for CouchDB.
+
+<p>This is our first foray into CouchDB internals. To use CouchDB, you don’t need to know what’s going on under the hood, but if you understand how CouchDB performs its magic, you’ll be able to pull tricks of your own. Additionally, if you understand the consequences of the ways you are using CouchDB, you will end up with smarter systems.
+
+<p>If you weren’t looking closely, CouchDB would appear to be a B-tree manager with an HTTP interface.
+
+<div class="aside note">
+
+<p>CouchDB is actually using a B+ tree, which is a slight variation of the B-tree that trades a bit of (disk) space for speed. When we say <em>B-tree</em>, we mean CouchDB’s <em>B+ tree</em>.
+
+</div>
+
+<p>A B-tree is an excellent data structure for storing huge amounts of data for fast retrieval. When there are millions and billions of items in a B-tree, that’s when they get fun. B-trees are usually a shallow but wide data structure. While other trees can grow very high, a typical B-tree has a single-digit height, even with millions of entries. This is particularly interesting for CouchDB, where the leaves of the tree are stored on a slow medium such as a hard drive. Accessing any part of the tree for reading or writing requires visiting only a few nodes, which translates to a few head seeks (which are what make a hard drive slow), and because the operating system is likely to cache the upper tree nodes anyway, only the seek to the final leaf node is needed.
+
+<blockquote>
+
+<p>From a practical point of view, B-trees, therefore, guarantee an access time of less than 10 ms even for extremely large datasets.
+
+<p class="attribution">&mdash;Dr. Rudolf Bayer, inventor of the B-tree
+
+</blockquote>
+
+<p>CouchDB’s B-tree implementation is a bit different from the original. While it maintains all of the important properties, it adds Multi-Version Concurrency Control (MVCC) and an append-only design. B-trees are used to store the main database file as well as view indexes. One database is one B-tree, and one view index is one B-tree.
+
+<p>MVCC allows concurrent reads and writes without using a locking system. Writes are serialized, allowing only one write operation at any point in time for any single database. Write operations do not block reads, and there can be any number of read operations at any time. Each read operation is guaranteed a consistent view of the database. How this is accomplished is at the core of CouchDB’s storage model.
+
+<p>The short answer is that because CouchDB uses append-only files, the B-tree root node must be rewritten every time the file is updated. However, old portions of the file will never change, so every old B-tree root, should you happen to have a pointer to it, will also point to a consistent snapshot of the database.
+
+<p>Early in the book we explained how the MVCC system uses the document’s <code>_rev</code> value to ensure that only one person can change a document version. The B-tree is used to look up the existing <code>_rev</code> value for comparison. By the time a write is accepted, the B-tree can expect it to be an authoritative version.
+
+<p>Since old versions of documents are not overwritten or deleted when new versions come in, requests that are reading a particular version do not care if new ones are written at the same time. With an often changing document, there could be readers reading three different versions at the same time. Each version was the latest one when a particular client started reading it, but new versions were being written. From the point when a new version is <em>committed</em>, new readers will read the new version while old readers keep reading the old version.
+
+<p>In a B-tree, data is kept only in leaf nodes. CouchDB B-trees append data only to the database file that keeps the B-tree on disk and grows only at the end. Add a new document? The file grows at the end. Delete a document? That gets recorded at the end of the file. The consequence is a robust database file. Computers fail for plenty of reasons, such as power loss or failing hardware. Since CouchDB does not overwrite any existing data, it cannot corrupt anything that has been written and <em>committed</em> to disk already. See <a href="#figure/1">Figure 1, “Flat B-tree and append-only”</a>.
+
+<p>Committing is the process of updating the database file to reflect changes. This is done in the file footer, which is the last 4k of the database file. The footer is 2k in size and written twice in succession. First, CouchDB appends any changes to the file and then records the file’s new length in the first database footer. It then force-flushes all changes to disk. It then copies the first footer over to the second 2k of the file and force-flushes again.
+
+<div class="figure" id="figure/1">
+
+<img src="btree/01.png">
+
+<p class="caption">Figure 1. Flat B-tree and append-only
+
+</div>
+
+<p>If anywhere in this process a problem occurs—say, power is cut off and CouchDB is restarted later—the database file is in a consistent state and doesn’t need a checkup. CouchDB starts reading the database file backward. When it finds a footer pair, it makes some checks: if the first 2k are corrupt (a footer includes a checksum), CouchDB replaces it with the second footer and all is well. If the second footer is corrupt, CouchDB copies the first 2k over and all is well again. Only once both footers are flushed to disk successfully will CouchDB acknowledge that a write operation was successful. Data is never lost, and data on disk is never corrupted. This design is the reason for CouchDB having no <em>off</em> switch. You just terminate it when you are done.
+
+<p>There’s a lot more to say about B-trees in general, and if and how SSDs change the runtime behavior. The Wikipedia article on <a href="http://en.wikipedia.org/wiki/B-tree">B-trees</a> is a good starting point for further investigations. Scholarpedia includes <a href="http://www.scholarpedia.org/article/B-tree_and_UB-tree">notes</a> by Dr. Rudolf Bayer, inventor of the B-tree.
