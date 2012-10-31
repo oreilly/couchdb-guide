@@ -1,4 +1,4 @@
-<title>Why CouchDB?</title>
+<title>为什么选择CouchDB</title>
 
 <meta charset="utf-8">
 
@@ -10,95 +10,95 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="why">Why CouchDB?</h2>
+<h2 id="why">为什么选择CouchDB</h2>
 
-<p>Apache CouchDB is one of a new breed of database management systems. This chapter explains why there’s a need for new systems as well as the motivations behind building CouchDB.
+<p>Apache CouchDB是新型数据库管理系统的一种. 本章解释了为什么需要一种新系统以及开发构建CouchDB背后的动机.
 
-<p>As CouchDB developers, we’re naturally very excited to be using CouchDB. In this chapter we’ll share with you the reasons for our enthusiasm. We’ll show you how CouchDB’s schema-free document model is a better fit for common applications, how the built-in query engine is a powerful way to use and process your data, and how CouchDB’s design lends itself to modularization and scalability.
+<p>作为CouchDB开发者, 我们自然会对使用CouchDB感到很兴奋. 在本章中, 我们会和您分享我们这种热情的原因. 我们会向您展示, CouchDB与模式无关的(schema-free)文档模型如何更加适合于普通应用, 内置的查询引擎如何高效的使用和处理数据使用和处理数据的, 以及CouchDB的设计如何使它自己变得模块化和可扩展化.
 
-<h3 id="relax">Relax</h3>
+<h3 id="relax">放松</h3>
 
-<p>If there’s one word to describe CouchDB, it is <em>relax</em>. It is in the title of this book, it is the byline to CouchDB’s official logo, and when you start CouchDB, you see:
+<p>如果有一个词可以来形容CouchDB的话, 那就是<em>放松</em>. 它出现在这本书的题目中, 它是CouchDB官方LOGO的副标题, 并且当你启动CouchDB时, 你会看到:
 
 <pre>
 Apache CouchDB has started. Time to relax.
 </pre>
 
-<p>Why is relaxation important? Developer productivity roughly doubled in the last five years. The chief reason for the boost is more powerful tools that are easier to use. Take Ruby on Rails as an example. It is an infinitely complex framework, but it’s easy to get started with. Rails is a success story because of the core design focus on ease of use. This is one reason why CouchDB is relaxing: learning CouchDB and understanding its core concepts should feel natural to most everybody who has been doing any work on the Web. And it is still pretty easy to explain to non-technical people.
+<p>为什么放松如此重要? 开发者的生产效率在过去五年中大概翻了一番. 这种加速的首要原因便是有了更多的更加易用的工具. 就拿Ruby on Rails来作例子吧. 它本身是一个极其复杂的框架, 但是使用起来却相当的容易上手. Rails因为把易用性作为核心设计重点而成为了一个成功的故事. 这是CouchDB为什么要放松的一个原因: 学习CouchDB, 理解它的核心概念, 对于做过Web开发的大多数人而说应该会觉得自然而然. 并且对于非技术人员解释说明也应该相当的容易.
 
-<p>Getting out of the way when creative people try to build specialized solutions is in itself a core feature and one thing that CouchDB aims to get right. We found existing tools too cumbersome to work with during development or in production, and decided to focus on making CouchDB easy, even a pleasure, to use. Chapters <a href="tour.html">3</a> and <a href="api.html">4</a> will demonstrate the intuitive HTTP-based REST API.
+<p>当那些富有创意的人们想要构建一个特殊的解决方法时, 让出道路, 是CouchDB自身的一个核心功能, 也是CouchDB目标要做好的一件事. 我们发现现有的工具在开发或生产环境中显然过于笨重, 所以决定将注意力放在如何让CouchDB在使用中显然简单甚至是一种乐趣. 第<a href="tour.html">3</a>和第<a href="api.html">4</a>章会演示直观的基于HTTP的REST API.
 
-<p>Another area of relaxation for CouchDB users is the production setting. If you have a live running application, CouchDB again goes out of its way to avoid troubling you. Its internal architecture is fault-tolerant, and failures occur in a controlled environment and are dealt with gracefully. Single problems do not cascade through an entire server system but stay isolated in single requests.
+<p>CouchDB用户另外一个可以感到放松的地方是生产环境设置. 如果您有一个在线的应用, CouchDB又一次让出路来避免来麻烦你. 它的内部架构是容错的, 失败会发生在一个可控的环境并且被优雅的处理. 单一的问题不会波及到整个服务系统, 而是被孤立在一个单一的请求.
 
-<p>CouchDB’s core concepts are simple (yet powerful) and well understood. Operations teams (if you have a team; otherwise, that’s you) do not have to fear random behavior and untraceable errors. If anything should go wrong, you can easily find out what the problem is—but these situations are rare.
+<p>CouchDB的核心概念是简单的(也是强大的)并且容易理解. 运维团队(容易您有一个的话, 否则, 就是您自己)不用去害怕随机的行为和不可追踪的错误. 如果真有什么错误发生了, 您可以相当容易的发现问题所在--但是这种情况很少发生.
 
-<p>CouchDB is also designed to handle varying traffic gracefully. For instance, if a website is experiencing a sudden spike in traffic, CouchDB will generally absorb a lot of concurrent requests without falling over. It may take a little more time for each request, but they all get answered. When the spike is over, CouchDB will work with regular speed again.
+<p>CouchDB同样被设计为使用优雅的处理流量的变化. 假设您有一个网站遭遇了突然的流量高峰. CouchDB一般会吸收大量的并且请求而不会挂掉; 它会使用一点点更多的时间来让每个请求结束, 但是这些请求都会得到响应. 当这个高峰过去后, CouchDB会再次和之前一样的快速运行.
 
-<p>The third area of relaxation is growing and shrinking the underlying hardware of your application. This is commonly referred to as <em>scaling</em>. CouchDB enforces a set of limits on the programmer. On first look, CouchDB might seem inflexible, but some features are left out by design for the simple reason that if CouchDB supported them, it would allow a programmer to create applications that couldn’t deal with scaling up or down. We’ll explore the whole matter of scaling CouchDB in <a href="index.html#part/iv">Part IV, “Deploying CouchDB”</a>.
+<p>第三个放松的地方是增加或收缩应用的底层硬件的时候. 这通常也被叫做<em>可扩展性</em>. CouchDB对程序员强制执行了一些限制. 第一眼看去, CouchDB时常被认为不够灵活, 但有些特性是因为为了保持设计的简单性而放弃的, 那是因为如果CouchDB支持了这些特性, 那么创建的应用就没办法很好的向上或向下进行扩展. 我们会在<a href="index.html#part/iv">第四部分, "部署CouchDB"里再来讲解关于如何扩展CouchDB的问题</a>.
 
-<p>In a nutshell: CouchDB doesn’t let you do things that would get you in trouble later on. This sometimes means you’ll have to unlearn best practices you might have picked up in your current or past work. <a href="recipes.html">Chapter 24, Recipes</a> contains a list of common tasks and how to solve them in CouchDB.
+<p>简言之: CouchDB不会让你做以后会让你陷入麻烦的事情. 这通常意味着要忘却一些您在现在或者曾经工作中学到的一些"最佳实践". "Recipes"这一章包含了一个普通任务的列表并且如何在CouchDB中解决他们的方法.
 
-<h3 id="different">A Different Way to Model Your Data</h3>
+<h3 id="different">一种不同的方法来建模你的数据</h3>
 
-<p>We believe that CouchDB will drastically change the way you build document-based applications. CouchDB combines an intuitive document storage model with a powerful query engine in a way that’s so simple you’ll probably be tempted to ask, “Why has no one built something like this before?”
+<p>我们相信CouchDB会很大程度上的改变您开发以文档为基础应用的方法. CouchDB用一个简单的方式结合了直观的文档存储模型和一个强大的查询引擎, 它是如此简单以至于你可能会很想问"为什么以前没人开发出类似的东西呢?"
 
 <blockquote>
 
-<p>Django may be built <em>for</em> the Web, but CouchDB is built <em>of</em> the Web. I’ve never seen software that so completely embraces the philosophies behind HTTP. CouchDB makes Django look old-school in the same way that Django makes ASP look outdated.
+<p>Django可以说是<em>为</em>Web而构建, 可CouchDB是<em>以</em>Web而构建的. 我以前从来没有看到到一款软件是如此完全得拥抱了HTTP背后的哲学. CouchDB使得Django看起来像是很老旧的东西, 就像Django让ASP显得过时了一样.
 
-<p class="attribution">&mdash;Jacob Kaplan-Moss, Django developer
+<p class="attribution">&mdash;Jacob Kaplan-Moss, Django开发者
 
 </blockquote>
 
-<p>CouchDB’s design borrows heavily from web architecture and the concepts of resources, methods, and representations. It augments this with powerful ways to query, map, combine, and filter your data. Add fault tolerance, extreme scalability, and incremental replication, and CouchDB defines a sweet spot for document databases.
+<p>CouchDB的设计大量的借用了Web架构以及资源(resources), 方法(methods)和展示(representations)的概念. 它增添了强大的方式来查询, 匹配, 组合和过滤你的数据. 增加了容错性, 极高的可扩展性和增量的复制, 并且CouchDB为文档型数据库作了一个很好的定义.
 
-<h3 id="better">A Better Fit for Common Applications</h3>
+<h3 id="better">一般应用的一个更好的选择</h3>
 
-<p>We write software to improve our lives and the lives of others. Usually this involves taking some mundane information—such as contacts, invoices, or receipts—and manipulating it using a computer application. CouchDB is a great fit for common applications like this because it embraces the natural idea of evolving, self-contained documents as the very core of its data model.
+<p>我们写软件来改进自己的生活以及他人的生活. 通常, 这牵扯到一些世俗的信息, 比如联系人, 账单, 收货单, 然后用计算机应用程序来处理它们. 对于类似此类的应用, CouchDB是一个非常棒的选择, 因为它拥抱了演变的,自包含的文档这种自然而然的概念作为它的最核心的数据模型.
 
-<h4 id="containment">Self-Contained Data</h4>
+<h4 id="containment">自包含的数据</h4>
 
-<p>An invoice contains all the pertinent information about a single transaction—the seller, the buyer, the date, and a list of the items or services sold. As shown in <a href="#figure/1">Figure 1, “Self-contained documents”</a>, there’s no abstract reference on this piece of paper that points to some other piece of paper with the seller’s name and address. Accountants appreciate the simplicity of having everything in one place. And given the choice, programmers appreciate that, too.
+<p>一个账单包含了一个交易的所有相关信息: 卖家, 买家, 日期, 和一个售出物品或服务的清单. 如<a href="#figure/1">图1, "自包含的文档"</a>所示, 在这张小纸条上不会包含抽象的指向其它写有卖家的名字和地址的小纸条的引用. 会计师喜欢这种所有东西放在一个地方的简单性. 如果有选择的话, 程序员也会喜欢.
 
 <div class="figure" id="figure/1">
 
 <img src="why/01.png">
 
-<p class="caption">Figure 1. Self-contained documents
+<p class="caption">图1. 自包含数据的文档
 
 </div>
 
-<p>Yet using references is exactly how we model our data in a relational database! Each invoice is stored in a table as a row that refers to other rows in other tables—one row for seller information, one for the buyer, one row for each item billed, and more rows still to describe the item details, manufacturer details, and so on and so forth.
+<p>而这正是我们在关系数据库里建模数据时做的事情! 每个账单被存储在一张表里, 其中一行指向其他表里的其他行: 一行指向卖家的信息, 一行指向买家的信息, 各一行指向每种消费的物品的信息, 还有更多的行来描述物品的细节, 制造商细节等等等等.
 
-<p>This isn’t meant as a detraction of the relational model, which is widely applicable and extremely useful for a number of reasons. Hopefully, though, it illustrates the point that sometimes your model may not “fit” your data in the way it occurs in the real world.
+<p>这不是对关系模型的一种诽谤, 关系模型被广泛的接受并且因为很多原因非常的有用. 但是上节表达了这么一种观点, 有时候, 你的模型并不适合你想如何处理的数据的方式.
 
-<p>Let’s take a look at the humble contact database to illustrate a different way of modeling data, one that more closely “fits” its real-world counterpart—a pile of business cards. Much like our invoice example, a business card contains all the important information, right there on the cardstock. We call this “self-contained” data, and it’s an important concept in understanding document databases like CouchDB.
+<p>让我们来看看联系人数据库, 以此来说明一种不同的建模数据的方式, 一种更加接近于真实世界的方法: 一堆名片. 和我们前面所说的账单那个例子类似, 名片包含了所有的重要信息, 全写在了卡片上. 我们把它叫做"自包含"的数据, 这是理解像CouchDB这样的文档型数据库的一个重要概念.
 
-<h4 id="information">Syntax and Semantics</h4>
+<h4 id="information">语法与语义</h4>
 
-<p>Most business cards contain roughly the same information—someone’s identity, an affiliation, and some contact information. While the exact form of this information can vary between business cards, the general information being conveyed remains the same, and we’re easily able to recognize it as a business card. In this sense, we can describe a business card as a <em>real-world document</em>.
+<p>大部分名片包含了大致相同的信息: 某人的名字, 职业, 和一些联系信息. 此类信息的准确形式却以不同的名片而不同, 但一般包含的信息保持相同, 我们可以轻松的认出这是一张名片. 从这种意义上来说, 我们可以把一张名片描述成一个<em>真实世界的文档</em>.
 
-<p>Jan’s business card might contain a phone number but no fax number, whereas J. Chris’s business card contains both a phone and a fax number. Jan does not have to make his lack of a fax machine explicit by writing something as ridiculous as “Fax: None” on the business card. Instead, simply omitting a fax number implies that he doesn’t have one.
+<p>Jan的名片可能包含一个电话号码但是却没有传真号码, 而Chris的名片却包含电话和传真号码. Jan不用因为他少了传真号码而刻意的在名片上莫名其妙的写上"传真: 无". 他会简单的不写传真号码, 以此表示他没有传真号码.
 
-<p>We can see that real-world documents of the same type, such as business cards, tend to be very similar in <em>semantics</em>—the sort of information they carry—but can vary hugely in <em>syntax</em>, or how that information is structured. As human beings, we’re naturally comfortable dealing with this kind of variation.
+<p>我们可以看到真实世界同样类型的文档, 比如名片, 在语义上, 在它们包含的信息类型上, 总是相似的; 但是在语法上, 在这种信息是如何被结构化上, 却大相径庭. 对于人类来说, 我们能够很自然的处理这种变化.
 
-<p>While a traditional relational database requires you to model your data <em>up front</em>, CouchDB’s schema-free design unburdens you with a powerful way to aggregate your data <em>after the fact</em>, just like we do with real-world documents. We’ll look in depth at how to design applications with this underlying storage paradigm.
+<p>然而, 一个传统的关系数据库要求你<em>事先</em>建模好你的数据, CouchDB与模式无关(schema-free)的设计使你可以卸下这个包袱, 它给了你一个在<em>事后</em>再来聚合数据的强大方法, 就像我们在处理真实世界文档时所做的那样. 我们会深入了解如何在这种模式下设计应用.</p>
 
-<h3 id="blocks">Building Blocks for Larger Systems</h3>
+<h3 id="blocks">为大型系统建立分块</h3>
 
-<p>CouchDB is a storage system useful on its own. You can build many applications with the tools CouchDB gives you. But CouchDB is designed with a bigger picture in mind. Its components can be used as building blocks that solve storage problems in slightly different ways for larger and more complex systems.
+<p>CouchDB自身是一个有用的存储系统. 你可以用CouchDB给你的工具建立许多应用. 但是, CouchDB在设计时, 我们的脑子里有一个更大的蓝图. 它的组件可以用一种稍微不同的方式来为更加大型, 更加复杂的系统建立分块, 解决存储问题.
 
-<p>Whether you need a system that’s crazy fast but isn’t too concerned with reliability (think logging), or one that guarantees storage in two or more physically separated locations for reliability, but you’re willing to take a performance hit, CouchDB lets you build these systems.
+<p>不管你是否需要一个极快的速度运行, 但却不大关心可靠性(比如日志)的系统或者一个把数据放在两个或多个物理地址的需要高可靠性的系统, 你都会愿意有更高的性能. 因为可靠性更加重要, CouchDB能让你构建这样的系统.
 
-<p>There are a multitude of knobs you could turn to make a system work better in one area, but you’ll affect another area when doing so. One example would be the CAP theorem discussed in the next chapter. To give you an idea of other things that affect storage systems, see Figures <a href="#figure/2">2</a> and <a href="#figure/3">3</a>.
+<p>让一个系统在某一方面表现的更好, 你可以有做很多事情, 但是不管你怎么做, 总是会影响到另外的方面. 我们的第一个例子是下一章要讲CAP定理. 为了给你一个其他因素会如何影响一个存储系统的概念, 见图<a href="#figure/2">2</a>和图<a href="#figure/3">3</a>.
 
-<p>By reducing latency for a given system (and that is true not only for storage systems), you affect concurrency and throughput capabilities.
+<p>减少一个系统的延时(并且这并不只是对于存储系统来说的), 就会影响并发和处理能力
 
 <div class="figure" id="figure/2">
 
 <img src="why/02.png">
 
-<p class="caption">Figure 2. Throughput, latency, or concurrency
+<p class="caption">图2. 处理能力, 延时, 与并发能力
 
 </div>
 
@@ -106,54 +106,54 @@ Apache CouchDB has started. Time to relax.
 
 <img src="why/03.png">
 
-<p class="caption">Figure 3. Scaling: read requests, write requests, or data
+<p class="caption">图3. 扩展: 写请求, 读请求, 与数据
 
 </div>
 
-<p>When you want to scale out, there are three distinct issues to deal with: scaling read requests, write requests, and data. Orthogonal to all three and to the items shown in Figures <a href="#figure/2">2</a> and <a href="#figure/3">3</a> are many more attributes like reliability or simplicity. You can draw many of these graphs that show how different features or attributes pull into different directions and thus shape the system they describe.
+<p>当你想要扩展时, 有三个明显的问题需会遇到: 扩展读的请求, 写的请求和数据. 这三者是正相关的, 并且图<a href="#figure/2">2</a>和图<a href="#figure/3">3</a>之外其他的属性比如可靠性和简单性也是正相关的. 你可以画出很多像这样的图表. 不同的特性或属性指向不同的方向并得出它们所描述的系统的图形.
 
-<p>CouchDB is very flexible and gives you enough building blocks to create a system shaped to suit your exact problem. That’s not saying that CouchDB can be bent to solve any problem—CouchDB is no silver bullet—but in the area of data storage, it can get you a long way.
+<p>CouchDB非常的灵活并且给你足够的分块来使系统适合于你特定的问题. 这也并不是说CouchDB可以任意变化来解决所有的问题: CouchDB没有银弹, 但是数据存储这方面, 它可以给你很多东西.
 
-<h4 id="replication">CouchDB Replication</h4>
+<h4 id="replication">CouchDB的复制</h4>
 
-<p>CouchDB replication is one of these building blocks. Its fundamental function is to synchronize two or more CouchDB databases. This may sound simple, but the simplicity is key to allowing replication to solve a number of problems: reliably synchronize databases between multiple machines for redundant data storage; distribute data to a cluster of CouchDB instances that share a subset of the total number of requests that hit the cluster (load balancing); and distribute data between physically distant locations, such as one office in New York and another in Tokyo.
+<p>CouchDB复制是这些分块中的一个. 它的基本功能是同步两个或更多个CouchDB数据库. 这听起来可能很简单, 但这种简单性是让复制可以解决很多问题的关键: 可靠的在多台机器上的冗余数据的同步; 在一个CouchDB实例集群上的分布式的数据同步, 集群分享所有请求的一个子集(负载均衡); 不同物理地点间的分布式的数据同步, 比如一个在纽约的办公室和另一个在东京的.
 
-<p>CouchDB replication uses the same REST API all clients use. HTTP is ubiquitous and well understood. Replication works incrementally; that is, if during replication anything goes wrong, like dropping your network connection, it will pick up where it left off the next time it runs. It also only transfers data that is needed to synchronize databases.
+<p>CouchDB复制的所有客户端都使用的REST API. HTTP很普遍并且容易理解. 复制是增量的, 这意味着, 如果在复制过程中, 有什么错误发生了, 比如网络连接断掉了, 下次复制开始的时候它会从上次断掉的地方继续. 复制也只会传输那些需要同步的数据.
 
-<p>A core assumption CouchDB makes is that things can go wrong, like network connection troubles, and it is designed for graceful error recovery instead of assuming all will be well. The replication system’s incremental design shows that best. The ideas behind “things that can go wrong” are embodied in the <a href="http://en.wikipedia.org/wiki/Fallacies_of_Distributed_Computing">Fallacies of Distributed Computing</a>:
+<p>CouchDB的一个核心的假设便是, 错误可以发生, 比如网络连接中断了, 它被设计为可以优雅的进行错误恢复, 而不是假设所有事情都能顺利进行. 复制系统的增量设计最好的展示了这一点. "错误可以发生"背后的观点在<a href="http://en.wikipedia.org/wiki/Fallacies_of_Distributed_Computing">分布式计算的谬误</a>这里有很好的解释:
 
 <ol>
 
-<li>The network is reliable.</li>
+<li>网络是可靠的.</li>
 
-<li>Latency is zero.</li>
+<li>延时为0.</li>
 
-<li>Bandwidth is infinite.</li>
+<li>带宽是无限大的.</li>
 
-<li>The network is secure.</li>
+<li>网络是安全的.</li>
 
-<li>Topology doesn’t change.</li>
+<li>拓扑不变.</li>
 
-<li>There is one administrator.</li>
+<li>管理员存在.</li>
 
-<li>Transport cost is zero.</li>
+<li>数据传输成本为0.</li>
 
-<li>The network is homogeneous.</li>
+<li>网络是同类型的.</li>
 
 </ol>
 
-<p>Existing tools often try to hide the fact that there is a network and that any or all of the previous conditions don’t exist for a particular system. This usually results in fatal error scenarios when something finally goes wrong. In contrast, CouchDB doesn’t try to hide the network; it just handles errors gracefully and lets you know when actions on your end are required.
+<p>现在的工具经常试图来隐藏这些问题, 它们假设对于特定系统, 会有这么一个网络, 没有上述的任一问题或所有问题. 当错误最后终于发生的时候, 这些系统就会崩溃. 相对的, CouchDB不打算隐藏网络问题, 它只是优雅的进行处理错误, 然后在当需要你进行处理的时候通知你.
 
-<h3 id="local">Local Data Is King</h3>
+<h3 id="local">本地数据为王</h3>
 
-<p>CouchDB takes quite a few lessons learned from the Web, but there is one thing that could be improved about the Web: latency. Whenever you have to wait for an application to respond or a website to render, you almost always wait for a network connection that isn’t as fast as you want it at that point. Waiting a few seconds instead of milliseconds greatly affects user experience and thus user satisfaction.
+<p>CouchDB从Web上学到了不少的东西, 但是有一个事情Web做的并不好: 延时. 每当你要等待一个应用给你响应或者一个网站展现给你的时候, 你总是在等待一个在这一时刻不够快的网络连接. 相比于等待几毫秒, 等待几秒极大的影响了用户体验以及用户满意度.
 
-<p>What do you do when you are offline? This happens all the time—your DSL or cable provider has issues, or your iPhone, G1, or Blackberry has no bars, and no connectivity means no way to get to your data.
+<p>更糟的是: 当你离线的时候你怎么办. 这种情况总是会发生, 你的DSL或者网络提供商出现了问题, 你的iPhone, G1或者Blackberry没有信号了. 没有网络连接, 就没有方法得到你的数据.
 
-<p>CouchDB can solve this scenario as well, and this is where scaling is important again. This time it is scaling down. Imagine CouchDB installed on phones and other mobile devices that can synchronize data with centrally hosted CouchDBs when they are on a network. The synchronization is not bound by user interface constraints like subsecond response times. It is easier to tune for high bandwidth and higher latency than for low bandwidth and very low latency. Mobile applications can then use the local CouchDB to fetch data, and since no remote networking is required for that, latency is low by default.
+<p>CouchDB可以解决这种问题, 同时这也又一次说明可扩展性的重要. 只是这次是向下扩展. 想像一下安装在手机或其他移动设备的CouchDB, 当它们在线的时候可以和一个中心的CouchDB进行同步. 同步没有用户界面的限制, 比如需要小于1秒的响应时间之类的约束. 对高带宽和高延时作优化要比对低带宽和低延时作优化简单. 移动应用然后可以使用本地CouchDB来取得数据因而不再需要远程网络, 这样默认的, 延时就小了.
 
-<p>Can you really use CouchDB on a phone? Erlang, CouchDB’s implementation language has been designed to run on embedded devices magnitudes smaller and less powerful than today’s phones.
+<p>但是, 手机上的CouchDB, 能实现吗? Erlang, CouchDB的实现语言被设计成可以在比现在的手机更小, 处理能力更弱的嵌入式设备上运行.
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">收尾</h3>
 
-<p>The next chapter further explores the distributed nature of CouchDB. We should have given you enough bites to whet your interest. Let’s go!
+<p>下一节会更加深入的讲解CouchDB的分布式特性. 我们应该已经激起了你的兴趣的吧. 让我们继续.
