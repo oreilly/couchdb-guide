@@ -1,0 +1,464 @@
+<title>Recipes</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="performance.html">
+
+<link rel="next" href="unix.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="recipes">Recipes</h2>
+
+<p>This chapter shows some common tasks and how to solve them with CouchDB using best practices and easy-to-follow step-by-step instructions.
+
+<h3 id="banking">Banking</h3>
+
+<p>Banks are serious business. They need serious databases to store serious transactions and serious account information. They can’t lose any money. Ever. They also can’t create money. A bank must be in balance. All the time.
+
+<p>Conventional wisdom says a database needs to support <em>transactions</em> to be taken seriously. CouchDB does not support transactions in the traditional sense (although it works transactionally), so you could conclude CouchDB is not well suited to store bank data. Besides, would you trust your money to a couch? Well, we would. This chapter explains why.
+
+<h4 id="erasers">Accountants Don’t Use Erasers</h4>
+
+<p>Say you want to give $100 to your cousin Paul for the New York cheesecake he sent to you. Back in the day, you had to travel all the way to New York and hand Paul the money, or you could send it via (paper) mail. Both methods were considerably inconvenient, so people started looking for alternatives. At one point, banks offered to take care of the money and make sure it arrived at Paul’s bank safely without headaches. Of course, they’d charge for the convenience, but you’d be happy to pay a little fee if it could save a trip to New York. Behind the scenes, the bank would send somebody with your money to give it to Paul’s bank—the same procedure, but another person was dealing with the trouble. Banks could also batch money transfers; instead of sending each order on its own, they could collect all transfers to New York for a week and send them all at once. In case of any problems—say, the recipient was no longer a customer of the bank (remember, it used to take weeks to travel from one coast to the other)—the money was sent back to the originating account.
+
+<p>Eventually, the modern banking system was put in place and the actual sending of money back and forth could be stopped (much to the disdain of highwaymen). Banks had money <em>on paper</em>, which they could send around without actually sending valuables. The old concept is stuck in our heads though. To send somebody money from our bank account, the bank needs to take the notes out of the account and bring them to the receiving account. But nowadays we’re used to things happen instantaneously. It takes just a few clicks to order goods from Amazon and have them placed into the mail, so why should a banking transaction take any longer?
+
+<p>Banks are all electronic these days (and have been for a while). When we issue a money transfer, we expect it to go through immediately, and we expect it to work in the way it worked back in the day: take money from my account, add it to Paul’s account, and if anything goes wrong, put it back in my account. While this is logically what happens, that’s not quite how it works behind the scenes, and hasn’t since way before computers were used for banking.
+
+<p>When you go to your bank and ask it to send money to Paul, the accountant will <em>start a transaction</em> by noting down that you ordered the sending of the money. The transaction will include the date, amount, and recipient. Remember that banks always need to be in balance. The money taken from your account cannot vanish. The accountant will move the money into an <em>in-transit</em> account that the bank maintains for you. Your account balance at this point is an aggregation of your current balance and the transactions in the in-transit account. Now the bank checks whether Paul’s account is what you say it is and whether the money could arrive there safely. If that’s the case, the money is moved in another single transaction from the in-transit account to Paul’s account. Everything is in balance. Notice how there are multiple independent transactions, not one big transaction that combines a number of actions.
+
+<p>Now let’s consider an error case: say Paul’s account no longer exists. The bank finds this out while performing the batch operation of all the in-transit transactions that need to be performed. A second transaction is generated that moves the money back from the in-transit account to your bank account. Note that the transaction that moved the money out of your account is <em>not</em> undone. Rather, a second transaction that does the reverse action is created.
+
+<p>Here’s another error case: say you don’t have sufficient funds to send $100 to Paul. This will be checked by the accountant (or software) before the bank creates any money-deducting transaction. For accountability, a bank cannot pretend an action didn’t happen; it has to record every action minutely in a log. Undoing is done explicitly by performing a reverse action, not by reverting or removing an existing transaction. “Accountants don’t use erasers” is a quote from Pat Helland, a senior architect of transactional systems who worked at Microsoft and Amazon.
+
+<p>To rehash, a <em>transaction</em> can succeed or fail, but nothing in between. The only operation that CouchDB guarantees to have succeed or fail is a single document write. All operations that comprise a transaction need to be combined into a single document. If business logic detects that an error occurred (e.g., not enough funds), a reverse transaction needs to be created.
+
+<p>Let’s look at a CouchDB example. We mentioned earlier that your account balance is an aggregated value. If we stick to this picture, things become downright easy. Instead of updating the balance of two accounts (yours and Paul’s, or yours and the in-transit account), we simply create a single transaction document that describes what we’re doing and use a view to aggregate your account balance.
+
+<p>Let’s consider a bunch of transactions:
+
+<pre>
+...
+{"from":"Jan","to":"Paul","amount":100}
+{"from":"Paul","to":"Steve","amount":20}
+{"from":"Work","to":"Jan","amount":200}
+...
+</pre>
+
+<p>Single document writes in CouchDB are atomic. Querying a view forces an update to the view index with all changes to all documents. The view result is always consistent with the data in our documents. This guarantees that our bank is always in balance. There are many more transactions, of course, but these will do for illustration purposes.
+
+<p>How do we read the current account balance? Easy—create a MapReduce view:
+
+<pre>
+function(transaction) {
+  emit(transaction.from, transaction.amount * -1);
+  emit(transaction.to, transaction.amount);
+}
+</pre>
+
+<pre>
+function(keys, values) {
+  return sum(values);
+}
+</pre>
+
+<p>Doesn’t look too hard, does it? We’ll store this in a view <code>balance</code> in a <code>_design/account</code> document. Let’s find out Jan’s balance:
+
+<pre>
+curl 'http://127.0.0.1:5984/bank/_design/account/_view/balance?key="Jan"'
+</pre>
+
+<p>CouchDB replies:
+
+<pre>
+{"rows":[
+{"key":null,"value":100}
+]}
+</pre>
+
+<p>Looks good! Now let’s see if our bank is actually in balance. The sum of all transactions should be zero:
+
+<pre>
+curl http://127.0.0.1:5984/bank/_design/account/_view/balance
+</pre>
+
+<p>CouchDB replies:
+
+<pre>
+{"rows":[
+{"key":null,"value":0}
+]}
+</pre>
+
+<h4 id="wrap">Wrapping Up</h4>
+
+<p>This should explain that applications with strong consistency requirements can use CouchDB if it is possible to break up bigger transactions into smaller ones. A bank is a good enough approximation of a serious business, so you can be safe modeling your important business logic into small CouchDB transactions.
+
+<h3 id="ordering">Ordering Lists</h3>
+
+<p>Views let you sort things by any value of your data—even complex JSON keys are possible, as we’ve seen in earlier chapters. Sorting by date is very useful for allowing users to find things quickly; a name is much easier to find in a list of names that is sorted alphabetically. Humans naturally resort to a divide-and-conquer algorithm (sound familiar?) and don’t consider a large part of the input set because they know the name won’t show up there. Likewise, sorting by number and date helps a great deal to let users manage their ever-increasing amounts of data.
+
+<p>There’s another sorting type that is a little more fuzzy. Search engines show you results in order of relevance. That relevance is what the search engine thinks is most relevant to you given your search term (and potential search and surfing history). There are other systems trying to infer from earlier data what is most relevant to you, but they have the near-to-impossible task of guessing what a user is interested in. Computers are notoriously bad at guessing.
+
+<p>The easiest way for a computer to figure out what’s most relevant for a user is to let the user prioritize things. Take a to-do application: it allows users to reorder to-do items so they know what they need to work on next. The underlying problem—keeping a user-defined sorting order—can be found in a number of other places.
+
+<h4 id="integers">A List of Integers</h4>
+
+<p>Let’s stick with the to-do application example. The naïve approach is pretty easy: with each to-do item we store an integer that specifies the location in a list. We use a view to get all to-do items in the right order.
+
+<p>First, we need some example documents:
+
+<pre>
+{
+  "title":"Remember the Milk",
+  "date":"2009-07-22T09:53:37",
+  "sort_order":2
+}
+
+{
+  "title":"Call Fred",
+  "date":"2009-07-21T19:41:34",
+  "sort_order":3
+}
+
+{
+  "title":"Gift for Amy",
+  "date":"2009-07-19T17:33:29",
+  "sort_order":4
+}
+
+{
+  "title":"Laundry",
+  "date":"2009-07-22T14:23:11",
+  "sort_order":1
+}
+</pre>
+
+<p>Next, we create a view with a simple map function that emits rows that are then sorted by the <code>sort_order</code> field of our documents. The view’s result looks like we’d expect:
+
+<pre>
+function(todo) {
+  if(todo.sort_order &amp;&amp; todo.title) {
+    emit(todo.sort_order, todo.title);
+  }
+}
+</pre>
+
+<pre>
+{
+  "total_rows": 4,
+  "offset": 0,
+  "rows": [
+    {
+      "key":1,
+      "value":"Laundry",
+      "id":"..."
+    },
+    {
+      "key":2,
+      "value":"Remember the Milk",
+      "id":"..."
+    },
+    {
+      "key":3,
+      "value":"Call Fred",
+      "id":"..."
+    },
+    {
+      "key":4,
+      "value":"Gift for Amy",
+      "id":"..."
+    }
+  ]
+}
+</pre>
+
+<p>That looks reasonably easy, but can you spot the problem? Here’s a hint: what do you have to do if getting a gift for Amy becomes a higher priority than remembering the milk? Conceptually, the work required is simple:
+
+<ol>
+
+<li>Assign “Gift for Amy” the <code>sort_order</code> of “Remember the Milk.”</li>
+
+<li>Increment the <code>sort_order</code> of “Remember the Milk” and <em>all</em> items that follow by one.</li>
+
+</ol>
+
+<p>Under the hood, this is a lot of work. With CouchDB you’d have to load every document, increment the <code>sort_order</code>, and save it back. If you have a lot of to-do items (I do), then this is some significant work. Maybe there’s a better approach.
+
+<h4 id="floats">A List of Floats</h4>
+
+<p>The fix is simple: instead of using an integer to specify the sort order, we use a float:
+
+<pre>
+{
+  "title":"Remember the Milk",
+  "date":"2009-07-22T09:53:37",
+  "sort_order":0.2
+}
+
+{
+  "title":"Call Fred",
+  "date":"2009-07-21T19:41:34",
+  "sort_order":0.3
+}
+
+{
+  "title":"Gift for Amy",
+  "date":"2009-07-19T17:33:29",
+  "sort_order":0.4
+}
+
+{
+  "title":"Laundry",
+  "date":"2009-07-22T14:23:11",
+  "sort_order":0.1
+}
+</pre>
+
+<p>The view stays the same. Reading this is as easy as the previous approach. Reordering becomes much easier now. The application frontend can keep a copy of the <code>sort_order</code> values around, so when we move an item and store the move, we not only have available the new position, but also the <code>sort_order</code> value for the two new surrounding items.
+
+<p>Let’s move “Gift for Amy” so it’s above “Remember the Milk.” The surrounding <code>sort_order</code>s in the target position are <code>0.1</code> and <code>0.2</code>. To store “Gift for Amy” with the correct <code>sort_order</code>, we simply use the median of the two surrounding values: <code>(0.1 + 0.2) / 2 = 0.3 / 2 = 0.15</code>.
+
+<p>If we query the view again, we now get the desired result:
+
+<pre>
+{
+  "total_rows": 4,
+  "offset": 0,
+  "rows": [
+    {
+      "key":0.1,
+      "value":"Laundry",
+      "id":"..."
+    },
+    {
+      "key":0.15,
+      "value":"Gift for Amy",
+      "id":"..."
+    },
+    {
+      "key":0.2,
+      "value":"Remember the Milk",
+      "id":"..."
+    },
+    {
+      "key":0.3,
+      "value":"Call Fred",
+      "id":"..."
+    }
+  ]
+}
+</pre>
+
+<p>The downside of this approach is that with an increasing number of reorderings, float precision can become an issue as digits “grow” infinitely. One solution is not to care and expect that a single user will not exceed any limits. Alternatively, an administrative task can reset the whole list to single decimals when a user is not active.
+
+<p>The advantage of this approach is that you have to touch only a single document, which is efficient for storing the new ordering of a list and updating the view that maintains the ordered index since only the changed document has to be incorporated into the index.
+
+<h3 id="pagination">Pagination</h3>
+
+<p>This recipe explains how to paginate over view results. Pagination is a user interface (UI) pattern that allows the display of a large number of rows (the <em>result set</em>) without loading all the rows into the UI at once. A fixed-size subset, the <em>page</em>, is displayed along with <em>next</em> and <em>previous</em> links or buttons that can move the <em>viewport</em> over the result set to an adjacent page.
+
+<p>We assume you’re familiar with creating and querying documents and views as well as the multiple view query options.
+
+<h4 id="data">Example Data</h4>
+
+<p>To have some data to work with, we’ll create a list of bands, one document per band:
+
+<pre>
+{ "name":"Biffy Clyro" }
+
+{ "name":"Foo Fighters" }
+
+{ "name":"Tool" }
+
+{ "name":"Nirvana" }
+
+{ "name":"Helmet" }
+
+{ "name":"Tenacious D" }
+
+{ "name":"Future of the Left" }
+
+{ "name":"A Perfect Circle" }
+
+{ "name":"Silverchair" }
+
+{ "name":"Queens of the Stone Age" }
+
+{ "name":"Kerub" }
+</pre>
+
+<h4 id="view">A View</h4>
+
+<p>We need a simple map function that gives us an alphabetical list of band names. This should be easy, but we’re adding extra smarts to filter out “The” and “A” in front of band names to put them into the right position:
+
+<pre>
+function(doc) {
+  if(doc.name) {
+    var name = doc.name.replace(/^(A|The) /, "");
+    emit(name, null);
+  }
+}
+</pre>
+
+<p>The views result is an alphabetical list of band names. Now say we want to display band names five at a time and have a link pointing to the next five names that make up one page, and a link for the previous five, if we’re not on the first page.
+
+<p>We learned how to use the <code>startkey</code>, <code>limit</code>, and <code>skip</code> parameters in earlier chapters. We’ll use these again here. First, let’s have a look at the full result set:
+
+<pre>
+{"total_rows":11,"offset":0,"rows":[
+  {"id":"a0746072bba60a62b01209f467ca4fe2","key":"Biffy Clyro","value":null},
+  {"id":"b47d82284969f10cd1b6ea460ad62d00","key":"Foo Fighters","value":null},
+  {"id":"45ccde324611f86ad4932555dea7fce0","key":"Tenacious D","value":null},
+  {"id":"d7ab24bb3489a9010c7d1a2087a4a9e4","key":"Future of the Left","value":null},
+  {"id":"ad2f85ef87f5a9a65db5b3a75a03cd82","key":"Helmet","value":null},
+  {"id":"a2f31cfa68118a6ae9d35444fcb1a3cf","key":"Nirvana","value":null},
+  {"id":"67373171d0f626b811bdc34e92e77901","key":"Kerub","value":null},
+  {"id":"3e1b84630c384f6aef1a5c50a81e4a34","key":"Perfect Circle","value":null},
+  {"id":"84a371a7b8414237fad1b6aaf68cd16a","key":"Queens of the Stone Age","value":null},
+  {"id":"dcdaf08242a4be7da1a36e25f4f0b022","key":"Silverchair","value":null},
+  {"id":"fd590d4ad53771db47b0406054f02243","key":"Tool","value":null}
+]}
+</pre>
+
+<h4 id="setup">Setup</h4>
+
+<p>The mechanics of paging are very simple:
+
+<ul>
+
+<li>Display first page.</li>
+
+<li>If there are more rows to show, show <em>next</em> link.</li>
+
+<li>Draw subsequent page</li>
+
+<li>If this is not the first page, show a <em>previous</em> link.</li>
+
+<li>If there are more rows to show, show <em>next</em> link.</li>
+
+</ul>
+
+<p>Or in a pseudo-JavaScript snippet:
+
+<pre>
+var result = new Result();
+var page = result.getPage();
+
+page.display();
+
+if(result.hasPrev()) {
+  page.display_link('prev');
+}
+
+if(result.hasNext()) {
+  page.display_link('next');
+}
+</pre>
+
+<h4 id="slow">Slow Paging (Do Not Use)</h4>
+
+<p>Don’t use this method! We just show it because it might seem natural to use, and you need to know why it is a bad idea. To get the first five rows from the view result, you use the <code>?limit=5</code> query parameter:
+
+<pre>
+curl -X GET http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5
+</pre>
+
+<p>The result:
+
+<pre>
+{"total_rows":11,"offset":0,"rows":[
+  {"id":"a0746072bba60a62b01209f467ca4fe2","key":"Biffy Clyro","value":null},
+  {"id":"b47d82284969f10cd1b6ea460ad62d00","key":"Foo Fighters","value":null},
+  {"id":"45ccde324611f86ad4932555dea7fce0","key":"Tenacious D","value":null},
+  {"id":"d7ab24bb3489a9010c7d1a2087a4a9e4","key":"Future of the Left","value":null},
+  {"id":"ad2f85ef87f5a9a65db5b3a75a03cd82","key":"Helmet","value":null}
+]}
+</pre>
+
+<p>By comparing the <code>total_rows</code> value to our <code>limit</code> value, we can determine if there are more pages to display. We also know by the <code>offset</code> member that we are on the first page. We can calculate the value for <code>skip=</code> to get the results for the next page:
+
+<pre>
+var rows_per_page = 5;
+var page = (offset / rows_per_page) + 1; // == 1
+var skip = page * rows_per_page; // == 5 for the first page, 10 for the second ...
+</pre>
+
+<p>So we query CouchDB with:
+
+<pre>
+curl -X GET 'http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5&amp;skip=5'
+</pre>
+
+<p>Note we have to use <code>'</code> (single quotes) to escape the <code>&amp;</code> character that is special to the shell we execute <code>curl</code> in.
+
+<p>The result:
+
+<pre>
+{"total_rows":11,"offset":5,"rows":[
+  {"id":"a2f31cfa68118a6ae9d35444fcb1a3cf","key":"Nirvana","value":null},
+  {"id":"67373171d0f626b811bdc34e92e77901","key":"Kerub","value":null},
+  {"id":"3e1b84630c384f6aef1a5c50a81e4a34","key":"Perfect Circle","value":null},
+  {"id":"84a371a7b8414237fad1b6aaf68cd16a","key":"Queens of the Stone Age","value":null},
+  {"id":"dcdaf08242a4be7da1a36e25f4f0b022","key":"Silverchair","value":null}
+]}
+</pre>
+
+<p>Implementing the <code>hasPrev()</code> and <code>hasNext()</code> method is pretty straightforward:
+
+<pre>
+function hasPrev()
+{
+  return page &gt; 1;
+}
+
+function hasNext()
+{
+  var last_page = Math.floor(total_rows / rows_per_page) +
+    (total_rows % rows_per_page);
+  return page != last_page;
+}
+</pre>
+
+<h5 id="dealbreaker">The dealbreaker</h5>
+
+<p>This all looks easy and straightforward, but it has one fatal flaw. Remember how view results are generated from the underlying B-tree index: CouchDB jumps to the first row (or the first row that matches <code>startkey</code>, if provided) and reads one row after the other from the index until there are no more rows (or <code>limit</code> or <code>endkey</code> match, if provided).
+
+<p>The <code>skip</code> argument works like this: in addition to going to the first row and starting to read, <code>skip</code> will skip as many rows as specified, but CouchDB will still read from the first row; it just won’t return any values for the skipped rows. If you specify <code>skip=100</code>, CouchDB will read 100 rows and not create output for them. This doesn’t sound too bad, but it is <em>very</em> bad, when you use <code>1000</code> or even <code>10000</code> as <code>skip</code> values. CouchDB will have to look at a lot of rows unnecessarily.
+
+<p>As a rule of thumb, <code>skip</code> should be used only with single digit values. While it’s possible that there are legitimate use cases where you specify a larger value, they are a good indicator for potential problems with your solution. Finally, for the calculations to work, you need to add a reduce function and make two calls to the view per page to get all the numbering right, and there’s still a potential for error.
+
+<h4 id="fast">Fast Paging (Do Use)</h4>
+
+<p>The correct solution is not much harder. Instead of slicing the result set into equally sized pages, we look at 10 rows at a time and use <code>startkey</code> to jump to the next 10 rows. We even use <code>skip</code>, but only with the value <code>1</code>.
+
+<p>Here is how it works:
+
+<ul>
+
+<li>Request <code>rows_per_page</code> + 1 rows from the view</li>
+
+<li>Display <code>rows_per_page</code> rows, store + 1 row as <code>next_startkey</code> and <code>next_startkey_docid</code></li>
+
+<li>As <em>page information</em>, keep <code>startkey</code> and <code>next_startkey</code></li>
+
+<li>Use the <code>next_*</code> values to create the <em>next</em> link, and use the others to create the <em>previous</em> link</li>
+
+</ul>
+
+<p>The trick to finding the next page is pretty simple. Instead of requesting 10 rows for a page, you request 11 rows, but display only 10 and use the values in the 11th row as the <code>startkey</code> for the next page. Populating the link to the previous page is as simple as carrying the current <code>startkey</code> over to the next page. If there’s no previous <code>startkey</code>, we are on the first page. We stop displaying the link to the next page if we get <code>rows_per_page</code> or less rows back. This is called <em>linked list pagination</em>, as we go from page to page, or list item to list item, instead of jumping directly to a pre-computed page. There is one caveat, though. Can you spot it?
+
+<p>CouchDB view keys do not have to be unique; you can have multiple index entries <em>read</em>. What if you have more index entries for a key than rows that should be on a page? <code>startkey</code> jumps to the first row, and you’d be screwed if CouchDB didn’t have an additional parameter for you to use. All view keys with the same value are internally sorted by <code>docid</code>, that is, the ID of the document that created that view row. You can use the <code>startkey_docid</code> and <code>endkey_docid</code> parameters to get subsets of these rows. For pagination, we still don’t need <code>endkey_docid</code>, but <code>startkey_docid</code> is very handy. In addition to <code>startkey</code> and <code>limit</code>, you also use <code>startkey_docid</code> for pagination if, and only if, the extra row you fetch to find the next page has the same key as the current <code>startkey</code>.
+
+<p>It is important to note that the <code>*_docid</code> parameters only work <em>in addition</em> to the <code>*key</code> parameters and are only useful to further narrow down the result set of a view for a single key. They do not work on their own (the one exception being the built-in _<code>all_docs</code> view that already sorts by document ID).
+
+<p>The advantage of this approach is that all the key operations can be performed on the super-fast B-tree index behind the view. Looking up a page doesn’t include scanning through hundreds and thousands of rows unnecessarily.
+
+<h4 id="jump">Jump to Page</h4>
+
+<p>One drawback of the linked list style pagination is that you can’t pre-compute the rows for a particular page from the page number and the rows per page. Jumping to a specific page doesn’t really work. Our gut reaction, if that concern is raised, is, “Not even Google is doing that!” and we tend to get away with it. Google always pretends on the first page to find 10 more pages of results. Only if you click on the second page (something very few people actually do) might Google display a reduced set of pages. If you page through the results, you get links for the previous and next 10 pages, but no more. Pre-computing the necessary <code>startkey</code> and <code>startkey_docid</code> for 20 pages is a feasible operation and a pragmatic optimization to know the rows for every page in a result set that is potentially tens of thousands of rows long, or more.
+
+<p>If you really do need to jump to a page over the full range of documents (we have seen applications that require that), you can still maintain an integer value index as the view index and take a hybrid approach at solving pagination.
