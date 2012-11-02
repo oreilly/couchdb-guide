@@ -1,4 +1,4 @@
-<title>Getting Started</title>
+<title>新手上路</title>
 
 <meta charset="utf-8">
 
@@ -10,67 +10,67 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="tour">Getting Started</h2>
+<h2>新手上路</h2>
 
-<p>In this chapter, we’ll take a quick tour of CouchDB’s features, familiarizing ourselves with <em>Futon</em>, the built-in administration interface. We’ll create our first document and experiment with CouchDB views. Before we start, skip to <a href="source.html">Appendix D, Installing from Source</a> and look for your operating system. You will need to follow those instructions and get CouchDB installed before you can progress.
+<p>在本节中, 我们将会快速的浏览下CouchDB的各种特性, 熟悉<em>Futon</em>--CouchDB自带的管理界面. 我们会创建第一个文档并体验CouchDB的视图. 在开始前, 请查看<a href="source.html">附录D, 从源代码安装</a>中关于您的操作系统的安装步骤. 在继续前进之前, 请按照这些指示, 安装好CouchDB.
 
-<h3 id="go">All Systems Are Go!</h3>
+<h3 id="go">在任何系统上都能运行!</h3>
 
-<p>We’ll have a very quick look at CouchDB’s bare-bones <em>Application Programming Interface (API)</em> by using the command-line utility <code>curl</code>. Please note that this is only one way of talking to CouchDB. We will show you plenty more throughout the rest of the book. What’s interesting about <code>curl</code> is that it gives you control over raw HTTP requests, and you can see exactly what is going on “underneath the hood” of your database.
+<p>我们会用<code>curl</code>来快速的看看CouchDB的一些零散的<em>API</em>. 请注意这只是其中的一种和CouchDB沟通的方式. 我们将在本书的后面展示更多的方式. <code>curl</code>的有趣之处在于, 它给了你对原生HTTP请求的控制能力, 并且让你能准确的看到数据库底层到底在干些什么.
 
-<p>Make sure CouchDB is still running, and then do:
+<p>确认CouchDB已经在运行后, 输入:
 
 <pre>
 curl http://127.0.0.1:5984/
 </pre>
 
-<p>This issues a <code>GET</code> request to your newly installed CouchDB instance.
+<p>这会发一个<code>GET</code>请求到你新装的CouchDB实例.
 
-<p>The reply should look something like:
+<p>得到的回应看起来应该像这样子:
 
 <pre>
 {"couchdb":"Welcome","version":"0.10.1"}
 </pre>
 
-<p>Not all that spectacular. CouchDB is saying “hello” with the running version number.
+<p>没什么特别的, CouchDB正向你问好呢, 带着它的版本号.
 
-<p>Next, we can get a list of databases:
+<p>接下来, 我们可以得到所有数据库的一个列表:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>All we added to the previous request is the <code>_all_dbs</code> string.
+<p>我们在前一个请求里加的只有 <code>_all_dbs</code> 这个字符串.
 
-<p>The response should look like:
+<p>回应看起来像是这个样子:
 
 <pre>
 []
 </pre>
 
-<p>Oh, that’s right, we didn’t create any databases yet! All we see is an empty list.
+<p>哦, 对, 我们还没有创建任何数据库! 我们看到的是一个空列表.
 
 <div class="aside note">
 
-<p>The <code>curl</code> command issues <code>GET</code> requests by default. You can issue <code>POST</code> requests using <code>curl -X POST</code>. To make it easy to work with our terminal history, we usually use the <code>-X</code> option even when issuing <code>GET</code> requests. If we want to send a <code>POST</code> next time, all we have to change is the method.
+<p><code>curl</code>命令的默认方法是<code>GET</code>. 可以使用<code>curl -X POST</code>来发送一个<code>POST</code>请求. 为了更好的我们的终端历史配合, 即便是在发送<code>GET</code>请求时, 我们也使用了<code>-X</code>的选项. 这样如果下一次我们想要发送<code>POST</code>请求, 就只需要改变方法名就可以了.
 
-<p>HTTP does a bit more under the hood than you can see in the examples here. If you’re interested in every last detail that goes over the wire, pass in the <code>-v</code> option (e.g., <code>curl -vX GET</code>), which will show you the server <code>curl</code> tries to connect to, the request headers it sends, and response headers it receives back. Great for debugging!
+<p>在底层, HTTP其实做了比上述例子中更多一点的事情. 如果您以于这些细节感兴趣, 可以使用<code>-v</code>选项(比如, <code>curl -vX GET</code>), 这样<code>curl</code>就会显示出它是在向哪里发起连接, 发送的请求头, 以及接收回来的返回头. 这对于调试来说非常有用.
 
 </div>
 
-<p>Let’s create a database:
+<p>让我们来创建一个数据库:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/baseball
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB会回应:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>Retrieving the list of databases again shows some useful results this time:
+<p>再取一次数据库列表, 这次会显示一些有用的结果:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
@@ -82,143 +82,143 @@ curl -X GET http://127.0.0.1:5984/_all_dbs
 
 <div class="aside note">
 
-<p>We should mention <em>JavaScript Object Notation (JSON)</em> here, the data format CouchDB speaks. JSON is a lightweight data interchange format based on JavaScript syntax. Because JSON is natively compatible with JavaScript, your web browser is an ideal client for CouchDB.
+<p>我们应该在这里提一下<em>JavaScript Object Notation (JSON)</em>, CouchDB的数据格式. JSON是一个以JavaScrip语法为基础的轻量级数据交换格式. 因为JSON和JavaScript原生的兼容, 所以浏览器就是CouchDB的一个理想的客户端.
 
-<p>Brackets (<code>[]</code>) represent ordered lists, and curly braces (<code>{}</code>) represent key/value dictionaries. Keys must be strings, delimited by quotes (<code>"</code>), and values can be strings, numbers, booleans, lists, or key/value dictionaries. For a more detailed description of JSON, see <a href="json.html">Appendix E, JSON Primer</a>.
+<p>方括号(<code>[]</code>)代表排序的列表, 大括号(<code>{}</code>)代表key/value字典. key必须是字符串, 以引号(<code>"</code>)包含, value可以是字符吕, 数字, 布尔, 列表, 或者key/value字典. 要了解更多的关于JSON的描述, 请查看<a href="json.html">附录E, JSON初步</a>.
 
 </div>
 
-<p>Let’s create another database:
+<p>让我们创建另一个数据库:
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/baseball
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB会回应:
 
 <pre>
 {"error":"file_exists","reason":"The database could not be created, the file already exists."}
 </pre>
 
-<p>We already have a database with that name, so CouchDB will respond with an error. Let’s try again with a different database name:
+<p>我们已经有了一个同名的数据库, 所以CouchDB会返回一个错误. 让我们试着换一个数据库名称.
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/plankton
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB会回应:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>Retrieving the list of databases yet again shows some useful results:
+<p>再一次获取数据库列表, 现在可以看到一些有用的东西了:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>CouchDB will respond with:
+<p>CouchDB会回应:
 
 <pre>
 ["baseball", "plankton"]
 </pre>
 
-<p>To round things off, let’s delete the second database:
+<p>为了演示, 让我们删除第二个数据库:
 
 <pre>
 curl -X DELETE http://127.0.0.1:5984/plankton
 </pre>
 
-<p>CouchDB will reply with:
+<p>CouchDB会回应:
 
 <pre>
 {"ok":true}
 </pre>
 
-<p>The list of databases is now the same as it was before:
+<p>现在数据库列表和先前的一样了:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>CouchDB will respond with:
+<p>CouchDB回应:
 
 <pre>
 ["baseball"]
 </pre>
 
-<p>For brevity, we’ll skip working with documents, as the next section covers a different and potentially easier way of working with CouchDB that should provide experience with this. As we work through the example, keep in mind that “under the hood” everything is being done by the application exactly as you have been doing here manually. Everything is done using <code>GET</code>, <code>PUT</code>, <code>POST</code>, and <code>DELETE</code> with a URI.
+<p>为了减略, 我们跳过了和文档打交道的部分, 因为下一部分会讲到一个不同的但应该更加简单的方法来和CouchDB打交道, 那里会包含和文档打交道的这一部分. 当我们讲解这些例子时, 请记住, 在底层应用程序所作的事和你现在手工在做的是完全一样的. 任何事情都是用<code>GET</code>, <code>PUT</code>, <code>POST</code>和<code>DELETE</code>来操作一个URI.
 
-<h3 id="welcome">Welcome to Futon</h3>
+<h3 id="welcome">欢迎来到Futon</h3>
 
-<p>After having seen CouchDB’s raw API, let’s get our feet wet by playing with Futon, the built-in administration interface. Futon provides full access to all of CouchDB’s features and makes it easy to work with some of the more complex ideas involved. With Futon we can create and destroy databases; view and edit documents; compose and run MapReduce views; and trigger replication between databases.
+<p>在看过CouchDB的原生API后, 让我们来玩玩Futon, CouchDB自带的管理界面. Futon提供了访问CouchDB特性的全部权限, 而且它使得理解一些更加复杂的概念变得简单. 用Futon, 我们可以创建和销毁数据库, 查看和编辑文档, 建立和运行MapReduce视图, 还能在数据库之间进行复制.
 
-<p>To load Futon in your browser, visit:
+<p>想要在你的浏览器里打开Futon, 访问:
 
 <pre>
 http://127.0.0.1:5984/_utils/
 </pre>
 
-<p>If you’re running version 0.9 or later, you should see something similar to <a href="#figure/1">Figure 1, “The Futon welcome screen”</a>. In later chapters, we’ll focus on using CouchDB from server-side languages such as Ruby and Python. As such, this chapter is a great opportunity to showcase an example of natively serving up a dynamic web application using nothing more than CouchDB’s integrated web server, something you may wish to do with your own applications.
+<p>如果你运行的是0.9及其以后的版本, 你应该会看到像<a href="#figure/1">图1, "Futon欢迎界面"</a>类似的界面. 在之后的章节里, 我们会关注于用服务器端语言, 比如Ruby和Python来使用CouchDB. 而现在, 本章节正是一个好机会, 可以展示一个只使用CouchDB的集成Web Server来构建动态Web应用的例子.
 
-<p>The first thing we should do with a fresh installation of CouchDB is run the test suite to verify that everything is working properly. This assures us that any problems we may run into aren’t due to bothersome issues with our setup. By the same token, failures in the Futon test suite are a red flag, telling us to double-check our installation before attempting to use a potentially broken database server, saving us the confusion when nothing seems to be working quite like we expect!
+<p>在全新安装一个CouchDB后的第一件事就是运行测试套件来确认正常工作. 这可以保证将来无论我们遇到什么问题都不是因为某些安装时的烦人原因而造成的. Futon测试套件里的失败会有一个红色标记, 告诉我们在使用一个可能有问题的数据库之前, 需要再三检查安装是否没有问题, 以免当出现不是我们所期待的事情时陷入混乱.</p>
 
 <div class="figure" id="figure/1">
 
 <img src="tour/01.png">
 
-<p class="caption">Figure 1. The Futon welcome screen
+<p class="caption">图1. Futon欢迎界面
 
 </div>
 
 <div class="aside warning">
 
-<p>Some common network configurations cause the replication test to fail when accessed via the <code>localhost</code> address. You can fix this by accessing CouchDB via <em>http://127.0.0.1:5984/_utils/</em>.
+<p>当通过 <code>localhost</code> 访问时, 有些网络配置可能会导致复制测试失败. 可以通过访问<em>http://127.0.0.1:5984/_utils/</em>代替 <code>localhost</code> 来解决这个问题.
 
 </div>
 
-<p>Navigate to the test suite by clicking “Test Suite” on the Futon sidebar, then click “run all” at the top to kick things off. <a href="#figure/2">Figure 2, “The Futon test suite running some tests”</a> shows the Futon test suite running some tests.
+<p>在Futon的侧边栏上点击 "Test Suite" 来进入测试套件, 然后点击主页面上端的 "run all" 来开始测试. <a href="#figure/2">图2, "Futon测试套件"</a>显示Futon测试套件正在跑一些测试.
 
 <div class="figure" id="figure/2">
 
 <img src="tour/02.png">
 
-<p class="caption">Figure 2. The Futon test suite running some tests
+<p class="caption">图2. Futon测试套件
 
 </div>
 
-<p>Because the test suite is run from the browser, not only does it test that CouchDB is functioning properly, it also verifies that your browser’s connection to the database is properly configured, which can be very handy for diagnosing misbehaving proxies or other HTTP middleware.
+<p>因为测试套件是从浏览器里跑的, 它不仅测试了CouchDB工作正常, 也验证了你的浏览器到数据库的连接设置正常, 这对于诊断不正常的代理或者其他HTTP中间件是很方便的.
 
 <div class="aside warning">
 
-<p>If the test suite has an inordinate number of failures, you’ll need to see the troubleshooting section in <a href="source.html">Appendix D, Installing from Source</a> for the next steps to fix your installation.
+<p>如果测试套件结果有过多的失败, 您需要查看下<a href="source.html">附录D, 从源代码安装</a>中的错误处理一节, 以便找到方法来修复您的安装.
 
 </div>
 
-<p>Now that the test suite is finished, you’ve verified that your CouchDB installation is successful and you’re ready to see what else Futon has to offer.
+<p>好了, 测试套件跑完后, 可以确认CouchDB安装已经成功, 来看看Futon还提供了哪些其他功能.
 
-<h3 id="first">Your First Database and Document</h3>
+<h3 id="first">你的第一个数据库与文档</h3>
 
-<p>Creating a database in Futon is simple. From the overview page, click “Create Database.” When asked for a name, enter <code>hello-world</code> and click the Create button.
+<p>在Futon里创建一个数据库很简单. 在overview页面点击 "Create Database". 当问你叫什么名字时, 键入 <code>hello-world</code> 然后点击Create按钮.
 
-<p>After your database has been created, Futon will display a list of all its documents. This list will start out empty (<a href="#figure/3">Figure 3, “An empty database in Futon”</a>), so let’s create our first document. Click the “Create Document” link and then the Create button in the pop up. Make sure to leave the document ID blank, and CouchDB will generate a UUID for you.
+<p>当你的数据库创建以后, Futon会显示一个该数据库全部文档的列表, 如图3所示. 这个列表一开始会是空的(<a href="#figure/3">图3, "一个空的数据库"</a>), 那么我们来创建第一个文档吧. 点击Create Document来创建. 确保让文档ID为空, CouchDB会为你生成一个UUID.
 
 <div class="aside warning">
 
-<p>For demoing purposes, having CouchDB assign a UUID is fine. When you write your first programs, we recommend assigning your own UUIDs. If your rely on the server to generate the UUID and you end up making two POST requests because the first POST request bombed out, you might generate two docs and never find out about the first one because only the second one will be reported back. Generating your own UUIDs makes sure that you’ll never end up with duplicate documents.
+<p>出于演示的目的, 让CouchDB来给UUID赋值没有问题. 在写您自己的第一个程序时, 我们建议自己来给UUID赋值. 如果你信赖于服务器来产生UUID, 那么可能会有这种情况. 你以为第一个POST请求丢失了, 因为没有响应回来, 而实际上并没有丢失. 结果你又做了一次相同的POST请求. 这样就会产生两个相同的文档而可能永远发现不了第一次产生的文档, 因为只有第二次的POST请求有响应回来. 使用自己的UUID就可以保证永远不会产生重复的文档.
 
 </div>
 
-<p>Futon will display the newly created document, with its <code>_id</code> and <code>_rev</code> as the only fields. To create a new field, click the “Add Field” button. We’ll call the new field <code>hello</code>. Click the green check icon (or hit the Enter key) to finalize creating the <code>hello</code> field. Double-click the <code>hello</code> field’s value (default <code>null</code>) to edit it.
+<p>Futon会显示我们刚才新创建的文档, 这个文档只有<code>_id</code>和<code>rev</code>两个域. 创建一个新的域, 点击Add Field. 我们把新的域叫作<code>hello</code>. 点击绿色的勾按钮(或者按回车)来结束创建<code>hello</code>域. 双击<code>hello</code>域的值(默认是<code>null</code>)来编辑它.
 
-<p>If you try to enter <code>world</code> as the new value, you’ll get an error when you click the value’s green check icon. CouchDB values must be entered as valid JSON. Instead, enter <code>"world"</code> (with quotes) because this is a valid JSON string. You should have no problems saving it. You can experiment with other JSON values; e.g., <code>[1, 2, "c"]</code> or <code>{"foo":"bar"}</code>. Once you’ve entered your values into the document, make a note of its <code>_rev</code> attribute and click “Save Document.” The result should look like <a href="#figure/4">Figure 4, “A “hello world” document in Futon”</a>.
+<p>如果你键入<code>world</code>作为新值, 当你点击绿色勾勾时会得到一个错误. CouchDB的值必须是有效的JSON. 键入<code>"world"</code>(带双引号), 因为这是一个有效的JSON字符串, 这次保存它应该没有问题了. 你可以用另外的JSON值来试验一下, 比如 <code>[1, 2, "c"]</code> 或者 <code>{"foo":"bar"}</code>. 一旦你键入了值,  注意下_rev属性然后点击Save Document. 结果应该像<a href="#figure/4">图4一个"hello world"文档</a>所示.
 
 <div class="figure" id="figure/3">
 
 <img src="tour/03.png">
 
-<p class="caption">Figure 3. An empty database in Futon
+<p class="caption">图3. 一个空的数据库
 
 </div>
 
@@ -226,37 +226,37 @@ http://127.0.0.1:5984/_utils/
 
 <img src="tour/04.png">
 
-<p class="caption">Figure 4. A “hello world” document in Futon
+<p class="caption">图4. 一个"hello world"文档
 
 </div>
 
-<p>You’ll notice that the document’s <code>_rev</code> has changed. We’ll go into more detail about this in later chapters, but for now, the important thing to note is that <code>_rev</code> acts like a safety feature when saving a document. As long as you and CouchDB agree on the most recent <code>_rev</code> of a document, you can successfully save your changes.
+<p>你会注意到文档的<code>_rev</code>已经改变了. 在后面的章节中我们会更细节的来看这个问题, 但是现在, 值得注意的事是当保存一个文档时, <code>_rev</code>表现为一个安全特性. 当你和CouchDB对文档的最新<code>_rev</code>达成一致, 你就能成功的保存改变.
 
-<p>Futon also provides a way to display the underlying JSON data, which can be more compact and easier to read, depending on what sort of data you are dealing with. To see the JSON version of our “hello world” document, click the Source tab. The result should look like <a href="#figure/5">Figure 5, “The JSON source of a “hello world” document in Futon”</a>.
+<p>Futon也提供了一种方法来显示底层的JSON数据, 根据你在处理的是什么类型的数据, 可以展示的更紧凑并且更易读. 要看我们的Hello World文档的JSON版本, 点击Source tab, 结果应该像<a href="#figure/5">图5, "'hello world'文档的JSON源代码"</a>所示.
 
 <div class="figure" id="figure/5">
 
 <img src="tour/05.png">
 
-<p class="caption">Figure 5. The JSON source of a “hello world” document in Futon
+<p class="caption">图5. "hello world"文档的JSON源代码
 
 </div>
 
-<h3 id="mapreduce">Running a Query Using MapReduce</h3>
+<h3 id="mapreduece">用MapReduce执行查询</h3>
 
-<p>Traditional relational databases allow you to run any queries you like as long as your data is structured correctly. In contrast, CouchDB uses predefined <em>map</em> and <em>reduce</em> functions in a style known as MapReduce. These functions provide great flexibility because they can adapt to variations in document structure, and indexes for each document can be computed independently and in parallel. The combination of a map and a reduce function is called a <em>view</em> in CouchDB terminology.
+<p>传统关系数据库允许你跑任何你喜欢的查询, 只要你的数据是正常的结构化的. 而CouchDB则使用预告定义的<em>map</em>和<em>reduce</em>函数, 一种被叫做MapReduce的风格. 这些函数提供了巨大的灵活性, 因为它们可以根据文档结构来产生不同变种, 并且每个文档的索引可以被独立和平行的计算. 一个map和一个reduce函数的组合在CouchDB的术语里被叫做<em>视图</em>.
 
 <div class="aside note">
 
-<p>For experienced relational database programmers, MapReduce can take some getting used to. Rather than declaring which rows from which tables to include in a result set and depending on the database to determine the most efficient way to run the query, reduce queries are based on simple range requests against the indexes generated by your map functions.
+<p>对于有经验的关系数据库程序员来说, MapReduce可以需要慢慢的来适应. 关系数据库中要声明哪些表的哪些行应该出现在结果集中, 要根据不同的数据库决定如何最有效的查询数据, 而reduce查询则是以map函数产生的索引为基础的.
 
 </div>
 
-<p>Map functions are called once with each document as the argument. The function can choose to skip the document altogether or <em>emit</em> one or more view rows as key/value pairs. Map functions may not depend on any information outside of the document. This independence is what allows CouchDB views to be generated incrementally and in parallel.
+<p>Map函数每次调用都会使用一个文档作为参数. 函数可以选择跳过整个文档或者<em>使用</em>一行或多行key/value对. Map函数可以不依赖任何文档之外的信息. 这种独立性使得CouchDB视图可以增量和平行的生成.
 
-<p>CouchDB views are stored as rows that are kept sorted by key. This makes retrieving data from a range of keys efficient even when there are thousands or millions of rows. When writing CouchDB map functions, your primary goal is to build an index that stores related data under nearby keys.
+<p>CouchDB视图是以key排序以行的形式被存储的. 这使得从一个keys范围中获取数据变得高效, 甚至当有成千上万行的时候. 在写CouchDB map函数的时候, 你的首要目标是建立一个索引, 这个索引存储相近key之间的相关数据.
 
-<p>Before we can run an example MapReduce view, we’ll need some data to run it on. We’ll create documents carrying the price of various supermarket items as found at different stores. Let’s create documents for apples, oranges, and bananas. (Allow CouchDB to generate the <code>_id</code> and <code>_rev</code> fields.) Use Futon to create documents that have a final JSON structure that looks like this:
+<p>在我们执行一个MapReduce视图示例之前, 我们需要一些用来执行这个示例的数据. 我们会创建包含不同超市不同商品的价格的文档. 我们以苹果, 村子和香蕉为例子来创建文档. (允许CouchDB来生成<code>_id</code>和<code>_rev</code>域.) 使用Futon来创建文档, 最后产生的JSON结构看起来是这样:
 
 <pre>
 {
@@ -271,17 +271,17 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>This document should look like <a href="#figure/6">Figure 6, “An example document with apple prices in Futon”</a> when entered into Futon.
+<p>这个文档应该如<a href="#figure/6">图6, 一个包含有苹果价格的示例文档</a>所示.
 
 <div class="figure" id="figure/6">
 
 <img src="tour/06.png">
 
-<p class="caption">Figure 6. An example document with apple prices in Futon
+<p class="caption">图6. 一个包含有苹果价格的示例文档
 
 </div>
 
-<p>OK, now that that’s done, let’s create the document for oranges:
+<p>好, 让我们再来创建桔子的文档:
 
 <pre>
 {
@@ -296,7 +296,7 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>And finally, the document for bananas:
+<p>最后, 香蕉的:
 
 <pre>
 {
@@ -311,17 +311,17 @@ http://127.0.0.1:5984/_utils/
 }
 </pre>
 
-<p>Imagine we’re catering a big luncheon, but the client is very price-sensitive. To find the lowest prices, we’re going to create our first view, which shows each fruit sorted by price. Click “hello-world” to return to the hello-world overview, and then from the “select view” menu choose “Temporary view…” to create a new view. The result should look something like <a href="#figure/7">Figure 7, “A temporary view in Futon”</a>.
+<p>想像一下, 我们正在做一个大型的午餐, 但是客户对价格很敏感. 为了找出最低的价格, 我们来创建我们的第一个视图, 它会根据价格排序显示每种水果. 点击hello-world来回到hello-world的overview页面, 然后从视图选择目录里选择Temporary view...来创建一个新视图. 结果应该如<a href="#figure/7">图7, "一个临时视图"</a>所示.
 
 <div class="figure" id="figure/7">
 
 <img src="tour/07.png">
 
-<p class="caption">Figure 7. A temporary view in Futon
+<p class="caption">图7. 一个临时视图</p>
 
 </div>
 
-<p>Edit the map function, on the left, so that it looks like the following:
+<p>编辑左边的map函数, 让它看起像这样子:
 
 <pre>
 function(doc) {
@@ -336,19 +336,19 @@ function(doc) {
 }
 </pre>
 
-<p>This is a <em>JavaScript</em> function that CouchDB runs for each of our documents as it computes the view. We’ll leave the reduce function blank for the time being.
+<p>这是一个<em>JavaScript</em>函数, CouchDB会在每个文档上运行这个函数. 现在我们把Reduce函数暂时留空.
 
-<p>Click “Run” and you should see result rows like in <a href="#figure/8">Figure 8, “The results of running a view in Futon”</a>, with the various items sorted by price. This map function could be even more useful if it grouped the items by type so that all the prices for bananas were next to each other in the result set. CouchDB’s key sorting system allows any valid JSON object as a key. In this case, we’ll emit an array of <code>[item, price]</code> so that CouchDB groups by item type and price.
+<p>点击Run, 然后你应该会看到如<a href="#figure/8">图8, "视图运行的结果"</a>的结果, 以价格排序的不同的物件. 如果把这些物件用类型排序, 这个map函数会更加有用, 这样所以香蕉的价格在结果集里都集中了. CouchDB的key排序系统允许任何有效的JSON对象作为一个key. 在这个例子中, 我们使用<code>[item, price]</code>这样一个数组, 这样CouchDB就能以物品类型和价格来进行分组
 
 <div class="figure" id="figure/8">
 
 <img src="tour/08.png">
 
-<p class="caption">Figure 8. The results of running a view in Futon
+<p class="caption">图8. 视图运行的结果
 
 </div>
 
-<p>Let’s modify the view function so that it looks like this:
+<p>让我们修改视图函数, 使它变成这样:
 
 <pre>
 function(doc) {
@@ -363,48 +363,48 @@ function(doc) {
 }
 </pre>
 
-<p>Here, we first check that the document has the fields we want to use. CouchDB recovers gracefully from a few isolated map function failures, but when a map function fails regularly (due to a missing required field or other JavaScript exception), CouchDB shuts off its indexing to prevent any further resource usage. For this reason, it’s important to check for the existence of any fields before you use them. In this case, our map function will skip the first “hello world” document we created without emitting any rows or encountering any errors. The result of this query should look like <a href="#figure/9">Figure 9, “The results of running a view after grouping by item type and price”</a>.
+<p>在这个函数中, 我们首先检查文档是否有我们想要使用的域. CouchDB可以从少量独立的map函数错误中优雅的恢复, 但是当一个map函数经常的发生错误(因为缺少需要的域或者其他JavaScript异常), CouchDB 会关闭它的索引来防止进一步的资源使用. 因为这个原因, 在使用它们之前检查域的存在是很重要的. 在这个例子里, 我们的map函数会跳过我们第一个"hello world"文档, 没有数据, 同时不会错误. 这个查询的结果应该如<a href="#figure/9">图9, "根据物品类型和价格进行分组后的视图运行结果"</a>所示.
 
 <div class="figure" id="figure/9">
 
 <img src="tour/09.png">
 
-<p class="caption">Figure 9. The results of running a view after grouping by item type and price
+<p class="caption">图9. 根据物品类型和价格进行分组后的视图运行结果
 
 </div>
 
-<p>Once we know we’ve got a document with an item type and some prices, we iterate over the item’s prices and emit key/values pairs. The key is an array of the item and the price, and forms the basis for CouchDB’s sorted index. In this case, the value is the name of the store where the item can be found for the listed price.
+<p>在得到了一个有物品类型和价格的文档后, 我们遍历物品的价格, 然后显示key/value对. key是一个物品和价格的数组. 在这个例子中, value则是这个价格的物品所在商场的名字.
 
-<p>View rows are sorted by their keys—in this example, first by item, then by price. This method of complex sorting is at the heart of creating useful indexes with CouchDB.
+<p>视图列表根据它们的key来排序, 在这个例子中: 首先是物件, 然后是价格. 这种复杂排序的方法是使用CouchDB创建有价值的索引的核心.
 
 <div class="aside note">
 
-<p>MapReduce can be challenging, especially if you’ve spent years working with relational databases. The important things to keep in mind are that map functions give you an opportunity to sort your data using any key you choose, and that CouchDB’s design is focused on providing fast, efficient access to data within a range of keys.
+<p>MapReduce可以变得很有挑战性, 特别是在你已经使用了多年的关系数据库后. 最重要的要记住的就是, map函数给了你以任何你选择的key来排序数据的机会, 而CouchDB的设计则关注于提供快速, 高效的依据key范围的数据访问.
 
 </div>
 
-<h3 id="replication">Triggering Replication</h3>
+<h3 id="replication">进行复制</h3>
 
-<p>Futon can trigger replication between two local databases, between a local and remote database, or even between two remote databases. We’ll show you how to replicate data from one local database to another, which is a simple way of making backups of your databases as we’re working through the examples.
+<p>Futon可以在两个本地数据库, 一个本地数据库一个远端数据库, 或者甚至是两个远端数据库之间进行复制. 我们会向你展示, 如何从一个本地数据库复制数据到另一个, 这是一个简单的做数据库备份的方法.
 
-<p>First we’ll need to create an empty database to be the target of replication. Return to the overview and create a database called <code>hello-replication</code>. Now click “Replicator” in the sidebar and choose <code>hello-world</code> as the source and <code>hello-replication</code> as the target. Click “Replicate” to replicate your database. The result should look something like <a href="#figure/10">Figure 10, “Running database replication in Futon”</a>.
+<p>首先我们需要创建一个空数据库作为复制目标数据库. 回到overview页面然后创建一个叫<code>hello-replication</code>的数据库. 现在点击侧边栏里的Replicator, 并选择<code>hello-world</code>作为源, <code>hello-replication</code>作为目标. 点击"Relicate"来复制你的数据库. 结果应该如<a href="#figure/10">图10, "在Futon中运行数据库复制"</a>所示.
 
 <div class="figure" id="figure/10">
 
 <img src="tour/10.png">
 
-<p class="caption">Figure 10. Running database replication in Futon
+<p class="caption">图10: 在Futon中运行数据库复制
 
 </div>
 
 <div class="aside warning">
 
-<p>For larger databases, replication can take much longer. It is important to leave the browser window open while replication is taking place. As an alternative, you can trigger replication via <code>curl</code> or some other HTTP client that can handle long-running connections. If your client closes the connection before replication finishes, you’ll have to retrigger it. Luckily, CouchDB’s replication can take over from where it left off instead of starting from scratch.
+<p>对于更大型的数据库来说, 复制会需要更长的时间. 在复制正在进行时, 保持浏览器窗口一直打开是很重要的. 也可以用另一种方式来进行复制, 可以通过<code>curl</code>或者其他的可以处理长时间连接的HTTP客户端. 如果在复制结果前, 客户端关闭了连接, 就必须要再次触发复制了. 幸运的是, CouchDB的复制可以在它中断的地方重新开始, 而不必重头再来.
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">收尾</h3>
 
-<p>Now that you’ve seen most of Futon’s features, you’ll be prepared to dive in and inspect your data as we build our example application in the next few chapters. Futon’s pure JavaScript approach to managing CouchDB shows how it’s possible to build a fully featured web application using only CouchDB’s HTTP API and integrated web server.
+<p>现在我们已经看过了Futon的大部分功能, 您已经可以进一步深入, 并且可以在后面章节构建示例应用时仔细观察下您的数据. Futon使用了纯粹的avaScript来实现CouchDB的管理, 这也向我们展示了如何只用CouchDB的HTTP API和内建Web Server来构建一个全功能的Web应用.
 
-<p>But before we get there, we’ll have another look at CouchDB’s HTTP API—now with a magnifying glass. Let’s <em>curl</em> on the couch and relax.
+<p>但在我们讲到那之前, 我们用另一个角度来看看CouchDB的HTTP API; 这次我们会用放大镜--<em>curl</em>来看看.
