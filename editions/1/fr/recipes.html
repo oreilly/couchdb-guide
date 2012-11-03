@@ -1,4 +1,4 @@
-<title>Recipes</title>
+<title>Recettes</title>
 
 <meta charset="utf-8">
 
@@ -10,35 +10,35 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="recipes">Recipes</h2>
+<h2 id="recipes">Recettes</h2>
 
-<p>This chapter shows some common tasks and how to solve them with CouchDB using best practices and easy-to-follow step-by-step instructions.
+<p>Ce chapitre explore quelques problèmes courants et aborde leur résolution avec CouchDB, le tout en s’appuyant sur les bonnes pratiques et des instructions simples à suivre, pas après pas.
 
-<h3 id="banking">Banking</h3>
+<h3 id="banking">La Banque</h3>
 
-<p>Banks are serious business. They need serious databases to store serious transactions and serious account information. They can’t lose any money. Ever. They also can’t create money. A bank must be in balance. All the time.
+<p>Banquier, c’est un métier sérieux, qui nécessite des bases de données tout aussi sérieuses pour stocker des transactions sérieuses et des informations sérieuses relatives aux comptes. Ils ne peuvent pas laisser l’argent s’évaporer. Jamais. Pas plus qu’ils ne peuvent créer de l’argent. Une banque doit être équilibrée, en tout temps.
 
-<p>Conventional wisdom says a database needs to support <em>transactions</em> to be taken seriously. CouchDB does not support transactions in the traditional sense (although it works transactionally), so you could conclude CouchDB is not well suited to store bank data. Besides, would you trust your money to a couch? Well, we would. This chapter explains why.
+<p>La sagesse populaire dit qu’une base de données doit implémenter les <em>transactions</em> pour être prise au sérieux. CouchDB ne supporte pas les transactions dans le sens traditionnel du terme (bien qu’il fonctionne de manière transactionnelle), aussi pourriez-vous conclure que couchDB n’est pas adapté pour stocker des données bancaires. En outre, qui confierait son argent à un canapé ? Eh bien, nous, nous lui ferions confiance. Ce chapitre explique pourquoi.
 
-<h4 id="erasers">Accountants Don’t Use Erasers</h4>
+<h4 id="erasers">Les comptables n’utilisent pas de blanc</h4>
 
-<p>Say you want to give $100 to your cousin Paul for the New York cheesecake he sent to you. Back in the day, you had to travel all the way to New York and hand Paul the money, or you could send it via (paper) mail. Both methods were considerably inconvenient, so people started looking for alternatives. At one point, banks offered to take care of the money and make sure it arrived at Paul’s bank safely without headaches. Of course, they’d charge for the convenience, but you’d be happy to pay a little fee if it could save a trip to New York. Behind the scenes, the bank would send somebody with your money to give it to Paul’s bank—the same procedure, but another person was dealing with the trouble. Banks could also batch money transfers; instead of sending each order on its own, they could collect all transfers to New York for a week and send them all at once. In case of any problems—say, the recipient was no longer a customer of the bank (remember, it used to take weeks to travel from one coast to the other)—the money was sent back to the originating account.
+<p>Disons que vous voulez donner 100 € à votre cousin Paul pour la forêt noire qu’il vous a fait parvenir depuis Marseille. Il y a longtemps, vous auriez dû voyager jusqu’à la cité fosséenne pour le payer en main propre ou vous auriez dû lui envoyer la somme par la poste. Ces deux méthodes s’avéraient considérablement pénibles et des alternatives se sont développées. Par exemple, les banques vous proposaient d’acheminer l’argent à Paul pour vous. Bien sûr, ce service engendrait un surcoût, mais vous étiez prêts à le payer pour éviter de voyager. En fait, la banque envoyait quelqu’un porter votre argent à la banque de Paul ; on faisait la même chose que vous auriez faite, mais par l’intermédiare d’un préposé. Les banques pouvaient aussi regrouper les transferts en lots : plutôt que d’envoyer une persone à chaque fois, elle ne faisait plus qu’un voyage. En cas de problème, par exemple si le destinataire avait changé de banque (rappelez-vous qu’il fallait quatre jours aux postes du XVIIIe siècle pour faire Paris-Lyon-Marseille), l’argent était renvoyé au compte du débiteur.
 
-<p>Eventually, the modern banking system was put in place and the actual sending of money back and forth could be stopped (much to the disdain of highwaymen). Banks had money <em>on paper</em>, which they could send around without actually sending valuables. The old concept is stuck in our heads though. To send somebody money from our bank account, the bank needs to take the notes out of the account and bring them to the receiving account. But nowadays we’re used to things happen instantaneously. It takes just a few clicks to order goods from Amazon and have them placed into the mail, so why should a banking transaction take any longer?
+<p>Plus tard, le système bancaire moderne a été introduit et a évité de faire transiter physiquement l’argent sur les routes (au grand dam des bandiers de grand chemin !). Les banques ont l’argent <em>sur le papier</em>, ce qui leur permet de le faire circuler dans envoyer d’objets de valeur. Cependant, le vieux concept est resté dans nos mémoires : pour envoyer de l’argent à quelqu’un, notre banque doit sotir les billets de notre compte et les apporter au compte du créditeur. Aujourd’hui, nous sommes habitués à ce que cela se produise instantanément. Cela ne prend que quelques clis pour commander des biens sur Amazon et qu’ils soient expédiés, alors pourquoi une transaction bancaire prendrait-elle plus de temps ?
 
-<p>Banks are all electronic these days (and have been for a while). When we issue a money transfer, we expect it to go through immediately, and we expect it to work in the way it worked back in the day: take money from my account, add it to Paul’s account, and if anything goes wrong, put it back in my account. While this is logically what happens, that’s not quite how it works behind the scenes, and hasn’t since way before computers were used for banking.
+<p>Les banques sont toutes électroniques de nos jours (et l’ont été depuis longtemps). Quand nous ordonnons un virement, nous nous attendons à ce qu’il parte immédiatement et nous voulons que cela fonctionne de la même manière qu’antan : prend l’argent de mon compte, dépose-le sur celui de Paul ou, si quelque chose se passe mal, rend-le-moi. Bien que ce soit la démarche logique, ce n’est pas vraiment ce qui se passe derrière le comptoir, et cela ne l’a jamais été depuis que les ordinateurs ont été utilisés par les banques.
 
-<p>When you go to your bank and ask it to send money to Paul, the accountant will <em>start a transaction</em> by noting down that you ordered the sending of the money. The transaction will include the date, amount, and recipient. Remember that banks always need to be in balance. The money taken from your account cannot vanish. The accountant will move the money into an <em>in-transit</em> account that the bank maintains for you. Your account balance at this point is an aggregation of your current balance and the transactions in the in-transit account. Now the bank checks whether Paul’s account is what you say it is and whether the money could arrive there safely. If that’s the case, the money is moved in another single transaction from the in-transit account to Paul’s account. Everything is in balance. Notice how there are multiple independent transactions, not one big transaction that combines a number of actions.
+<p>Quand vous vous rendez à votre banque et lui demandez d’envoyer de l’argent à Paul, le comptable va <em>amorcer une transaction</em> en prenant note que vous avez demandé d’effectuer un virement. La transaction contiendra la date, la somme et le compte créditeur. Souvenez-vous que les banques doivent toujours être équilibrées : la somme déduite de votre compte ne peut pas se volatiliser. Le comptable va placer votre argent sur un compte <em>de transit</em> que la banque tient pour vous. Le solde de votre compte est alors une agrégation de votre solde courant et des transactions listées dans le compte de transit. Ensuite, la banque vérifie que les coordonnées bancaires de Paul sont correctes et que l’argent peut y être déposé sans problème. Si c’est le cas, l’argent est déplacé dans une autre transaction initiée depuis le compte de transit jusqu’au compte de Paul. Tout est équilibré. Notez qu’il y a plusieurs transactions indépendantes et non une seule qui contiendrait un ensemble d’actions.
 
-<p>Now let’s consider an error case: say Paul’s account no longer exists. The bank finds this out while performing the batch operation of all the in-transit transactions that need to be performed. A second transaction is generated that moves the money back from the in-transit account to your bank account. Note that the transaction that moved the money out of your account is <em>not</em> undone. Rather, a second transaction that does the reverse action is created.
+<p>Maintenant, considérons un cas d’erreur : le compte de Paul n’existe plus. La banque s’en rend compte lorsqu’elle traite le lot d’opérations qui contient toutes les transactions depuis les comptes de transit. Une deuxième transaction est alors générée, laquelle renvoie l’argent sur votre compte. Notez que la transaction qui a débité initialement votre compte n’est pas <em>défaite</em>, mais que c’est une nouvelle (troisième) transaction qui est créée.
 
-<p>Here’s another error case: say you don’t have sufficient funds to send $100 to Paul. This will be checked by the accountant (or software) before the bank creates any money-deducting transaction. For accountability, a bank cannot pretend an action didn’t happen; it has to record every action minutely in a log. Undoing is done explicitly by performing a reverse action, not by reverting or removing an existing transaction. “Accountants don’t use erasers” is a quote from Pat Helland, a senior architect of transactional systems who worked at Microsoft and Amazon.
+<p>Un autre cas d’erreur : vous n’avez pas assez d’argent sur votre compte pour envoyer 100 € à Paul. Ce sera vérifié par le comptable (ou l’équivalent logiciel) avant que la banque crée la première transaction débitrice. Pour la comptabilité, la banque ne peut pas prétendre qu’il ne s’est rien passé : elle doit garder la trace de l’opération et de son rejet dans un journal. Annuler une opération consiste à effectuer la transaction inverse et jamais en effaçant la première transaction. « Les comptables n’utilisent pas de blanc » est une citation de Pat Helland, un architecte des systèmes transactionnels qui a travaillé pour Microsoft et Amazon.
 
-<p>To rehash, a <em>transaction</em> can succeed or fail, but nothing in between. The only operation that CouchDB guarantees to have succeed or fail is a single document write. All operations that comprise a transaction need to be combined into a single document. If business logic detects that an error occurred (e.g., not enough funds), a reverse transaction needs to be created.
+<p>Pour récapituler, une <em>transaction</em> peut aboutir ou faillir, et rien d’autre. La seule opération que CouchDB garantit comme pouvant aboutir ou faillir est l’écriture d’un document. Toutes les opérations qui sont comprises dans une transaction doivent être contenue dans le même document. Si la logique métier détecte la survenance d’une erreur (par ex., il n’y a pas les fonds requis), une nouvelle transaction inverse doit être créée.
 
-<p>Let’s look at a CouchDB example. We mentioned earlier that your account balance is an aggregated value. If we stick to this picture, things become downright easy. Instead of updating the balance of two accounts (yours and Paul’s, or yours and the in-transit account), we simply create a single transaction document that describes what we’re doing and use a view to aggregate your account balance.
+<p>Voyons ce qu’il en est avec CouchDB. Nous avons mentionné que le solde de votre compte est une valeur agrégée. Si nous nous en tenons à cette image, les choses sont simples. Plutôt que mettre à jour le solde des deux comptes (le vôtre et celui de Paul, ou le vôtre et celui de transit), nous créons une seule transaction qui décrit ce que nous sommes en train de faire et recourons à une vue pour obtenir le solde agrégé.
 
-<p>Let’s consider a bunch of transactions:
+<p>Considérons les transactions suivantes :
 
 <pre>
 ...
@@ -48,9 +48,9 @@
 ...
 </pre>
 
-<p>Single document writes in CouchDB are atomic. Querying a view forces an update to the view index with all changes to all documents. The view result is always consistent with the data in our documents. This guarantees that our bank is always in balance. There are many more transactions, of course, but these will do for illustration purposes.
+<p>Dans CouchDB, l’écriture d’un document est une opération atomique. Interroger une vue oblige à mettre à jour l’index de la vue en prenant en compte l’ensemble des changements survenus dans tous les documents. La vue résultante est toujours cohérente avec les données présentes dans nos documents. Cela garantie que notre banque est toujours équilibrée. Bien sûr, il existe bien d’autres transactions, mais celles-ci suffiront pour l’exemple.
 
-<p>How do we read the current account balance? Easy—create a MapReduce view:
+<p>Comment consultons-nous le solde courant ? C’est simple : une vue <em>MapReduce</em>.
 
 <pre>
 function(transaction) {
@@ -65,13 +65,13 @@ function(keys, values) {
 }
 </pre>
 
-<p>Doesn’t look too hard, does it? We’ll store this in a view <code>balance</code> in a <code>_design/account</code> document. Let’s find out Jan’s balance:
+<p>Ça n’a pas l’air bien compliqué, n’est-ce pas ? Nous stockerons cela dans une vue <code>balance</code> (NdT : solde) dans un document <code>_design/account</code>. Consultons le solde de Jan :
 
 <pre>
 curl 'http://127.0.0.1:5984/bank/_design/account/_view/balance?key="Jan"'
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB répond :
 
 <pre>
 {"rows":[
@@ -79,13 +79,13 @@ curl 'http://127.0.0.1:5984/bank/_design/account/_view/balance?key="Jan"'
 ]}
 </pre>
 
-<p>Looks good! Now let’s see if our bank is actually in balance. The sum of all transactions should be zero:
+<p>Ça semble correct ! Maintenant, vérifions que notre banque est bien équilibrée. La somme des transactions devrait être égale à zéro :
 
 <pre>
 curl http://127.0.0.1:5984/bank/_design/account/_view/balance
 </pre>
 
-<p>CouchDB replies:
+<p>CouchDB répond :
 
 <pre>
 {"rows":[
@@ -93,9 +93,9 @@ curl http://127.0.0.1:5984/bank/_design/account/_view/balance
 ]}
 </pre>
 
-<h4 id="wrap">Wrapping Up</h4>
+<h4 id="wrap">Résumé</h4>
 
-<p>This should explain that applications with strong consistency requirements can use CouchDB if it is possible to break up bigger transactions into smaller ones. A bank is a good enough approximation of a serious business, so you can be safe modeling your important business logic into small CouchDB transactions.
+<p>Cela devrait explique que les applications qui requiernt une forte cohérence peuvent utiliser CouchDB s’il est possible de découper les grosses transactions et petites. Une banque est une bonne approximation d’un métier sérieux, donc vous pouvez être rassurés quant à la possibilité de modéliser votre transactions importantes en petites transactions CouchDB.
 
 <h3 id="ordering">Ordering Lists</h3>
 
