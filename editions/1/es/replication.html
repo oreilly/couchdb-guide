@@ -1,4 +1,4 @@
-<title>Replication</title>
+<title>Replicación</title>
 
 <meta charset="utf-8">
 
@@ -10,59 +10,59 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="replication">Replication</h2>
+<h2 id="replication">Replicación</h2>
 
-<p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
+<p>Este capítulo introduce el sistema de replicación "de primera clase" de CouchDB. Este sistema sincroniza dos copias de la misma base de datos, permitiendo al usuario tener acceso de baja latencia donde quiera que esté. Las bases de datos pueden estar alojadas en el mismo servidor o en servidores distintos-CouchDB no hace distinción. Si cambia una copia de la base de datos, el proceso de replicación envía los cambios a la otra copia.
 
-<p>Replication is a one-off operation: you send an HTTP request to CouchDB that includes a <em>source</em> and a <em>target</em> database, and CouchDB will send the changes from the source to the target. That is all. Granted, calling something world-class and then only needing one sentence to explain it does seem odd. But part of the reason why CouchDB’s replication is so powerful lies in its simplicity.
+<p>La replicación es una operación puntual y aislada: mandamos una petición HTTP a CouchDB incluyendo una base de datos de <em>origen</em> (<em>source</em>) y una de <em>destino</em> (<em>target</em>), y CouchDB manda todos los cambios del origen al destino. Eso es todo. Aunque decir que algo es "de primera clase" y después sólo necesitar una frase para explicarlo suena un poco raro. Dicho esto, veremos que esta simplicidad es uno de los factores que dan al sistema de replicación tanta potencia.
 
-<p>Let’s see what replication looks like:
+<p>Veamos un ejemplo de replicación:
 
 <pre>
 POST /_replicate HTTP/1.1
 {"source":"database","target":"http://example.org/database"}
 </pre>
 
-<p>This call sends all the documents in the local database <code>database</code> to the remote database <code>http://example.org/database</code>. A database is considered “local” when it is on the same CouchDB instance you send the <code>POST /_replicate</code> HTTP request to. All other instances of CouchDB are “remote.”
+<p>Esta petición manda todos los documentos de la base de datos local <code>database</code> a la base de datos remota <code>http://example.org/database</code>. Una base de datos se considera “local” cuando está en la misma instancia de CouchDB a la que le mandamos la petición HTTP <code>POST /_replicate</code>. Cualquier otra instancia de CouchDB se considera “remota”.
 
-<p>If you want to send changes from the target to the source database, you just make the same HTTP requests, only with source and target database swapped. That is all.
+<p>Si quieres sincronizar en la otra dirección, desde la base de datos remota a la local, simplemente cambiamos el origen (source) por el destino (target). Y ya está!.
 
 <pre>
 POST /_replicate HTTP/1.1
 {"source":"http://example.org/database","target":"database"}
 </pre>
 
-<p>A remote database is identified by the same URL you use to talk to it. CouchDB replication works over HTTP using the same mechanisms that are available to you. This example shows that replication is a <em>unidirectional</em> process. Documents are copied from one database to another and not automatically vice versa. If you want <em>bidirectional</em> replication, you need to trigger two replications with <em>source</em> and <em>target</em> swapped.
+<p>Las bases de datos remotas se identifican por la misma URL que usamos para hacer consultas. La replicación de CouchDB funciona por HTTP usando los mismos mecanismos a tu alcance. Este ejemplo muestra que la replicación es un proceso <em>unidireccional</em>. Los documentos se copian de una base datos a otra pero esto no implica que se copie nada en la otra dirección. Si quieres replicación <em>bidireccional</em>, tienes que iniciar dos replicaciones con el origen (<em>source</em>) y destino (<em>target</em>) intercambiados.
 
-<h3 id="magic">The Magic</h3>
+<h3 id="magic">La Magia</h3>
 
-<p>When you ask CouchDB to replicate one database to another, it will go and compare the two databases to find out which documents on the source differ from the target and then submit a batch of the changed documents to the target until all changes are transferred. Changes include new documents, changed documents, and deleted documents. Documents that already exist on the target in the same revision are not transferred; only newer revisions are.
+<p>Cuando le pedimos a CouchDB que replique una base de datos en otra, éste va y compara las dos bases de datos para averiguar qué documentos del origen son distintos del destino y después envía tandas de documentos cambiados hasta que todos los cambios se han transferido. Los cambios incluyen documentos nuevos, documentos cambiados, y documentos borrados. Los documentos que ya existan en el destino y estén en la misma revisión no se transfieren.
 
-<p>Databases in CouchDB have a <em>sequence number</em> that gets incremented every time the database is changed. CouchDB remembers what changes came with which sequence number. That way, CouchDB can answer questions like, “What changed in database A between sequence number 212 and now?” by returning a list of new and changed documents. Finding the differences between databases this way is an efficient operation. It also adds to the robustness of replication.
+<p>En CouchDB las bases de datos tienen un <em>número de secuencia</em> (<em>sequence number</em>) que se incrementa cada vez que la base datos cambia. CouchDB se acuerda de qué cambios se hicieron en cada número de secuencia. De esta manera, CouchDB puede responder a preguntas como, “¿Qué ha cambiado en la base de datos A entre el número de secuencia 212 y ahora?” y presentarnos con una lista de documentos nuevos y documentos cambiados. Ésto nos permite encontrar diferencias entra bases de datos de manera eficiente. Además, contribuye a la robustez del sistema de replicación.
 
 <div class="aside note">
 
-<p>CouchDB views use the same mechanism when determining when a view needs updating and which documents to replication. You can use this to build your own solutions as well.
+<p>Las vistas de CouchDB usan el mismo mecanismo para determinar cuándo una vista necesita actualizarse y qúe documentos replicar. Ésto es algo que también podemos usar para construir nuestras propias soluciones.
 
 </div>
 
-<p>You can use replication on a single CouchDB instance to create snapshots of your databases to be able to test code changes without risking data loss or to be able to refer back to older states of your database. But replication gets really fun if you use two or more different computers, potentially geographically spread out.
+<p>La replicación se puede usar en una sola instancia de CouchDB para crear "snapshots" (instantáneas) de tus bases y así poder testear código sin poner en riesgo los datos, o para poder referirnos a estados previos de nuestra bases datos. Pero la replicación se pone interesante de verdad cuando usamos dos o más computadoras, potencialmente separadas geográficamente.
 
-<p>With different servers, potentially hundreds or thousands of miles apart, problems are bound to happen. Servers crash, network connections break off, things go wrong. When a replication process is interrupted, it leaves two replicating CouchDBs in an inconsistent state. Then, when the problems are gone and you trigger replication again, it continues where it left off.
+<p>Con varios servidores, potencialmente separados por cientos o miles de kilómetros, sabemos que van ocurrir problemas. Los servidores se cuelgan, las conexiónes de red se caen, siempre pasan cosas. Cuando un proceso de replicación se interrumpe, las bases de datos se quedan en un estado inconsistente. Después, cuando los problemas desaparecen e iniciamos la replicación otra vez, continúa donde se quedó.
 
-<h3 id="simple">Simple Replication with the Admin Interface</h3>
+<h3 id="simple">Replicación Simple usando la Interfaz de Administración</h3>
 
-<p>You can run replication from your web browser using Futon, CouchDB’s built-in administration interface. Start CouchDB and open your browser to <code>http://127.0.0.1:5984/_utils/</code>. On the righthand side, you will see a list of things to visit in Futon. Click on “Replication.”
+<p>La replicación se puede ejecutar desde un navegador web usando Futon, la interfaz de administración que viene con CouchDB. Arranca CouchDB, y en tu navegador abre <code>http://127.0.0.1:5984/_utils/</code>. En el lado derecho de la pantalla verás una lista de cosas que ver en Futon. Haz click en “Replication”.
 
-<p>Futon will show you an interface to start replication. You can specify a source and a target by either picking a database from the list of local databases or filling in the URL of a remote database.
+<p>Futon nos muestra una interfaz para iniciar la replicación. Podemos especificar el origen y el destino usando la lista de bases de datos locales o directamente con la URL a una base datos remota.
 
-<p>Click on the Replicate button, wait a bit, and have a look at the lower half of the screen where CouchDB gives you some statistics about the replication run or, if an error occurred, an explanatory message.
+<p>Haz click en el botón que dice Replicate, espera un poco, y echa un vistazo a la mitad inferior de la pantalla donde CouchDB nos muestra algunas estadísticas sobre la replicación o, si ocurrieron errores, un mensaje explicatorio.
 
-<p>Congratulations—you ran your first replication.
+<p>Enhorabuena-acabas de ejecutar tu primera replicación.
 
-<h3 id="detail">Replication in Detail</h3>
+<h3 id="detail">Replicación al Detalle</h3>
 
-<p>So far, we’ve skipped over the result from a replication request. Now is a good time to look at it in detail. Here’s a nicely formatted example:
+<p>Por ahora hemos omitido los resultados de las peticiones de replicación. Éste es un buen momento para ver una respuesta en detalle. Ahí va un ejemplo formateado bonito:
 
 <pre>
 {
@@ -87,32 +87,38 @@ POST /_replicate HTTP/1.1
 }
 </pre>
 
-<p>The <code>"ok": true</code> part, similar to other responses, tells us everything went well. <code>source_last_seq</code> includes the source’s <code>update_seq</code> value that was considered by this replication. Each replication request is assigned a <code>session_id</code>, which is just a UUID; you can also talk about a <em>replication session</em> identified by this ID.
+<p>La parte que dice <code>"ok": true</code>, al igual que en otras respuestas, nos dice que todo ha ido bien. <code>source_last_seq</code> incluye la secuencia de modificación (<code>update_seq</code>) del origen que se ha tenido en cuenta en esta replicación. A cada petición de replicación se le asigna un identificador de sesión (<code>session_id</code>), que es simplemente un UUID; también podemos hacer referencia a una <em>sesión de replicación</em> identificada por este ID.
 
-<p>The next bit is the replication <em>history</em>. CouchDB maintains a list of history sessions for future reference. The history array is currently capped at 50 entries. Each unique replication trigger object (the JSON string that includes the source and target databases as well as potential options) gets its own history. Let’s see what a history entry is all about.
+<p>La siguiente parte es la <em>historia</em> de replicación. CouchDB mantiene una lista de historias de sesiones para poder hacer referencia en el futuro. Esta array de historias está limitada a 50 elementos por el momento. Cada objeto de replicación único (el string JSON que contiene las bases de datos de origen y destino así como otras opciones) recibe su propia historia. Veamos de qué se trata esto de las historias.
 
-<p>The <code>session_id</code> is recorded here again for convenience. The start and end time for the replication session are recorded. The <code>_last_seq</code> denotes the <code>update_seq</code>s that were valid at the beginning and the end of the session. <code>recorded_seq</code> is the <code>update_seq</code> of the target again. It’s different from <code>end_last_seq</code> if a replication process dies in the middle and is restarted. <code>missing_checked</code> is the number of docs on the target that are already there and don’t need to be replicated. <code>missing_found</code> is the number of missing documents on the source.
+<p>El ID de sesión (<code>session_id</code>) aparece aquí otra vez por comodidad. Podemos ver cuándo se inició y cuándo terminó. <code>_last_seq</code> hace referencia a las secuencias de modificación (<code>update_seq</code>) que eran válidas en el momento de iniciar y terminar la sesión. <code>recorded_seq</code> es la secuencia de modificación (<code>update_seq</code>) del destino otra vez. Es diferente a <code>end_last_seq</code> si la replicación se interrumpe y se reinicia después. <code>missing_checked</code> es el número de documentos en el destino que ya están ahí y no necesitan ser replicados. <code>missing_found</code> es el número de documentos que faltan en el origen.
 
-<p>The last three—<code>docs_read</code>, <code>docs_written</code>, and <code>doc_write_failures</code>—show how many documents we read from the source, wrote to the target, and how many failed. If all is well, <code>_read</code> and <code>_written</code> are identical and <code>doc_write_failures</code> is 0. If not, you know something went wrong during replication. Possible failures are a server crash on either side, a lost network connection, or a <code>validate_doc_update</code> function rejecting a document write.
+<p>Las tres últimas propiedades-<code>docs_read</code>, <code>docs_written</code>, y <code>doc_write_failures</code>—muestran cuántos documentos se han leído del origen, cuántos se han escrito en el destino, y cuántos han fallado. Si todo va bien, <code>_read</code> y <code>_written</code> deberían ser idénticos y <code>doc_write_failures</code> es 0. Si no, sabemos que algo no ha ido bien en la replicación. Posibles errores pueden ser servidores colgándose, conexiones caídas o una función <code>validate_doc_update</code> rechazando la escritura de un documento.
 
-<p>One common scenario is triggering replication on nodes that have admin accounts enabled. Creating design documents is restricted to admins, and if the replication is triggered without admin credentials, writing the design documents during replication will fail and be recorded as <code>doc_write_failures</code>. If you have admins, be sure to include the credentials in the replication request:
+<p>Un caso común es iniciar replicación en nodos donde se han activado cuentas de administración. Solamente los administradores pueden crear documentos de diseño (design documents), y si la replicación se inicia sin credenciales de administración, los documentos de diseño fallarán y se reportarán en <code>doc_write_failures</code>. Si tienes administradores, asegúrate de incluir los credenciales en la petición de replicación:
 
 <pre>
 &gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@e127.0.0.1:5984/database"}'
 </pre>
 
-<h3 id="continuous">Continuous Replication</h3>
+<h3 id="continuous">Replicación Continua</h3>
 
-<p>Now that you know how replication works under the hood, we share a neat little trick. When you add <code>"continuous":true</code> to the replication trigger object, CouchDB will not stop after replicating all missing documents from the source to the target. It will listen on CouchDB’s <code>_changes</code> API (see <a href="notifications.html">Chapter 20, Change Notifications</a>) and automatically replicate over any new docs as they come into the source to the target. In fact, they are not replicated right away; there’s a complex algorithm determining the ideal moment to replicate for maximum performance. The algorithm is complex and is fine-tuned every once in a while, and documenting it here wouldn’t make much sense.
+<p>Ahora que ya sabes cómo funciona la replicación, compartimos un pequeño y elegante truquito. Cuando añadimos <code>"continuous":true</code> a la petición de replicación, CouchDB no se detiene cuando termina de replicar los documentos del origen que faltan en el destino, si no que continúa y escucha los <code>_changes</code> que emite la API de CouchDB (ver <a href="notifications.html">Chapter 20, Change Notifications</a>) y replica cualquier documento nuevo o modificado según van apareciendo. De hecho, no se replican inmediatamente; hay un algoritmo complejo que decide cuándo es el momento ideal para replicar y obtener el mejor rendimiento. El algoritmo es complejo y se actualiza de vez en cuando, y documentarlo aquí no tendría mucho sentido.
 
 <pre>
 &gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}'
 </pre>
 
-<p>At the time of writing, CouchDB doesn’t remember continuous replications over a server restart. For the time being, you are required to trigger them again when you restart CouchDB. In the future, CouchDB will allow you to define permanent continuous replications that survive a server restart without you having to do anything.
+<p>Al momento de escribir esto, CouchDB no se acuerda de replicaciones al reiniciar. Por el momento, hay que reiniciarlas cuando volvamos a arrancar CouchDB. En el futuro, CouchDB permitirá definir replicaciones continuas permanentes que sobreviven a un reinicio del servidor sin tener que hacer nada.
 
-<h3 id="more">That’s It?</h3>
+<div class="aside note">
 
-<p>Replication is the foundation on which the following chapters build on. Make sure you have understood this chapter. If you don’t feel comfortable yet, just read it again and play around with the replication interface in Futon.
+<p>En CouchDB 1.1.0 se introdujo la base de datos <code>_replicator</code> que se encarga precisamente de acordarse de las tareas de replicación y reiniciarlas en caso de que el servidor se reinicie. Más info <a href="https://github.com/oreilly/couchdb-guide/issues/476">aquí</a> (en inglés).
 
-<p>We haven’t yet told you everything about replication. The next chapters show you how to manage replication conflicts (see <a href="conflicts.html">Chapter 17, Conflict Management</a>), how to use a set of synchronized CouchDB instances for load balancing (see <a href="balancing.html">Chapter 18, Load Balancing</a>), and how to build a cluster of CouchDBs that can handle more data or write requests than a single node (see <a href="clustering.html">Chapter 19, Clustering</a>).
+</div>
+
+<h3 id="more">¿Eso es todo?</h3>
+
+<p>La replicación son los cimientos sobre los que se apoyan los siguientes capítulos. Asegúrate de entender bien este capítulo. Si no estás seguro, léelo otra vez y juega un poco con la replicación en la interfaz de Futon.
+
+<p>Todavía no te hemos contado todo sobre la replicación. Los próximos capítulos describen cómo manejar conflictos (ver <a href="conflicts.html">Chapter 17, Conflict Management</a>), cómo configurar un grupo de instancias de CouchDB sincronizadas para balance de carga (ver <a href="balancing.html">Chapter 18, Load Balancing</a>), y cómo construir un clúster de CouchDBs que pueda responder a más peticiones de datos o escritura que un nodo sólo (ver <a href="clustering.html">Chapter 19, Clustering</a>).
