@@ -5,7 +5,8 @@ var lang = "en";
 var languages = {
     "en": "English",
     "de": "Deutsch",
-    "fr": "Français"
+    "fr": "Français",
+    "es": "Español"
 };
 
 var l10n = {
@@ -73,8 +74,28 @@ var l10n = {
         "search": "Rechercher",
         "title": "CouchDB <span>Le guide authentique</span>",
     },
-
-
+    "es": {
+        "draftEdition": "Borrador",
+        "draftNotice": "Esta edición del libro está todavía en proceso.<br>\
+            Por favor envía un <a href='https://github.com/oreilly/couchdb-guide/pulls'>\
+            pull request</a> o <a href='http://github.com/oreilly/couchdb-guide/issues'>\
+            reporta un issue</a> con correcciones o sugerencias.",
+        "edition": "Edición",
+        "editionNotice": "Esta edición puede no estar actualizada. Visita la\
+            <a href='%s'>edición actualizada</a> para obtener más información.",
+        "footer": "Un libro de <a href='http://oreilly.com/'>O’Reilly</a>\
+            sobre <a href='http://couchdb.apache.org/'>CouchDB</a> escrito por\
+            <a href='http://www.couchone.com/'>J. Chris Anderson</a>,\
+            <a href='http://www.couchone.com/'>Jan Lehnardt</a> y\
+            <a href='http://nslater.org/'>Noah Slater</a>.\
+            Traducido del inglés por\
+            <a href='http://lupomontero.com/'>Lupo Montero</a>.",
+        "home": "Inicio",
+        "nextPage": "Página siguiente",
+        "prevPage": "Página anterior",
+        "search": "Buscar",
+        "title": "CouchDB <span>La Guía Definitiva</span>",
+    }
 };
 
 var scripts = [
