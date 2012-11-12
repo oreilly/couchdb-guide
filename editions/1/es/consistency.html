@@ -52,21 +52,21 @@
 
 <img src="consistency/01.png">
 
-<p class="caption">Figure 1. The CAP theorem
+<p class="caption">Figura 1. El teorema CAP
 
 </div>
 
-<p>When a system grows large enough that a single database node is unable to handle the load placed on it, a sensible solution is to add more servers. When we add nodes, we have to start thinking about how to partition data between them. Do we have a few databases that share exactly the same data? Do we put different sets of data on different database servers? Do we let only certain database servers write data and let others handle the reads?
+<p>Cuando un sistema crece suficientemente grande que un solo nodo es incapar de manejar la carga requerida, una solucion razonable es añadir mas servidores. Cuando añadimos nodos tenemos que pensar como particionar la informacion entre ellos. Tenemos varias bases de datos que comparten exactamente la misma informacion? Ponemos diferentes partes de la informacion en diferentes servidores? Solo dejamos que algunos servidores escriban la informacion y otros manejen la lectura?
 
-<p>Regardless of which approach we take, the one problem we’ll keep bumping into is that of keeping all these database servers in synchronization. If you write some information to one node, how are you going to make sure that a read request to another database server reflects this newest information? These events might be milliseconds apart. Even with a modest collection of database servers, this problem can become extremely complex.
+<p>Sin importar que enfoque tomemos, el problema que seguiremos encontrando es el de mantener todos los servidores de datos sincronizados. Si escribes alguna informacion en un nodo, como vaz a estar a estar seguro que la lectura en otros servidor refleja la nueva informacion? Estos eventos pueden estar separados por milisegundos. Aun con una coleccion modesta de servidores de datos este problema puede volverse extremadamente complejo.
 
-<p>When it’s absolutely critical that all clients see a consistent view of the database, the users of one node will have to wait for any other nodes to come into agreement before being able to read or write to the database. In this instance, we see that <em>availability</em> takes a backseat to <em>consistency</em>. However, there are situations where availability trumps consistency:
+<p>Cuando es absolutamente critico que todos los clientes vean una vista consistente de la base de datos, el usuario de un nodo tendra que espera por que los otros nodos esten en concordancia antes de poder leer o escribir de la base de datos. En este caso vemos que la<em>disponbilidad</em> queda relegada por la <em>consistencia</em>. Sin embargo, hay situaciones donde disponibilidad triunfa sore la consistencia:
 
 <blockquote>
 
 <p>Each node in a system should be able to make decisions purely based on local state. If you need to do something under high load with failures occurring and you need to reach agreement, you’re lost. If you’re concerned about scalability, any algorithm that forces you to run agreement will eventually become your bottleneck. Take that as a given.
 
-<p class="attribution">&mdash;Werner Vogels, Amazon CTO and Vice President
+<p class="attribution">&mdash;Werner Vogels, Amazon CTO y Vice Presidente
 
 </blockquote>
 
