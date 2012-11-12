@@ -1,4 +1,4 @@
-<title>Eventual Consistency</title>
+<title>Consistencia Eventual</title>
 
 <meta charset="utf-8">
 
@@ -10,41 +10,43 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="consistency">Eventual Consistency</h2>
+<h2 id="consistency">Consistencia Eventual</h2>
 
-<p>In the previous chapter, we saw that CouchDB’s flexibility allows us to evolve our data as our applications grow and change. In this chapter, we’ll explore how working “with the grain” of CouchDB promotes simplicity in our applications and helps us naturally build scalable, distributed systems.
+<p>En el capitulo anterior vimos que la flexibilidad de CouchDB nos permite evolucionar nuestra data mientras nuestra aplicacion crece. En este capitulo vamos a explorar como trabajar "con el grano" de CouchDB promueve simplicidad en nuestras aplicaciones y nos ayuda a construir sistemas escalables y distribuidos.
 
-<h3 id="grain">Working with the Grain</h3>
+<h3 id="grain">Trabajando con el Corriente</h3>
 
-<p>A <em>distributed system</em> is a system that operates robustly over a wide network. A particular feature of network computing is that network links can potentially disappear, and there are plenty of strategies for managing this type of network segmentation. CouchDB differs from others by accepting eventual consistency, as opposed to putting absolute consistency ahead of raw availability, like RDBMS or Paxos. What these systems have in common is an awareness that data acts differently when many people are accessing it simultaneously. Their approaches differ when it comes to which aspects of <em>consistency</em>, <em>availability</em>, or <em>partition tolerance</em> they prioritize.
+<p>Un <em>sistema distribuido</em> es un sistema que opera robustamente sobre una red amplia. Una caracteristica particular de redes en computacion es que un enlance en la red puede potencialmente desaparecer, y hay varias estrategias para manejar este tipo de segmentacion.CouchDB se diferencia de otras tecnologias por que acepta consistencia eventual, en constraste a dar prioridad a la consistencia absoluta sobre la disponibildad, como RDBMS or Paxos. Lo que estos sistemas tienen en comun es el entendimiento de que la informacion actua diferentement cuando mucha gente la accede en simulaneo. Su enfoque difiere en que aspecto de <em>consistencia</em>, <em>disponibilidad</em>, o <em>tolerancia en las particiones</em> priorizan.
 
 <p>Engineering distributed systems is tricky. Many of the caveats and “gotchas” you will face over time aren’t immediately obvious. We don’t have all the solutions, and CouchDB isn’t a panacea, but when you work with CouchDB’s grain rather than against it, the path of least resistance leads you to naturally scalable applications.
 
-<p>Of course, building a distributed system is only the beginning. A website with a database that is available only half the time is next to worthless. Unfortunately, the traditional relational database approach to consistency makes it very easy for application programmers to rely on global state, global clocks, and other high availability no-nos, without even realizing that they’re doing so. Before examining how CouchDB promotes scalability, we’ll look at the constraints faced by a distributed system. After we’ve seen the problems that arise when parts of your application can’t rely on being in constant contact with each other, we’ll see that CouchDB provides an intuitive and useful way for modeling applications around high availability.
+<p>Diseña sistemas distribuidos es dificil. Muchos de las trampas que vaz a encontrar no son inmediatamente obvias. Nosotros no tenemos todas las soluciones, y CouchDB no es una panacea, pero cuando vaz en el sentido de la corriente con CouchDB en vez de encontra, el camino de menos resistencia te lleva a aplicaciones naturalmente escalables.
 
-<h3 id="cap">The CAP Theorem</h3>
+<p>Por supuesto, construir un sistema distribuido es solo el principio. Un sitio web con una base de datos que solo esta disponible la mitad del tiempo practicamente no tiene ninguna valor. Desafortunadamente, el enfoque tradicional sobre consistencia de bases de datos relacionales hace muy facil que los programadores dependan en estado global y otros no-nos de alta disponibilidad, sin darse cuenta que lo estan haciendo. Antes de examinar como CouchDB promueve escalabilidad, vamos a investigar las restricciones encontradas por sistemas distribuidos. Despues de ver los problemas que aparece cuando partes de tu aplicacion no pueden confiar en estar en contacto constante con otras partes, veremos que CouchDB provee una manera intuitive y util para modelar aplicaciones de alta disponibilidad.
 
-<p>The CAP theorem describes a few different strategies for distributing application logic across networks. CouchDB’s solution uses replication to propagate application changes across participating nodes. This is a fundamentally different approach from consensus algorithms and relational databases, which operate at different intersections of consistency, availability, and partition tolerance.
+<h3 id="cap">El Teorema CAP</h3>
 
-<p>The CAP theorem, shown in <a href="#figure/1">Figure 1, “The CAP theorem”</a>, identifies three distinct concerns:
+<p>El teoream CAP describe diferentes estrategias para distribuir la logica de una aplicacion atravez de reders. La solucion de CouchDB usa replicacion para propagar los cambios de la aplicacion atravez de los nodos participantes. Este es un enfoque fundamentalmente diferente que algoritmos de concenso y base de datos relacionales, los cuales operan en una interseccion diferente de consistencia, disponibilidad y toleracian en las particiones.
+
+<p>El teoream CAP, mostrado en la <a href="#figure/1">Figura 1, “The CAP theorem”</a>, identifica tres  three preocupaciones distintas:
 
 <dl>
 
-<dt>Consistency</dt>
+<dt>Consistencia</dt>
 
-<dd>All database clients see the same data, even with concurrent updates.</dd>
+<dd>Todos los clientes de la base de datos ven la misma informacion, inclusive con modificaciones concurrentes.</dd>
 
-<dt>Availability</dt>
+<dt>Disponibilidad</dt>
 
-<dd>All database clients are able to access some version of the data.</dd>
+<dd>Todos los clientes de la base de datos son capazes de acceder alguna version de la informacion.</dd>
 
-<dt>Partition tolerance</dt>
+<dt>Tolerancia a la Particion</dt>
 
-<dd>The database can be split over multiple servers.</dd>
+<dd>La base de datos puede ser divida sobre multiples servidores.</dd>
 
 </dl>
 
-<p>Pick two.
+<p>Escoge dos.
 
 <div class="figure" id="figure/1">
 
@@ -72,7 +74,7 @@
 
 <p>Unlike traditional relational databases, where each action performed is necessarily subject to database-wide consistency checks, CouchDB makes it really simple to build applications that sacrifice immediate consistency for the huge performance improvements that come with simple distribution.
 
-<h3 id="local">Local Consistency</h3>
+<h3 id="local">Local Consistencia</h3>
 
 <p>Before we attempt to understand how CouchDB operates in a cluster, it’s important that we understand the inner workings of a single CouchDB node. The CouchDB API is designed to provide a convenient but thin wrapper around the database core. By taking a closer look at the structure of the database core, we’ll have a better understanding of the API that surrounds it.
 
@@ -124,7 +126,7 @@
 
 <p>By working with the grain and letting CouchDB do this for us, we save ourselves a tremendous amount of CPU cycles that would otherwise have been spent serializing object graphs from SQL, converting them into domain objects, and using those objects to do application-level validation.
 
-<h3 id="distributed">Distributed Consistency</h3>
+<h3 id="distributed">Distributed Consistencia</h3>
 
 <p>Maintaining consistency within a single database node is relatively easy for most databases. The real problems start to surface when you try to maintain consistency between multiple database servers. If a client makes a write operation on server <em>A</em>, how do we make sure that this is consistent with server <em>B</em>, or <em>C</em>, or <em>D</em>? For relational databases, this is a very complex problem with entire books devoted to its solution. You could use multi-master, master/slave, partitioning, sharding, write-through caches, and all sorts of other complex techniques.
 
