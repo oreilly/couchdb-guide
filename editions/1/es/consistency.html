@@ -18,8 +18,6 @@
 
 <p>Un <em>sistema distribuido</em> es un sistema que opera robustamente sobre una red amplia. Una caracteristica particular de redes en computacion es que un enlance en la red puede potencialmente desaparecer, y hay varias estrategias para manejar este tipo de segmentacion.CouchDB se diferencia de otras tecnologias por que acepta consistencia eventual, en constraste a dar prioridad a la consistencia absoluta sobre la disponibildad, como RDBMS or Paxos. Lo que estos sistemas tienen en comun es el entendimiento de que la informacion actua diferentement cuando mucha gente la accede en simulaneo. Su enfoque difiere en que aspecto de <em>consistencia</em>, <em>disponibilidad</em>, o <em>tolerancia en las particiones</em> priorizan.
 
-<p>Engineering distributed systems is tricky. Many of the caveats and “gotchas” you will face over time aren’t immediately obvious. We don’t have all the solutions, and CouchDB isn’t a panacea, but when you work with CouchDB’s grain rather than against it, the path of least resistance leads you to naturally scalable applications.
-
 <p>Diseña sistemas distribuidos es dificil. Muchos de las trampas que vaz a encontrar no son inmediatamente obvias. Nosotros no tenemos todas las soluciones, y CouchDB no es una panacea, pero cuando vaz en el sentido de la corriente con CouchDB en vez de encontra, el camino de menos resistencia te lleva a aplicaciones naturalmente escalables.
 
 <p>Por supuesto, construir un sistema distribuido es solo el principio. Un sitio web con una base de datos que solo esta disponible la mitad del tiempo practicamente no tiene ninguna valor. Desafortunadamente, el enfoque tradicional sobre consistencia de bases de datos relacionales hace muy facil que los programadores dependan en estado global y otros no-nos de alta disponibilidad, sin darse cuenta que lo estan haciendo. Antes de examinar como CouchDB promueve escalabilidad, vamos a investigar las restricciones encontradas por sistemas distribuidos. Despues de ver los problemas que aparece cuando partes de tu aplicacion no pueden confiar en estar en contacto constante con otras partes, veremos que CouchDB provee una manera intuitive y util para modelar aplicaciones de alta disponibilidad.
@@ -64,75 +62,75 @@
 
 <blockquote>
 
-<p>Each node in a system should be able to make decisions purely based on local state. If you need to do something under high load with failures occurring and you need to reach agreement, you’re lost. If you’re concerned about scalability, any algorithm that forces you to run agreement will eventually become your bottleneck. Take that as a given.
+<p>Cada node en el sistem deberia poder hacer decisiones basadas puramente en el estado local. Si tienes que hacer algo bajo alta carga con fallas ocurriendo y tienes que alcanzar concorandia, entonces estas perdido. Si te preocupa la escabilidad, cualquier algoritmo que te fuerza a mantener concordancia sera eventualmente el cuello de botella. Tomalos por sentado.
 
 <p class="attribution">&mdash;Werner Vogels, Amazon CTO y Vice Presidente
 
 </blockquote>
 
-<p>If availability is a priority, we can let clients write data to one node of the database without waiting for other nodes to come into agreement. If the database knows how to take care of reconciling these operations between nodes, we achieve a sort of “eventual consistency” in exchange for high availability. This is a surprisingly applicable trade-off for many applications.
+<p>Si disponibilidad es una prioridad, podemos dejar a los clientes escribir la informacion a un node de la base de datos sin esperar que los otros nodos esten en corcodancia. Si la base de datos sabe como reconciliar estas operaciones entre nodos, logramos un tipo de 'consistencia eventual' a cambio de alta disponbilidad. Este es un compromiso sorprendemente aplicable para muchas aplicaciones.
 
-<p>Unlike traditional relational databases, where each action performed is necessarily subject to database-wide consistency checks, CouchDB makes it really simple to build applications that sacrifice immediate consistency for the huge performance improvements that come with simple distribution.
+<p>A diferencia de bases de datos relaciones tradicionales, donde cada accion realiza es sujeta a chequeos de consistencia en toda la base de datos, CouchDB hace muy simple construir aplicaciones que sacrifican consistencia inmediate a cambio the enormes mejoras de rendimiento gracias a la distribucion.
 
-<h3 id="local">Local Consistencia</h3>
+<h3 id="local">Consistencia Local</h3>
 
-<p>Before we attempt to understand how CouchDB operates in a cluster, it’s important that we understand the inner workings of a single CouchDB node. The CouchDB API is designed to provide a convenient but thin wrapper around the database core. By taking a closer look at the structure of the database core, we’ll have a better understanding of the API that surrounds it.
+<p>Antes que intentemos entender como CouchDB opera en un grupo, es importante que entendamos el funcionamiento interno de un solo nodo de CouchDB. El API de CouchDB esta diseñado para proveer una capa delgada alreador del nucleo de la base de datos. Mirando de cerca la estructura del nucleo de la base de datos, tendremos un mejor entendimiento del API que lo rodea.
 
-<h4 id="key">The Key to Your Data</h4>
+<h4 id="key">La Llave de tu Informacion</h4>
 
-<p>At the heart of CouchDB is a powerful <em>B-tree</em> storage engine. A B-tree is a sorted data structure that allows for searches, insertions, and deletions in logarithmic time. As <a href="#figure/2">Figure 2, “Anatomy of a view request”</a> illustrates, CouchDB uses this B-tree storage engine for all internal data, documents, and views. If we understand one, we will understand them all.
+<p>En el corazon de CouchDB hay un poderoso motor de almacenamiento <em>B-tree</em>. Un B-tree es una estructura de informacion ordenada que permite busquedas, inserciones, y eliminaciones en tiempo logaritmico. Como la <a href="#figure/2">Figura 2, “Anatomia de una solicitud de vista”</a> ilustra, CouchB usa este motor de almacenamiento B-tree para toda la data interna, documentos y vistas. Si entendemos una, entenderemos todos.
 
 <div class="figure" id="figure/2">
 
 <img src="consistency/02.png">
 
-<p class="caption">Figure 2. Anatomy of a view request
+<p class="caption">Figura 2. Anatomia de una solicitud de vista
 
 </div>
 
-<p>CouchDB uses MapReduce to compute the results of a view. MapReduce makes use of two functions, “map” and “reduce,” which are applied to each document in isolation. Being able to isolate these operations means that view computation lends itself to parallel and incremental computation. More important, because these functions produce key/value pairs, CouchDB is able to insert them into the B-tree storage engine, sorted by key. Lookups by key, or key range, are extremely efficient operations with a B-tree, described in <em>big O notation</em> as <em>O(log N)</em> and <em>O(log N + K)</em>, respectively.
+<p>CouchDB usa MapReduce para computar los resultados de una vista. MapReduce usa dos funciones, "map" y "reduce", que son aplicadas a cada document aisladamente. Puediendo aislar estas operaciones significa que procesar las vistas se presta a computacion en paralelo e incremental. Aun mas importante, debido a que estas funciones produce pares de llaves/valores, CouchDB es capaz de insertarlas en el almacenamiento de arbol binario, ordenadas por llave. Busquedas por llave o rango de llaves son operaciones extremadamente eficientes usando el arbol binario, descrito en <em>Cota superior asintótica</em> como <em>O(log N)</em> y <em>O(log N + K)</em>, respectivamente.
 
-<p>In CouchDB, we access documents and view results by key or key range. This is a direct mapping to the underlying operations performed on CouchDB’s B-tree storage engine. Along with document inserts and updates, this direct mapping is the reason we describe CouchDB’s API as being a thin wrapper around the database core.
+<<p>En CouchDb, accedemos documentos o resultados de vistas usando llaves o rango de llaves. Esto es una asignacion directa a las operaciones subyacentes realizadas en el motor de almacenamiento de CouchDB. Junto con inserciones y modificaciones de documentos, esta asignacion directa es la razon por lo que describimos el API de CouchDB como una envoltura delgada alrededor de el nucleo de la base de datos.
 
-<p>Being able to access results by key alone is a very important restriction because it allows us to make huge performance gains. As well as the massive speed improvements, we can partition our data over multiple nodes, without affecting our ability to query each node in isolation. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, and <em>memcached</em> restrict object lookups by key for exactly these reasons.
+<p>Porder accedes resultados solo usando llaves es una restriccion importante por que nos permite brindar enormes ganancias en rendimiento. Ademas de las mejoras masivas de velocidad, podemos particionar la informacion sobre multiples nodos, sin afectar nuestra habilidad de consultar cada nodo en aislamiento. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, y <em>memcached</em> restringen la busquedad de objectos usando llaves por exactamente estas razones.
 
-<h4 id="locking">No Locking</h4>
+<h4 id="locking">Sin Bloqueo</h4>
 
-<p>A table in a relational database is a single data structure. If you want to modify a table—say, update a row—the database system must ensure that nobody else is trying to update that row and that nobody can read from that row while it is being updated. The common way to handle this uses what’s known as a <em>lock</em>. If multiple clients want to access a table, the first client gets the lock, making everybody else wait. When the first client’s request is processed, the next client is given access while everybody else waits, and so on. This serial execution of requests, even when they arrived in parallel, wastes a significant amount of your server’s processing power. Under high load, a relational database can spend more time figuring out who is allowed to do what, and in which order, than it does doing any actual work.
+<p>Una table en una base de datos relacional es una sola estructura. Si quieres modificar una tabla — digamos, modificar una fila — el sistema de baso de datos debe asegurar que nadie mas este tratando de modificar esa fila y que nadie pueda leer esa file mientras este siendo modificada. La manera comun de manejar esto usa lo que conocemos como <em>candado</em>. Si multiples clientes quieren acceder una tabla, el primer cliente obtiene el candado, haciendo esperar a los demas. Cuando la solicitud del primer cliente es procesada, el siguiente cliente obtiene el candado y asi sucesivamente. Esta ejecucion serial de solicitudes, aun si llegan el paralelo, desperdicia una cantidad significative de poder de procesamiento del servidor. Bajo alta carga, una base de datos relaciones puede tomar mas tiempo averiguando quien esta permitido de hacer que, y en que orden, que los que toma hacer el trabajo actual.
 
-<p>Instead of locks, CouchDB uses <em>Multi-Version Concurrency Control (MVCC)</em> to manage concurrent access to the database. <a href="#figure/3">Figure 3, “MVCC means no locking”</a> illustrates the differences between MVCC and traditional locking mechanisms. MVCC means that CouchDB can run at full speed, all the time, even under high load. Requests are run in parallel, making excellent use of every last drop of processing power your server has to offer.
+<p>En vez de candados, CouchDB usa <em>Control de Concurrencia multi-version (MVCC abbreviacion ingles)</em> para manejar el accesso concurrente a la base de datos. La <a href="#figure/3">Figura 3, “MVCC significa no candados</a> ilustra las diferencias entre MVCC y mecanismos de bloqueo tradicionales. MBCC significa que CouchDB puede ejecutar a toda velocidad, todo el tiempo, inclusive bajo alta carga. Las solicitudes son ejecutadas en paralelo, haciendo excelente uso de hasta la ultima gota de poder de procesamiento que el servidor puede ofrecer.
 
 <div class="figure" id="figure/3">
 
 <img src="consistency/03.png">
 
-<p class="caption">Figure 3. MVCC means no locking
+<p class="caption">Figura 3. MVCC significa no bloqueo
 
 </div>
 
-<p>Documents in CouchDB are versioned, much like they would be in a regular version control system such as Subversion. If you want to change a value in a document, you create an entire new version of that document and save it over the old one. After doing this, you end up with two versions of the same document, one old and one new.
+<p>Los documentos en CouchDB son versionados, tal como serian en un sistema de control de versiones regular com Subversion. Si quieres cambiar un valor en un documento, creas una version enteramente nueva del documento y la grabas sobre la antigua. Despues de hacer esto, terminas con dos versions del mismo document, una antigua y una nueva.
 
-<p>How does this offer an improvement over locks? Consider a set of requests wanting to access a document. The first request reads the document. While this is being processed, a second request changes the document. Since the second request includes a completely new version of the document, CouchDB can simply append it to the database without having to wait for the read request to finish.
+<p>Como ofrece esto mejoras sobre candados? Considera un grupo de solicitudes queriendo acceder un documento. La primera solicitud lee el documento. Mientras este se procesa, una segunda solicitud modifica el documento. Dado que la segunda solicitude incluye una version completamente nueva del documento, CouchDB puede simplemente anadirlo a la base de datos sin tener que esperar que termine la solicitud de lectura.
 
-<p>When a third request wants to read the same document, CouchDB will point it to the new version that has just been written. During this whole process, the first request could still be reading the original version.
+<p>Cuando una tercera solicitud quiere leer el mismo document, CouchDB apuntara a la nueva version que acaba de ser grabada. Durante todo este proceso, la primera solicitud podria estar aun leyendo la version original.
 
-<p>A read request will always see the most recent snapshot of your database.
+<p>Una solicitud de lectura siempre obtendra la version {{snapshot}} mas reciente de tu base de datos.
 
-<h4 id="validation">Validation</h4>
+<h4 id="validation">Validacion</h4>
 
-<p>As application developers, we have to think about what sort of input we should accept and what we should reject. The expressive power to do this type of validation over complex data <em>within</em> a traditional relational database leaves a lot to be desired. Fortunately, CouchDB provides a powerful way to perform per-document validation from within the database.
+<p>Como desarolladores de aplicaciones, debemos pensar en que tipo de entradas debemos aceptar y que tipos debemos rechazar. El poder expresivo de hacer este tipo de validacion sobre informacion compleja <em>dentro</em> base de datos relacional deja mucho que desear. Por suerte, CouchDB provee una poderosa manera de realizar validaciones por documento desde dentro de la base de datos.
 
-<p>CouchDB can validate documents using JavaScript functions similar to those used for MapReduce. Each time you try to modify a document, CouchDB will pass the validation function a copy of the existing document, a copy of the new document, and a collection of additional information, such as user authentication details. The validation function now has the opportunity to approve or deny the update.
+<p>CouchDB puede validar documentos usando funciones de JavaScript similares a las usadas en MapReduce. Cada vez que tratas de modificar un documento, CouchDB pasara a la funcion de validacion una copia del documento existente, una copia del nuevo documento, y una colecion de informacion adicional, como los detalles de autenticacion del usuario. La funcion de validacion tiene ahora la oportunidad de aprovar o negar la modificacion.
 
-<p>By working with the grain and letting CouchDB do this for us, we save ourselves a tremendous amount of CPU cycles that would otherwise have been spent serializing object graphs from SQL, converting them into domain objects, and using those objects to do application-level validation.
+<p>Trabajando en direcion a la corriente y dejando a CouchDB hace esto por nosotro, nos ahorramos una cantidad tremenda de ciclos de CPU que serian de lo contrario gastados serializando graficos de objectos de SQL, convirtiendolos en objectos de nuestro dominio, y usando estos objectos para hacer validaciones en la aplicacion.
 
-<h3 id="distributed">Distributed Consistencia</h3>
+<h3 id="distributed">Consistencia Distribuida</h3>
 
-<p>Maintaining consistency within a single database node is relatively easy for most databases. The real problems start to surface when you try to maintain consistency between multiple database servers. If a client makes a write operation on server <em>A</em>, how do we make sure that this is consistent with server <em>B</em>, or <em>C</em>, or <em>D</em>? For relational databases, this is a very complex problem with entire books devoted to its solution. You could use multi-master, master/slave, partitioning, sharding, write-through caches, and all sorts of other complex techniques.
+<p>Manter la consistencia dentro de un solo nodo de base datos es relativamente facil para la mayoria de las bases de datos. El problema real comienza a aparecer cuando tratas de mantener la consistencia entre multiples servidores de bases de datos. Si un cliente hace una operacion de escritura en el servidor <em>A</em>, como estamos seguros que esto es consistente con el servidor <em>B</em>, o <em>C</em>, o <em>D</em>? Para las bases de datos relaciones esto es un problema muy complejo, con libros enteros dedicados a su solucion. Podria usar {{multi-master}} mutiples maestros, maestro/esclavo, particionamiento, {{sharding}} y toda clases de tecnicas complejas.
 
-<h4 id="incremental">Incremental Replication</h4>
+<h4 id="incremental">Replicacion Incremental</h4>
 
-<p>Because CouchDB operations take place within the context of a single document, if you want to use two database nodes, you no longer have to worry about them staying in constant communication. CouchDB achieves <em>eventual consistency</em> between databases by using incremental replication, a process where document changes are periodically copied between servers. We are able to build what’s known as a <em>shared nothing</em> cluster of databases where each node is independent and self-sufficient, leaving no single point of contention across the system.
+<p>Por que las operaciones de CouchDB toman lugar dentro del contexto de un solo documento, si tu quieres usar dos nodos de base de datos, no te tienes que preocupar de que ellos se mantengan en comunicacion constante. CouchDB logra <em>consistencial eventual</em> entre las bases de datos usando replicacion incremental, un proceso en que los cambios en los documentos son periodicamente copiados entre los servidores. Somos capaces de construir lo que se conoce como un grupo de bases de datos que <em>comparten nada</em> donde cada nodo es independiente y auto suficiente, sin dejar ningun punto de disputa a traves del sistema.
 
 <p>Need to scale out your CouchDB database cluster? Just throw in another server.
 
