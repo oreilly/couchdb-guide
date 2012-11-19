@@ -132,82 +132,82 @@
 
 <p>Por que las operaciones de CouchDB toman lugar dentro del contexto de un solo documento, si tu quieres usar dos nodos de base de datos, no te tienes que preocupar de que ellos se mantengan en comunicacion constante. CouchDB logra <em>consistencial eventual</em> entre las bases de datos usando replicacion incremental, un proceso en que los cambios en los documentos son periodicamente copiados entre los servidores. Somos capaces de construir lo que se conoce como un grupo de bases de datos que <em>comparten nada</em> donde cada nodo es independiente y auto suficiente, sin dejar ningun punto de disputa a traves del sistema.
 
-<p>Need to scale out your CouchDB database cluster? Just throw in another server.
+<p>Necesitas aumentar el tamano de tu grupo de base de datos de CouchDB? Simplemente anade otro servidor.
 
-<p>As illustrated in <a href="#figure/4">Figure 4, “Incremental replication between CouchDB nodes”</a>, with CouchDB’s incremental replication, you can synchronize your data between any two databases however you like and whenever you like. After replication, each database is able to work independently.
+<p>Como esta illustratado en la <a href="#figure/4">Figura 4, “Replicacion Incremental entre nodos de CouchDB”</a>, con la replicacion incremental de CouchDB, puedes sincronizar tu informarcion entre dos bases de datos de cualquier forma que quieras y cuando quieras. Despues de la replicacion, cada base de datos puede trabajar independiemente.
 
-<p>You could use this feature to synchronize database servers within a cluster or between data centers using a job scheduler such as <em>cron</em>, or you could use it to synchronize data with your laptop for offline work as you travel. Each database can be used in the usual fashion, and changes between databases can be synchronized later in both directions.
+<p>Podria usar esta caracteristica para sincronizar servidores de bases de atos dentro de un grupo o entre centros de datos usando un programador de trabajos como <em>cron</em>, o podrias usarlo para sincronizar la informacion con tu computadora portatil para trabajar fuera de linea cuando viajas. Cada base de datos puede ser usada de la manera usual, y los cambios entre ellas pueden ser sincronizados despues en ambas direcciones.
 
 <div class="figure" id="figure/4">
 
 <img src="consistency/04.png">
 
-<p class="caption">Figure 4. Incremental replication between CouchDB nodes
+<p class="caption">Figura 4. Replicacion Incremental entre nodos de CouchDB
 
 </div>
 
-<p>What happens when you change the same document in two different databases and want to synchronize these with each other? CouchDB’s replication system comes with automatic conflict detection <em>and</em> resolution. When CouchDB detects that a document has been changed in both databases, it flags this document as being in conflict, much like they would be in a regular version control system.
+<p>Que sucede cuando modificas el mismo documento en dos bases de datos diferentes y luego quieres sincronizarlos? El sistema de replicacion de CouchDB viene con deteccion <em>y</em> resolucion automatica de conflictos. Cuando CouchDB detecta que un documento ha sido cambiado en las dos bases de datos, marca el documento en conflicto, tal como seria en una sistema de control de versiones regular.
 
-<p>This isn’t as troublesome as it might first sound. When two versions of a document conflict during replication, the <em>winning</em> version is saved as the most recent version in the document’s history. Instead of throwing the <em>losing</em> version away, as you might expect, CouchDB saves this as a previous version in the document’s history, so that you can access it if you need to. This happens automatically and consistently, so both databases will make exactly the same choice.
+<p>Esto no es tan problematico como suena inicialmente. Cuando dos versiones de un documento crean conflicto durante la replication, la version <em>ganadora</em> es grabado como la version mas reciente en la historia. En vez de desechar la version <em>perdedora</em>, como te lo esperarias, CouchDB la guarda como una version anterior en la historia del documento, tal que puedas accederla si lo necesitas. Esto sucede automaticamente y en forma consistente, asi que las dos bases de datos haran la misma eleccion.
 
-<p>It is up to you to handle conflicts in a way that makes sense for your application. You can leave the chosen document versions in place, revert to the older version, or try to merge the two versions and save the result.
+<p>Depende de ti manejar los conflictos en una manera que tenga sentido para tu aplicacion. Puedes mantener las versions elegidas de los documentos, revertir a versions antiguas o tratar de combinar las dos versiones y guardar el resultado.
 
-<h4 id="study">Case Study</h4>
+<h4 id="study">Caso Practico</h4>
 
-<p>Greg Borenstein, a friend and coworker, built a small library for converting Songbird playlists to JSON objects and decided to store these in CouchDB as part of a backup application. The completed software uses CouchDB’s MVCC and document revisions to ensure that Songbird playlists are backed up robustly between nodes.
+<p>Greg Borenstein, un amigo y colega, construyo una pequena libreria para convertir listas de reproduccion de Songbird a objectos JSON y decidio guardar estos objectos en CouchDB como parte de una aplicacion de copia de seguridad. El software terminado usa el MVCC y revision de documentos de CouchDB para asegurar que las listas de reproduccion de Songbird sean copiadas robustamente entre los nodos.
 
 <div class="aside note">
 
-<p>Songbird is a free software media player with an integrated web browser, based on the Mozilla XULRunner platform. Songbird is available for Microsoft Windows, Apple Mac OS X, Solaris, and Linux.
+<p>Songbird es un software gratis para reproducir media con un navegador integrado, basado en la plataforma XULRunner de Mozilla. Songbird esta disponible para Microsoft Windows, Apple Mac OS X, Solaris, y Linux.
 
 </div>
 
-<p>Let’s examine the workflow of the Songbird backup application, first as a user backing up from a single computer, and then using Songbird to synchronize playlists between multiple computers. We’ll see how document revisions turn what could have been a hairy problem into something that <em>just works</em>.
+<p>Examinemos el flujo de copia de seguridad de la aplicacion, primero como un usario haciendo una copia de seguridad desde una sola computadora, y luego usando Songbird para sincronizar las listas de reproduccion entre multiples computadoras. Veremos como las revisiones de documentos vuelven lo que seria un problema complicado en algo que <em>simplemente funciona</em>.
 
-<p>The first time we use this backup application, we feed our playlists to the application and initiate a backup. Each playlist is converted to a JSON object and handed to a CouchDB database. As illustrated in <a href="#figure/5">Figure 5, “Backing up to a single database”</a>, CouchDB hands back the document ID and revision of each playlist as it’s saved to the database.
+<p>La primera vez que utilizamos esta aplicacion para hacer copias de seguridad, alimentamos nuestras listas de reproduccion a la aplicacion e iniciamos la copia de seguridad. Cada lista de reproduccion es convertida a un objecto JSON y enviada a una base de datos CouchDB. Tal como esta ilustrado en la <a href="#figure/5">Figura 5, “Copiando a una sola base de datos”</a>, CouchDB nos envia de regreso el ID y revision del documento grabado en la base de datos para cada lista de reproduccion.
 
 <div class="figure" id="figure/5">
 
 <img src="consistency/05.png">
 
-<p class="caption">Figure 5. Backing up to a single database
+<p class="caption">Figure 5. Copiando a una sola base de datos
 
 </div>
 
-<p>After a few days, we find that our playlists have been updated and we want to back up our changes. After we have fed our playlists to the backup application, it fetches the latest versions from CouchDB, along with the corresponding document revisions. When the application hands back the new playlist document, CouchDB requires that the document revision is included in the request.
+<p>Luego de unos dias, encontramos que nuestras listas de reproduccion han sido actualizadas y queremos hacer copias de seguridad de los cambios. Despues que alimentamos las listas de reproduccion a la aplicacion, ella busca las ultimas versiones de CouchDB, junto con las revisiones correspondientes. Cuando la aplicacion envia de regreso el nuevo documento a CouchDB, CouchDB require que la revision del documento sea incluido en la solicitud. 
 
-<p>CouchDB then makes sure that the document revision handed to it in the request matches the current revision held in the database. Because CouchDB updates the revision with every modification, if these two are out of synchronization it suggests that someone else has made changes to the document between the time we requested it from the database and the time we sent our updates. Making changes to a document after someone else has modified it without first inspecting those changes is usually a bad idea.
+<p>Luego CouchDB se asegura que la revision del documento recibida corresponda a la revision actual en la base de datos. Debido a que CouchDB actualiza la revision con cada modificacion, si estos dos estan desincronizados, esto sugiere que alguien mas ha hecho un cambio al documento entre el lapso que tomo hacer la solucitud del documento y el momento que enviamos la actualizacion. Hacer cambios a un documento sin inspeccionarlo primero despues que alguien lo ha modificado es una mala idea.
 
-<p>Forcing clients to hand back the correct document revision is the heart of CouchDB’s optimistic concurrency.
+<p>Forzar a los clientes a enviar la revision correcta de los documentos es el corazon de la concurrecia optimista de CouchDB.
 
-<p>We have a laptop we want to keep synchronized with our desktop computer. With all our playlists on our desktop, the first step is to “restore from backup” onto our laptop. This is the first time we’ve done this, so afterward our laptop should hold an exact replica of our desktop playlist collection.
+<p>Tenemos una computadora portatil que queremos manterner sincronizada con nuestra computadora de escritorio. Con todas nuestras listas de reproduccion en la computadora de escritorio, nuestro primer paso es 'restablecer desde la copia de seguridad' a nuestra computadora portatil. Esta es la primera vez que hacemos esto, asi que despues nuestra computadora portatil deberia tener una replica exacta de la coleccion de lista de reproduccion de nuestra computadora de escritorio.
 
-<p>After editing our Argentine Tango playlist on our laptop to add a few new songs we’ve purchased, we want to save our changes. The backup application replaces the playlist document in our laptop CouchDB database and a new document revision is generated. A few days later, we remember our new songs and want to copy the playlist across to our desktop computer. As illustrated in <a href="#figure/6">Figure 6, “Synchronizing between two databases”</a>, the backup application copies the new document and the new revision to the desktop CouchDB database. Both CouchDB databases now have the same document revision.
+<p>Despues de anadir algunas canciones a nuestra lista de reproduccion de Tangos Argentinos en nuestra computadora portatil, queremos guardar nuestros cambios. La aplicacion de copias de seguridad reemplaza el documento correspondiente en la base de datos CouchDB en nuestra computadora portatil, generando una nueva revision del documento. Unos cuantos dias despues, recordamos las nuevas canciones y queremos copiar la lista de reproduccion a nuestra computadora de escritorio. Como esta ilustrado en la <a href="#figure/6">Figura 6, “Sincronizacion entre dos bases de datos”</a>, la aplicacion de copias de seguridad copia el nuevo documento con la nueva revision a la base de datos CouchDB ubicada en la computadora de escritorio. Ambas bases de datos CouchDB tienen ahora la misma revision del documento.
 
 <div class="figure" id="figure/6">
 
 <img src="consistency/06.png">
 
-<p class="caption">Figure 6. Synchronizing between two databases
+<p class="caption">Figura 6 Sincronización entre dos bases de datos
 
 </div>
 
-<p>Because CouchDB tracks document revisions, it ensures that updates like these will work only if they are based on current information. If we had made modifications to the playlist backups between synchronization, things wouldn’t go as smoothly.
+<p>Debido a que CouchDB lleva el rastro de las revisiones, se asegura que modificaciones como esta funcionen solamente si estan basadas en la informacion actual. Si hemos hecho modificaciones a las copias de seguridad de las listas de reproduccion entre las sincronizaciones, las cosas no seran tan faciles.
 
-<p>We back up some changes on our laptop and forget to synchronize. A few days later, we’re editing playlists on our desktop computer, make a backup, and want to synchronize this to our laptop. As illustrated in <a href="#figure/7">Figure 7, “Synchronization conflicts between two databases”</a>, when our backup application tries to replicate between the two databases, CouchDB sees that the changes being sent from our desktop computer are modifications of out-of-date documents and helpfully informs us that there has been a conflict.
+<p>Hacemos algunos cambios en nuestra computadora portatil y nos olvidamos de sincronizar. Algunos dias despues estamos editando las listas de reproduccion en nuestra computadora de escritorio, hacemos una copia de seguridad y queremos sincronizar esto a nuestra computadora portatil. Como esta ilustrado en la <a href="#figure/7">Figura 7, Conflictos de Sincronizacion entre dos bases de datos”</a>, cuando nuestra aplicacion trata de replicar entre las dos bases de datos, CouchDB ve que los cambios enviados de nuestra computadora de escritorio son modificaciones de documentos desactulizados y amablemente nos informa que hay un conflicto.
 
-<p>Recovering from this error is easy to accomplish from an application perspective. Just download CouchDB’s version of the playlist and provide an opportunity to merge the changes or save local modifications into a new playlist.
+<p>Recuperace de este error el facil de realizar desde la perspectiva de la aplicacion. Simplemente descarga la version de la lista de reproduccion de CouchDB y provee una oportunidad para combinar los cambios o guarda las modificaciones locales a una nueva lista de reproduccion.
 
 <div class="figure" id="figure/7">
 
 <img src="consistency/07.png">
 
-<p class="caption">Figure 7. Synchronization conflicts between two databases
+<p class="caption">Figura 7 Conflictos de Sincronizacion entre dos bases de datos
 
 </div>
 
-<h3 id="wrap">Wrapping Up</h3>
+<h3 id="wrap">Concluyendo</h3>
 
-<p>CouchDB’s design borrows heavily from web architecture and the lessons learned deploying massively distributed systems on that architecture. By understanding why this architecture works the way it does, and by learning to spot which parts of your application can be easily distributed and which parts cannot, you’ll enhance your ability to design distributed and scalable applications, with CouchDB or without it.
+<p>El diseno de CouchDB toma prestado bastante de la arquitectura de la web y de las lecciones aprendidas al distribuir sistemas masivos en esa arquitectura. Al entender por que esta arquitectura funciona en la forma que lo hace y al aprender a darse cuenta que partes de tu aplicacion pueden ser distribuidas y cuales no, aumentaar tu habilidad para disenar aplicaciones distribuidas y escalables, con o sin CouchDB.
 
-<p>We’ve covered the main issues surrounding CouchDB’s consistency model and hinted at some of the benefits to be had when you work <em>with</em> CouchDB and not against it. But enough theory—let’s get up and running and see what all the fuss is about!
+<p>Hemos cubierto los problemas principales alrededor del modelo de consistencia de CouchDB y hemos visto algunos de los benecicios que podemos obtener cuando trabajamos <em>con</em> CouchDB y no encontra. Pero suficiente teoria — empezo a hacer algo y veamos a que viene el alboroto.
