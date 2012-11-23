@@ -12,21 +12,21 @@
 
 <h2 id="consistency">Consistencia Eventual</h2>
 
-<p>En el capitulo anterior vimos como la flexibilidad de CouchDB nos permite evolucionar nuestra data mientras nuestra aplicación crece. En este capitulo vamos a explorar como trabajar "con el grano" de CouchDB promueve simplicidad en nuestras aplicaciones y nos ayuda a construir sistemas escalables y distribuidos.
+<p>En el capítulo anterior vimos como la flexibilidad de CouchDB permite que nuestra información evolucione mientras nuestra aplicación crece. En este capítulo exploraremos como trabajar siguiendo la corriente en CouchDB promueve simplicidad en nuestras aplicaciones y nos ayuda a construir sistemas escalables y distribuidos.
 
-<h3 id="grain">Trabajando con el Corriente</h3>
+<h3 id="grain">Trabajando con la Corriente</h3>
 
-<p>Un <em>sistema distribuido</em> es un sistema que opera robustamente sobre una red amplia. Una característica particular de redes en computación es que un enlace en la red puede potencialmente desaparecer, y hay varias estrategias para manejar este tipo de segmentación.CouchDB se diferencia de otras tecnologías por que acepta consistencia eventual, en contraste a dar prioridad a la consistencia absoluta sobre la disponibilidad, como RDBMS o Paxos. Lo que estos sistemas tienen en común es el entendimiento de que la información actúa diferentemente cuando mucha gente la accede en simultáneo. Su enfoque difiere en que aspecto de <em>consistencia</em>, <em>disponibilidad</em>, o <em>tolerancia en las particiones</em> priorizan.
+<p>Un <em>sistema distribuido</em> es un sistema que opera robustamente sobre una red amplia. Una característica particular de redes en computación es que un enlace en la red puede potencialmente desaparecer, y hay varias estrategias para manejar este tipo de segmentación. CouchDB se diferencia de otras tecnologías por que acepta consistencia eventual, en contraste a dar prioridad a la consistencia absoluta sobre la disponibilidad, como RDBMS o Paxos. Lo que estos sistemas tienen en común es el entendimiento de que la información actúa diferentemente cuando mucha gente la accede en simultáneo. Su enfoque difiere en que aspecto de <em>consistencia</em>, <em>disponibilidad</em>, o <em>tolerancia en las particiones</em> priorizan.
 
-<p>Diseña sistemas distribuidos es difícil. Muchos de las trampas que vas a encontrar no son inmediatamente obvias. Nosotros no tenemos todas las soluciones, y CouchDB no es una panacea, pero cuando vas en el sentido de la corriente con CouchDB en vez de encontrar, el camino de menos resistencia te lleva a aplicaciones naturalmente escalables.
+<p>Diseña sistemas distribuidos es difícil. Muchos de las trampas que vas a encontrar no son inmediatamente obvias. Nosotros no tenemos todas las soluciones, y CouchDB no es una panacea, pero cuando vas en el sentido de la corriente con CouchDB en vez de encontra, el camino de menos resistencia te lleva a crear aplicaciones naturalmente escalables.
 
-<p>Por supuesto, construir un sistema distribuido es solo el principio. Un sitio web con una base de datos que solo esta disponible la mitad del tiempo prácticamente no tiene ninguna valor. Desafortunadamente, el enfoque tradicional sobre consistencia de bases de datos relacionales hace muy fácil que los programadores dependan en estado global y otros no-nos de alta disponibilidad, sin darse cuenta que lo están haciendo. Antes de examinar como CouchDB promueve escalabilidad, vamos a investigar las restricciones encontradas por sistemas distribuidos. Después de ver los problemas que aparece cuando partes de tu aplicación no pueden confiar en estar en contacto constante con otras partes, veremos que CouchDB provee una manera intuitiva y útil para modelar aplicaciones de alta disponibilidad.
+<p>Por supuesto, construir un sistema distribuido es solo el principio. Un sitio web con una base de datos que solo esta disponible la mitad del tiempo no tiene prácticamente ningún valor. Desafortunadamente, el enfoque tradicional sobre consistencia de bases de datos relacionales hace muy fácil que los programadores dependan del estado global y otros no-nos de alta disponibilidad, sin darse cuenta que lo están haciendo. Antes de examinar como CouchDB promueve escalabilidad, investigaremos las restricciones encontradas por sistemas distribuidos. Después de ver los problemas que aparece cuando partes de tu aplicación no pueden confiar en estar en contacto constante entre ellas, veremos como CouchDB provee una manera intuitiva y útil para modelar aplicaciones de alta disponibilidad.
 
 <h3 id="cap">El Teorema CAP</h3>
 
-<p>El teorema CAP describe diferentes estrategias para distribuir la lógica de una aplicación a traves de redes. La solución de CouchDB usa replicación para propagar los cambios de la aplicación a traves de los nodos participantes. Este es un enfoque fundamentalmente diferente que algoritmos de consenso y base de datos relacionales, los cuales operan en una intersección diferente de consistencia, disponibilidad y tolerancia en las particiones.
+<p>El teorema CAP describe diferentes estrategias para distribuir la lógica de una aplicación a través de redes. La solución de CouchDB usa replicación para propagar los cambios de la aplicación a través de los nodos participantes. Este es un enfoque fundamentalmente diferente que algoritmos de consenso y base de datos relacionales, los cuales operan en una intersección diferente de consistencia, disponibilidad y tolerancia en las particiones.
 
-<p>El teorema CAP, mostrado en la <a href="#figure/1">Figura 1, “The CAP teorema”</a>, identifica tres  three preocupaciones distintas:
+<p>El teorema CAP, mostrado en la <a href="#figure/1">Figura 1, “The CAP teorema”</a>, identifica tres preocupaciones distintas:
 
 <dl>
 
@@ -54,31 +54,31 @@
 
 </div>
 
-<p>Cuando un sistema crece suficientemente grande que un solo nodo es incapaz de manejar la carga requerida, una solución razonable es añadir mas servidores. Cuando añadimos nodos tenemos que pensar como particionar la información entre ellos. Tenemos varias bases de datos que comparten exactamente la misma información? Ponemos diferentes partes de la información en diferentes servidores? Solo dejamos que algunos servidores escriban la información y otros manejen la lectura?
+<p>Cuando un sistema crece tan grande que un solo nodo no es capaz de manejar la carga requerida, una solución razonable es añadir mas servidores. Cuando añadimos nodos tenemos que pensar como particionar la información entre ellos. ¿Tenemos varias bases de datos que comparten exactamente la misma información? ¿Ponemos diferentes partes de la información en diferentes servidores? ¿Solo dejamos que algunos servidores escriban la información y otros manejen la lectura?
 
-<p>Sin importar que enfoque tomemos, el problema que seguiremos encontrando es el de mantener todos los servidores de datos sincronizados. Si escribes alguna información en un nodo, como vas a estar a estar seguro que la lectura en otros servidor refleja la nueva información? Estos eventos pueden estar separados por milisegundos. Aun con una colección modesta de servidores de datos este problema puede volverse extremadamente complejo.
+<p>Sin importar que enfoque tomemos, el problema que seguiremos encontrando es el de mantener todos los servidores de datos sincronizados. ¿Si escribes alguna información en un nodo, como vas a estar a estar seguro que la lectura en otros servidor refleja la nueva información? Estos eventos pueden estar separados por milisegundos. Aun con una colección modesta de servidores de datos este problema puede volverse extremadamente complejo.
 
-<p>Cuando es absolutamente critico que todos los clientes vean una vista consistente de la base de datos, el usuario de un nodo tendrá que espera por que los otros nodos estén en concordancia antes de poder leer o escribir de la base de datos. En este caso vemos que la<em>disponibilidad</em> queda relegada por la <em>consistencia</em>. Sin embargo, hay situaciones donde disponibilidad triunfa sobre la consistencia:
+<p>Cuando es absolutamente critico que todos los clientes vean una vista consistente de la base de datos, el usuario de un nodo tendrá que espera que los otros nodos estén en concordancia antes de poder leer o escribir en la base de datos. En este caso vemos que la<em>disponibilidad</em> queda relegada por la <em>consistencia</em>. Sin embargo, hay situaciones donde la disponibilidad triunfa sobre la consistencia:
 
 <blockquote>
 
-<p>Cada nodo en el sistema debería poder hacer decisiones basadas puramente en el estado local. Si tienes que hacer algo bajo alta carga con fallas ocurriendo y tienes que alcanzar concordancia, entonces estas perdido. Si te preocupa la escalabilidad, cualquier algoritmo que te fuerza a mantener concordancia será eventualmente el cuello de botella. Tomalo por sentado.
+<p>Cada nodo en el sistema debería poder hacer decisiones basadas puramente en el estado local. Si tienes que hacer algo bajo alta carga con fallas ocurriendo y tienes que alcanzar concordancia, entonces estas perdido. Si te preocupa la escalabilidad, cualquier algoritmo que te fuerza a mantener concordancia será eventualmente el cuello de botella. Tómalo por sentado.
 
 <p class="attribution">&mdash;Werner Vogels, Amazon CTO y Vice Presidente
 
 </blockquote>
 
-<p>Si disponibilidad es una prioridad, podemos dejar a los clientes escribir la información a un nodo de la base de datos sin esperar que los otros nodos estén en concordancia. Si la base de datos sabe como reconciliar estas operaciones entre nodos, logramos un tipo de 'consistencia eventual' a cambio de alta disponibilidad. Este es un compromiso sorprendentemente aplicable para muchas aplicaciones.
+<p>Si disponibilidad es una prioridad, podemos dejar a los clientes escribir la información en un nodo de la base de datos sin esperar que los otros nodos estén en concordancia. Si la base de datos sabe como reconciliar estas operaciones entre los nodos, logramos un tipo de 'consistencia eventual' a cambio de alta disponibilidad. Este es un compromiso sorprendentemente razonable para muchas aplicaciones.
 
-<p>A diferencia de bases de datos relaciones tradicionales, donde cada acción realiza es sujeta a chequeos de consistencia en toda la base de datos, CouchDB hace muy simple construir aplicaciones que sacrifican consistencia inmediata a cambio de enormes mejoras de rendimiento gracias a la distribución.
+<p>A diferencia de bases de datos relaciones tradicionales, donde cada acción realizada es sujeta a chequeos de consistencia en toda la base de datos, CouchDB hace muy simple construir aplicaciones que sacrifican consistencia inmediata a cambio de enormes mejoras de rendimiento gracias a la distribución.
 
 <h3 id="local">Consistencia Local</h3>
 
-<p>Antes que intentemos entender como CouchDB opera en un grupo, es importante que entendamos el funcionamiento interno de un solo nodo de CouchDB. El API de CouchDB esta diseñado para proveer una capa delgada alterador del núcleo de la base de datos. Mirando de cerca la estructura del núcleo de la base de datos, tendremos un mejor entendimiento del API que lo rodea.
+<p>Antes que intentemos entender como CouchDB opera en un grupo, es importante que entendamos el funcionamiento interno de un solo nodo de CouchDB. El API de CouchDB esta diseñado para proveer una capa delgada alrededor del núcleo de la base de datos. Al ver de cerca la estructura del núcleo de la base de datos, tendremos un mejor entendimiento del API que lo rodea.
 
 <h4 id="key">La Llave de tu Información</h4>
 
-<p>En el corazón de CouchDB hay un poderoso motor de almacenamiento <em>B-tree</em>. Un B-tree es una estructura de información ordenada que permite búsquedas, inserciones, y eliminaciones en tiempo logarítmico. Como la <a href="#figure/2">Figura 2, “Anatomía de una solicitud de vista”</a> ilustra, CouchDB usa este motor de almacenamiento B-tree para toda la data interna, documentos y vistas. Si entendemos una, entenderemos todos.
+<p>El corazón de CouchDB es un poderoso motor de almacenamiento de <em>Arbol binario</em>. Un árbol binario es una estructura de información ordenada que permite búsquedas, inserciones, y eliminaciones en tiempo logarítmico. Como la <a href="#figure/2">Figura 2, “Anatomía de una solicitud de vista”</a> ilustra, CouchDB usa este árbol binario para toda la data interna, documentos y vistas. Si entendemos una, entenderemos todos.
 
 <div class="figure" id="figure/2">
 
@@ -88,17 +88,17 @@
 
 </div>
 
-<p>CouchDB usa MapReduce para computar los resultados de una vista. MapReduce usa dos funciones, "map" y "reduce", que son aplicadas a cada documento aisladamente. Pudiendo aislar estas operaciones significa que procesar las vistas se presta a computación en paralelo e incremental. Aun mas importante, debido a que estas funciones produce pares de llaves/valores, CouchDB es capaz de insertarlas en el almacenamiento de árbol binario, ordenadas por llave. Búsquedas por llave o rango de llaves son operaciones extremadamente eficientes usando el árbol binario, descrito en <em>Cota superior asintótica</em> como <em>O(log N)</em> y <em>O(log N + K)</em>, respectivamente.
+<p>CouchDB usa MapReduce para computar los resultados de una vista. MapReduce usa dos funciones, "map" y "reduce", que son aplicadas a cada documento aisladamente. Pudiendo aislar estas operaciones significa que procesar las vistas se presta a computación paralela e incremental. Aun mas importante, debido a que estas funciones produce pares de llaves y valores, CouchDB es capaz de insertarlas en el árbol binario, ordenadas por llave. Operaciones de búsquedas por llave o rango de llaves son extremadamente eficientes al usar árbol binario, descrito en <em>Big O notation</em> como <em>O(log N)</em> y <em>O(log N + K)</em>, respectivamente.
 
-<<p>En CouchDb, accedemos documentos o resultados de vistas usando llaves o rango de llaves. Esto es una asignación directa a las operaciones subyacentes realizadas en el motor de almacenamiento de CouchDB. Junto con inserciones y modificaciones de documentos, esta asignación directa es la razón por lo que describimos el API de CouchDB como una envoltura delgada alrededor de el núcleo de la base de datos.
+<p>En CouchDb, accedemos documentos o resultados de vistas usando llaves o rango de llaves. Esto es una asignación directa a las operaciones subyacentes realizadas en el motor de almacenamiento de CouchDB. Junto con inserciones y modificaciones de documentos, esta asignación directa es la razón por lo que describimos el API de CouchDB como una envoltura delgada alrededor del núcleo de la base de datos.
 
-<p>Poder accedes resultados solo usando llaves es una restricción importante por que nos permite brindar enormes ganancias en rendimiento. Ademas de las mejoras masivas de velocidad, podemos particionar la información sobre múltiples nodos, sin afectar nuestra habilidad de consultar cada nodo en aislamiento. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, y <em>memcached</em> restringen la búsqueda de objetos usando llaves por exactamente estas razones.
+<p>Poder acceder resultados solo usando llaves es una restricción importante por que nos permite brindar enormes ganancias en rendimiento. Ademas de las mejoras masivas de velocidad, podemos particionar la información sobre múltiples nodos, sin afectar nuestra habilidad de consultar cada nodo en aislamiento. <em>BigTable</em>, <em>Hadoop</em>, <em>SimpleDB</em>, y <em>memcached</em> restringen la búsqueda de objetos usando llaves por exactamente estas razones.
 
 <h4 id="locking">Sin Bloqueo</h4>
 
-<p>Una tabla en una base de datos relacional es una sola estructura. Si quieres modificar una tabla — digamos, modificar una fila — el sistema de baso de datos debe asegurar que nadie mas este tratando de modificar esa fila y que nadie pueda leer esa file mientras este siendo modificada. La manera común de manejar esto usa lo que conocemos como <em>candado</em>. Si múltiples clientes quieren acceder una tabla, el primer cliente obtiene el candado, haciendo esperar a los demás. Cuando la solicitud del primer cliente es procesada, el siguiente cliente obtiene el candado y así sucesivamente. Esta ejecución serial de solicitudes, aun si llegan el paralelo, desperdicia una cantidad significativa de poder de procesamiento del servidor. Bajo alta carga, una base de datos relaciones puede tomar mas tiempo averiguando quien esta permitido de hacer que, y en que orden, que los que toma hacer el trabajo actual.
+<p>Una tabla en una base de datos relacional es una sola estructura. Si quieres modificar una tabla — digamos, modificar una fila — la base de datos debe asegurarse que nadie mas este tratando de modificar esa fila y que nadie pueda leer esa file mientras este siendo modificada. La manera común de manejar esto es usando lo que conocemos como un <em>candado</em>. Si múltiples clientes quieren acceder una tabla, el primer cliente obtiene el candado, haciendo esperar a los demás. Cuando la solicitud del primer cliente es procesada, el siguiente cliente obtiene el candado y así sucesivamente. Esta ejecución serial de solicitudes, aun si llegan en paralelo, desperdicia una cantidad significativa de poder de procesamiento del servidor. Bajo alta carga, una base de datos relaciones puede tomar mas tiempo averiguando quien esta permitido de hacer que, y en que orden, que los que toma hacer el trabajo real.
 
-<p>En vez de candados, CouchDB usa <em>Control de Concurrencia multi-versión (MVCC abreviación ingles)</em> para manejar el acceso concurrente a la base de datos. La <a href="#figure/3">Figura 3, “MVCC significa no candados</a> ilustra las diferencias entre MVCC y mecanismos de bloqueo tradicionales. MBCC significa que CouchDB puede ejecutar a toda velocidad, todo el tiempo, inclusive bajo alta carga. Las solicitudes son ejecutadas en paralelo, haciendo excelente uso de hasta la ultima gota de poder de procesamiento que el servidor puede ofrecer.
+<p>En vez de candados, CouchDB usa <em>Control de Concurrencia multi-versión (MVCC abreviación ingles)</em> para manejar el acceso concurrente a la base de datos. La <a href="#figure/3">Figura 3, “MVCC significa no candados</a> ilustra las diferencias entre MVCC y mecanismos de bloqueo tradicionales. MVCC significa que CouchDB puede ejecutar a toda velocidad, todo el tiempo, inclusive bajo alta carga. Las solicitudes son ejecutadas en paralelo, haciendo excelente uso de hasta la ultima gota de poder de procesamiento que el servidor puede ofrecer.
 
 <div class="figure" id="figure/3">
 
@@ -108,35 +108,35 @@
 
 </div>
 
-<p>Los documentos en CouchDB son versionados, tal como serian en un sistema de control de versiones regular com Subversion. Si quieres cambiar un valor en un documento, creas una versión enteramente nueva del documento y la grabas sobre la antigua. Después de hacer esto, terminas con dos versiones del mismo documento, una antigua y una nueva.
+<p>Los documentos en CouchDB son versionados, tal como serian en un sistema de control de versiones regular como Subversion. Si quieres cambiar un valor en un documento, creas una nueva versión del documento y la grabas sobre la antigua. Después de hacer esto, terminas con dos versiones del mismo documento, una antigua y una nueva.
 
-<p>Como ofrece esto mejoras sobre candados? Considera un grupo de solicitudes queriendo acceder un documento. La primera solicitud lee el documento. Mientras este se procesa, una segunda solicitud modifica el documento. Dado que la segunda solicitud incluye una versión completamente nueva del documento, CouchDB puede simplemente añadirlo a la base de datos sin tener que esperar que termine la solicitud de lectura.
+<p>¿Como ofrece esto mejoras sobre los candados? Considera un grupo de solicitudes queriendo acceder un documento. La primera solicitud lee el documento. Mientras esta siendo procesada, una segunda solicitud modifica el documento. Dado que la segunda solicitud incluye una versión completamente nueva del documento, CouchDB puede simplemente añadirla a la base de datos sin tener que esperar que termine la solicitud de lectura.
 
-<p>Cuando una tercera solicitud quiere leer el mismo documento, CouchDB apuntara a la nueva versión que acaba de ser grabada. Durante todo este proceso, la primera solicitud podría estar aun leyendo la versión original.
+<p>Cuando una tercera solicitud quiere leer el mismo documento, CouchDB apuntara a la nueva versión que acaba de ser grabada. Durante todo este proceso, la primera solicitud podría aun estar leyendo la versión original.
 
-<p>Una solicitud de lectura siempre obtendrá la versión {{snapshot}} mas reciente de tu base de datos.
+<p>Una solicitud de lectura siempre obtendrá la versión mas reciente de la base de datos.
 
 <h4 id="validation">Validación</h4>
 
-<p>Como desolladores de aplicaciones, debemos pensar en que tipo de entradas debemos aceptar y que tipos debemos rechazar. El poder expresivo de hacer este tipo de validación sobre información compleja <em>dentro</em> base de datos relacional deja mucho que desear. Por suerte, CouchDB provee una poderosa manera de realizar validaciones por documento desde dentro de la base de datos.
+<p>Como desarrolladores de aplicaciones, debemos pensar en que tipo de entradas debemos aceptar y cuales debemos rechazar. El poder expresivo de hacer este tipo de validación sobre información compleja <em>dentro</em> de las bases de datos relacional deja mucho que desear. Por suerte, CouchDB provee una poderosa manera de realizar validaciones por documento desde dentro de la base de datos.
 
 <p>CouchDB puede validar documentos usando funciones de JavaScript similares a las usadas en MapReduce. Cada vez que tratas de modificar un documento, CouchDB pasara a la función de validación una copia del documento existente, una copia del nuevo documento, y una colección de información adicional, como los detalles de autenticación del usuario. La función de validación tiene ahora la oportunidad de aprobar o negar la modificación.
 
-<p>Trabajando en dirección a la corriente y dejando a CouchDB hace esto por nosotros, nos ahorramos una cantidad tremenda de ciclos de CPU que serian de lo contrario gastados serializando gráficos de objetos de SQL, convirtiéndolos en objetos de nuestro dominio, y usando estos objetos para hacer validaciones en la aplicación.
+<p>Al trabajar en dirección a la corriente y al dejar a CouchDB hace esto por nosotros, nos ahorramos una cantidad tremenda de ciclos de CPU que serian de lo contrario utilizados serializando gráficos de objetos de SQL, convirtiéndolos en objetos de nuestro dominio, y usando estos objetos para hacer validaciones en la aplicación.
 
 <h3 id="distributed">Consistencia Distribuida</h3>
 
-<p>Mantener la consistencia dentro de un solo nodo de base datos es relativamente fácil para la mayoría de las bases de datos. El problema real comienza a aparecer cuando tratas de mantener la consistencia entre múltiples servidores de bases de datos. Si un cliente hace una operación de escritura en el servidor <em>A</em>, como estamos seguros que esto es consistente con el servidor <em>B</em>, o <em>C</em>, o <em>D</em>? Para las bases de datos relaciones esto es un problema muy complejo, con libros enteros dedicados a su solución. Podría usar {{multi-master}} múltiples maestros, maestro/esclavo, particionamento, {{sharding}} y toda clases de técnicas complejas.
+<p>Mantener la consistencia dentro de un solo nodo de base datos es relativamente fácil para la mayoría de las bases de datos. El problema real aparece cuando tratas de mantener la consistencia entre múltiples servidores de bases de datos. Si un cliente hace una operación de escritura en el servidor <em>A</em>, ¿cómo podemos estar seguros que este es consistente con el servidor <em>B</em>, o <em>C</em>, o <em>D</em>? Para las bases de datos relaciones esto es un problema muy complejo, con libros enteros dedicados a su solución. Podrías usar múltiples maestros, maestro/esclavo, particionamento, {{sharding}} y toda clases de técnicas complejas.
 
 <h4 id="incremental">Replicación Incremental</h4>
 
-<p>Por que las operaciones de CouchDB toman lugar dentro del contexto de un solo documento, si tu quieres usar dos nodos de base de datos, no te tienes que preocupar de que ellos se mantengan en comunicación constante. CouchDB logra <em>consistencia eventual</em> entre las bases de datos usando replicación incremental, un proceso en que los cambios en los documentos son periódicamente copiados entre los servidores. Somos capaces de construir lo que se conoce como un grupo de bases de datos que <em>comparten nada</em> donde cada nodo es independiente y auto suficiente, sin dejar ningún punto de disputa a través del sistema.
+<p>Debido a que las operaciones en CouchDB toman lugar dentro del contexto de un solo documento, si tu quieres usar dos nodos de base de datos, no te tienes que preocupar de que ellos se mantengan en comunicación constante. CouchDB logra <em>consistencia eventual</em> entre las bases de datos usando replicación incremental, un proceso en que los cambios en los documentos son periódicamente copiados entre los servidores. Somos capaces de construir lo que se conoce como un grupo de bases de datos que <em>comparten nada</em> donde cada nodo es independiente y auto suficiente, sin dejar ningún punto de disputa a través del sistema.
 
-<p>Necesitas aumentar el tamaño de tu grupo de base de datos de CouchDB? Simplemente añade otro servidor.
+<p>¿Necesitas aumentar el tamaño de tu grupo de base de datos de CouchDB? Simplemente añade otro servidor.
 
 <p>Como esta ilustrado en la <a href="#figure/4">Figura 4, “Replicación Incremental entre nodos de CouchDB”</a>, con la replicación incremental de CouchDB, puedes sincronizar tu información entre dos bases de datos de cualquier forma que quieras y cuando quieras. Después de la replicación, cada base de datos puede trabajar independientemente.
 
-<p>Podría usar esta característica para sincronizar servidores de bases de datos dentro de un grupo o entre centros de datos usando un programador de trabajos como <em>cron</em>, o podrías usarlo para sincronizar la información con tu computadora portátil para trabajar fuera de linea cuando viajas. Cada base de datos puede ser usada de la manera usual, y los cambios entre ellas pueden ser sincronizados después en ambas direcciones.
+<p>Podrías usar esta característica para sincronizar servidores de bases de datos dentro de un grupo o entre centros de datos usando un programador de trabajos como <em>cron</em>, o podrías usarlo para sincronizar la información con tu computadora portátil para trabajar fuera de linea cuando viajas. Cada base de datos puede ser usada de la manera usual, y los cambios entre ellas pueden ser sincronizados después en ambas direcciones.
 
 <div class="figure" id="figure/4">
 
@@ -146,11 +146,11 @@
 
 </div>
 
-<p>Que sucede cuando modificas el mismo documento en dos bases de datos diferentes y luego quieres sincronizarlos? El sistema de replicación de CouchDB viene con detección <em>y</em> resolución automática de conflictos. Cuando CouchDB detecta que un documento ha sido cambiado en las dos bases de datos, marca el documento en conflicto, tal como seria en una sistema de control de versiones regular.
+<p>¿Qué sucede cuando modificas el mismo documento en dos bases de datos diferentes y luego quieres sincronizarlos? El sistema de replicación de CouchDB viene con detección <em>y</em> resolución automática de conflictos. Cuando CouchDB detecta que un documento ha sido cambiado en las dos bases de datos, marca el documento en conflicto, tal como pasaría en una sistema de control de versiones regular.
 
-<p>Esto no es tan problemático como suena inicialmente. Cuando dos versiones de un documento crean conflicto durante la replicación, la versión <em>ganadora</em> es grabado como la versión mas reciente en la historia. En vez de desechar la versión <em>perdedora</em>, como te lo esperarías, CouchDB la guarda como una versión anterior en la historia del documento, tal que puedas accederla si lo necesitas. Esto sucede automáticamente y en forma consistente, así que las dos bases de datos harán la misma elección.
+<p>Esto no es tan problemático como suena inicialmente. Cuando dos versiones de un documento crean conflicto durante la replicación, la versión <em>ganadora</em> es grabado como la versión mas reciente en la historia. En vez de desechar la versión <em>perdedora</em>, como te lo esperarías, CouchDB la guarda como una versión anterior en la historia del documento, así que podrias accederla si lo necesitas. Esto sucede automáticamente y en forma consistente, es decir que las dos bases de datos harán la misma elección.
 
-<p>Depende de ti manejar los conflictos en una manera que tenga sentido para tu aplicación. Puedes mantener las versiones elegidas de los documentos, revertir a versiones antiguas o tratar de combinar las dos versiones y guardar el resultado.
+<p>Depende de ti manejar los conflictos de una manera que tenga sentido para tu aplicación. Puedes mantener las versiones elegidas de los documentos, revertir a versiones antiguas o tratar de combinar las dos versiones y guardar el resultado.
 
 <h4 id="study">Caso Practico</h4>
 
@@ -158,11 +158,11 @@
 
 <div class="aside note">
 
-<p>Songbird es un software gratis para reproducir media con un navegador integrado, basado en la plataforma XULRunner de Mozilla. Songbird esta disponible para Microsoft Windows, Apple Mac OS X, Solaris, y Linux.
+<p>Songbird es un software gratis para reproducir medios con un navegador integrado, basado en la plataforma XULRunner de Mozilla. Songbird esta disponible para Microsoft Windows, Apple Mac OS X, Solaris, y Linux.
 
 </div>
 
-<p>Examinemos el flujo de copia de seguridad de la aplicación, primero como un usuario haciendo una copia de seguridad desde una sola computadora, y luego usando Songbird para sincronizar las listas de reproducción entre múltiples computadoras. Veremos como las revisiones de documentos vuelven lo que seria un problema complicado en algo que <em>simplemente funciona</em>.
+<p>Examinemos el flujo de copia de seguridad de la aplicación, primero como un usuario haciendo una copia de seguridad desde una sola computadora, y luego usando Songbird para sincronizar las listas de reproducción entre múltiples computadoras. Veremos como las revisiones de documentos convierten lo que seria un problema complicado en algo que <em>simplemente funciona</em>.
 
 <p>La primera vez que utilizamos esta aplicación para hacer copias de seguridad, alimentamos nuestras listas de reproducción a la aplicación e iniciamos la copia de seguridad. Cada lista de reproducción es convertida a un objeto JSON y enviada a una base de datos CouchDB. Tal como esta ilustrado en la <a href="#figure/5">Figura 5, “Copiando a una sola base de datos”</a>, CouchDB nos envía de regreso el ID y revisión del documento grabado en la base de datos para cada lista de reproducción.
 
@@ -180,9 +180,9 @@
 
 <p>Forzar a los clientes a enviar la revisión correcta de los documentos es el corazón de la concurrencia optimista de CouchDB.
 
-<p>Tenemos una computadora portátil que queremos mantener sincronizada con nuestra computadora de escritorio. Con todas nuestras listas de reproducción en la computadora de escritorio, nuestro primer paso es 'restablecer desde la copia de seguridad' a nuestra computadora portátil. Esta es la primera vez que hacemos esto, así que después nuestra computadora portatíl deberia tener una replica exacta de la coleccion de lista de reproduccion de nuestra computadora de escritorio.
+<p>Tenemos una computadora portátil que queremos mantener sincronizada con nuestra computadora de escritorio. Con todas nuestras listas de reproducción en la computadora de escritorio, nuestro primer paso es 'restablecer desde la copia de seguridad' a nuestra computadora portátil. Esta es la primera vez que hacemos esto, así que después nuestra computadora portátil debería tener una replica exacta de la colección de lista de reproducción de nuestra computadora de escritorio.
 
-<p>Despues de anadir algunas canciones a nuestra lista de reproduccion de Tangos Argentinos en nuestra computadora portatil, queremos guardar nuestros cambios. La aplicacion de copias de seguridad reemplaza el documento correspondiente en la base de datos CouchDB en nuestra computadora portatil, generando una nueva revision del documento. Unos cuantos dias despues, recordamos las nuevas canciones y queremos copiar la lista de reproduccion a nuestra computadora de escritorio. Como esta ilustrado en la <a href="#figure/6">Figura 6, “Sincronizacion entre dos bases de datos”</a>, la aplicacion de copias de seguridad copia el nuevo documento con la nueva revision a la base de datos CouchDB ubicada en la computadora de escritorio. Ambas bases de datos CouchDB tienen ahora la misma revision del documento.
+<p>Después de añadir algunas canciones a nuestra lista de reproducción de Tangos Argentinos en nuestra computadora portátil, queremos guardar nuestros cambios. La aplicación de copias de seguridad reemplaza el documento correspondiente en la base de datos CouchDB en nuestra computadora portátil, generando una nueva revisión del documento. Unos cuantos días después, recordamos las nuevas canciones y queremos copiar la lista de reproducción a nuestra computadora de escritorio. Como esta ilustrado en la <a href="#figure/6">Figura 6, “Sincronización entre dos bases de datos”</a>, la aplicación de copias de seguridad copia el nuevo documento con la nueva revisión a la base de datos CouchDB ubicada en la computadora de escritorio. Ambas bases de datos CouchDB tienen ahora la misma revisión del documento.
 
 <div class="figure" id="figure/6">
 
@@ -208,6 +208,6 @@
 
 <h3 id="wrap">Concluyendo</h3>
 
-<p>El diseño de CouchDB toma prestado bastante de la arquitectura de la web y de las lecciones aprendidas al distribuir sistemas masivos en esa arquitectura. Al entender por que esta arquitectura funciona en la forma que lo hace y al aprender a darse cuenta que partes de tu aplicación pueden ser distribuidas y cuales no, aumentar tu habilidad para diseñar aplicaciones distribuidas y escalables, con o sin CouchDB.
+<p>El diseño de CouchDB toma prestado bastante de la arquitectura de la web y de las lecciones aprendidas al distribuir sistemas masivos en esa arquitectura. Al entender por que esta arquitectura funciona en la forma que lo hace y al aprender a darse cuenta que partes de tu aplicación pueden ser distribuidas y cuales no, aumenta tu habilidad para diseñar aplicaciones distribuidas y escalables, con o sin CouchDB.
 
-<p>Hemos cubierto los problemas principales alrededor del modelo de consistencia de CouchDB y hemos visto algunos de los beneficios que podemos obtener cuando trabajamos <em>con</em> CouchDB y no en contra. Pero suficiente teoría — empezó a hacer algo y veamos a que viene el alboroto.
+<p>Hemos cubierto los problemas principales alrededor del modelo de consistencia de CouchDB y hemos visto algunos de los beneficios que podemos obtener cuando trabajamos <em>con</em> CouchDB y no en contra. Pero suficiente teoría — empecemos a hacer algo y veamos a que viene el alboroto.
