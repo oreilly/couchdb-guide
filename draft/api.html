@@ -186,7 +186,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 
 <p>The <code>Content-Type</code> header tells you which MIME type the HTTP response body is and its encoding. We already know CouchDB returns JSON strings. The appropriate <code>Content-Type</code> header is <code>application/json</code>. Why do we see <code>text/plain</code>? This is where pragmatism wins over purity. Sending an <code>application/json</code> <code>Content-Type</code> header will make a browser offer you the returned JSON for download instead of just displaying it. Since it is extremely useful to be able to test CouchDB from a browser, CouchDB sends a <code>text/plain</code> content type, so all browsers will display the JSON as text.
 
-<p>There are some browser extensions that make your browser JSON-aware, but they are not installed by default.
+<p>There are some extensions that make your browser JSON-aware, but they are not installed by default. For more information, look at the popular JSONView extension, available for both <a href="https://addons.mozilla.org/en-us/firefox/addon/jsonview/" title="JSONView :: Add-ons for Firefox">Firefox</a> and <a href="https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc" title="Chrome Web Store - JSONView">Chrome</a>.
 
 <p>Do you remember the <code>Accept</code> request header and how it is set to <code>\*/\* -&gt; */*</code> to express interest in any MIME type? If you send <code>Accept: application/json</code> in your request, CouchDB knows that you can deal with a pure JSON response with the proper <code>Content-Type</code> header and will use it instead of <code>text/plain</code>.
 
