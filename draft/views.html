@@ -79,7 +79,7 @@ function(doc) {
 
 <p>The <code>emit()</code> function always takes two arguments: the first is <code>key</code>, and the second is <code>value</code>. The <code>emit(key, value)</code> function creates an entry in our <em>view result</em>. One more thing: the <code>emit()</code> function can be called multiple times in the map function to create multiple entries in the view results from a single document, but we are not doing that yet.
 
-<p>CouchDB takes whatever you pass into the <code>emit()</code> function and puts it into a list (see <a href="#table/1">Table 1, “View results”</a>). Each row in that list includes the <code>key</code> and <code>value</code>. More importantly, the list is sorted by <code>key</code> (by <code>doc.date</code> in our case). The most important feature of a view result is that it is sorted by <code>key</code>. We will come back to that over and over again to do neat things. Stay tuned.
+<p>CouchDB takes whatever you pass into the <code>emit()</code> function and puts it into a list (see <a href="#table/1">Table 1, “View results”</a>). Each row in that list includes the <code>key</code> and <code>value</code>. The most important feature of a view result is that it is sorted by <code>key</code> (<code>doc.date</code> in our case). We will demonstrate a number of neat ways to take advantage of this feature.
 
 <div class="figure" id="table/1">
 
