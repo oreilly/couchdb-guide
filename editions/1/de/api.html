@@ -229,7 +229,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &gt; curl -vX DELETE http://127.0.0.1:5984/albums-backup
 </pre>
 
-<p>Damit löscht man eine CouchdB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in ihrer Verantwortung und ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht. 
+<p>Damit löscht man eine CouchDB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in ihrer Verantwortung und ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht.
 
 <p>In diesem Abschnitt sind wir tief in HTTP eingestiegen und haben damit die Grundlage geschaffen um den Rest des Core APIs von CouchDB zu erklären. Nächste Haltestelle: Dokumente.
 
@@ -499,4 +499,3 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5
 <h3 id="wrap">Fassen wir zusammen</h3>
 
 <p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch einen Schritt weiter gekommen und tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten sie soweit gerüstet sein, dass sie anfangen können, mit CouchDB Anwendungen zu schreiben.
-	
