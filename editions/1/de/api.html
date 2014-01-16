@@ -229,7 +229,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &gt; curl -vX DELETE http://127.0.0.1:5984/albums-backup
 </pre>
 
-<p>Damit löscht man eine CouchDB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in ihrer Verantwortung und ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht.
+<p>Damit löscht man eine CouchDB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in Ihrer Verantwortung und Ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht.
 
 <p>In diesem Abschnitt sind wir tief in HTTP eingestiegen und haben damit die Grundlage geschaffen um den Rest des Core APIs von CouchDB zu erklären. Nächste Haltestelle: Dokumente.
 
@@ -327,7 +327,7 @@ curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"
 
 <p>Ein anderer Grund für die Benutzung von MVCC ist, dass diese Modell vom Konzept her einfacher ist und somit auch leichter zu programmieren ist. CouchDB benötigt weniger Code um das umzusetzen und weniger Code ist immer gut, da das Verhältnis von Fehlern zu Codezeilen konstant ist.
 
-<p><em>Suggestion:</em> Andererseits verlagert MVCC die Behandlung von konkurrierenden, parallelen Zugriffen auf die gleichen Daten von der Datenbank in die Anwendung. Damit wird CouchDB einfacher, aber ihre Anwendung muss damit umgehen können. Das ist kein großes Problem, allerdings ein etwas anderer Ansatz als bei relationalen Datenbanken, die sich um die interne Konsistenz der Daten kümmern. Der große Vorteil ist, dass ihre Anwendung besser skaliert, weil sie nicht mehr auf einen globalen Zustand angewiesen ist und man bei mehr Last einfach einen weiteren Server dazustellen kann.
+<p><em>Suggestion:</em> Andererseits verlagert MVCC die Behandlung von konkurrierenden, parallelen Zugriffen auf die gleichen Daten von der Datenbank in die Anwendung. Damit wird CouchDB einfacher, aber Ihre Anwendung muss damit umgehen können. Das ist kein großes Problem, allerdings ein etwas anderer Ansatz als bei relationalen Datenbanken, die sich um die interne Konsistenz der Daten kümmern. Der große Vorteil ist, dass Ihre Anwendung besser skaliert, weil sie nicht mehr auf einen globalen Zustand angewiesen ist und man bei mehr Last einfach einen weiteren Server dazustellen kann.
 	
 <p>Die Versionierung von Dokumenten erleichtert auch die Replikation und die Speicherung der Dokumente in der Datenbank, doch dazu später mehr.
 
@@ -349,7 +349,7 @@ curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{
 
 <div class="aside note">
 
-<p>Falls sie mehr Details zu ihren Lieblingsalben kennen, fügen sie einfach weitere Attribute hinzu. Machen sie sich auch keine Gedanken darüber, dass sie im Moment noch nicht alle Informationen über die Alben haben. Die schema-freien Dokumente von CouchDB können enthalten was auch immer sie möchten. Schließlich sollen sie sich entspannen und keine Gedanken über ihre Daten machen.
+<p>Falls sie mehr Details zu Ihren Lieblingsalben kennen, fügen sie einfach weitere Attribute hinzu. Machen sie sich auch keine Gedanken darüber, dass sie im Moment noch nicht alle Informationen über die Alben haben. Die schema-freien Dokumente von CouchDB können enthalten was auch immer sie möchten. Schließlich sollen sie sich entspannen und keine Gedanken über Ihre Daten machen.
 
 </div>
 
@@ -448,7 +448,7 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 }
 </pre>
 
-<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
+<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn Ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
 
 <p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man anschließend auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
