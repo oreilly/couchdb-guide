@@ -16,7 +16,7 @@
 
 <p>Zu Beginn gehen wir noch einmal die Grundoperationen durch, die wir bereits im letzten Kapitel vorgestellt haben und schauen anschließend unter die Haube. Wir zeigen auch, was Futon hinter der Benutzerschnittstelle machen muss, um die vielen Funktionen zu haben, die wir zuvor gesehen haben.
 
-<p>Dieses Kapitel ist zugleich eine Einführung in das Core API von CouchDB und eine Referenz. Wenn sie sich nicht mehr erinnern können, wie ein bestimmter Request funktioniert oder warum bestimmte Parameter benötigt werden, können sie jederzeit hierhin zurückkehren und nachschlagen. Von allen Kapiteln nutzen wir dieses wahrscheinlich am häufigsten.
+<p>Dieses Kapitel ist zugleich eine Einführung in das Core API von CouchDB und eine Referenz. Wenn Sie sich nicht mehr erinnern können, wie ein bestimmter Request funktioniert oder warum bestimmte Parameter benötigt werden, können Sie jederzeit hierhin zurückkehren und nachschlagen. Von allen Kapiteln nutzen wir dieses wahrscheinlich am häufigsten.
 
 <p>Während wir das API genauer erklären, müssen wir manchmal etwas weiter ausholen, um die Motivation hinter einem Request zu erklären. Dabei können wir gleich erklären, warum CouchDB so funktioniert wie es funktioniert.
 
@@ -188,7 +188,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 
 <p>Es gibt Erweiterungen für Webbrowser, mit denen der Browser JSON korrekt erkennt und entsprechend behandelt. Allerdings werden diese standardmäßig nicht installiert.
 	
-<p>Erinnern sie sich noch an den <code>Accept</code> Header im HTTP Request und wie er zu <code>*/*</code> gesetzt wurde, um damit zu zeigen, dass der Client jeden MIME Type akzeptiert? Schickt ein Client im Request <code>Accept: application/json</code>, so weiß CouchDB, dass der Client korrekt mit JSON Strings und dem <code>Content-Type: application/json</code> Header umgehen kann und wird diesen verwenden anstelle von <code>text/plain</code>.
+<p>Erinnern Sie sich noch an den <code>Accept</code> Header im HTTP Request und wie er zu <code>*/*</code> gesetzt wurde, um damit zu zeigen, dass der Client jeden MIME Type akzeptiert? Schickt ein Client im Request <code>Accept: application/json</code>, so weiß CouchDB, dass der Client korrekt mit JSON Strings und dem <code>Content-Type: application/json</code> Header umgehen kann und wird diesen verwenden anstelle von <code>text/plain</code>.
 
 <pre>
 &lt; Content-Length: 12
@@ -229,7 +229,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &gt; curl -vX DELETE http://127.0.0.1:5984/albums-backup
 </pre>
 
-<p>Damit löscht man eine CouchDB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind sie sicher?“ Frage oder eine Papierkorb-Logik wenn sie eine Datenbank löschen. Das liegt in Ihrer Verantwortung und Ihre Daten werden umgehend – und wenn sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht.
+<p>Damit löscht man eine CouchDB Datenbank. Der Request wird die Datei, in der die Datenbank gespeichert ist, sofort löschen. Es gibt keine „Sind Sie sicher?“ Frage oder eine Papierkorb-Logik wenn Sie eine Datenbank löschen. Das liegt in Ihrer Verantwortung und Ihre Daten werden umgehend – und wenn Sie kein Backup haben – ohne eine Chance sie wieder zurück zu holen gelöscht.
 
 <p>In diesem Abschnitt sind wir tief in HTTP eingestiegen und haben damit die Grundlage geschaffen um den Rest des Core APIs von CouchDB zu erklären. Nächste Haltestelle: Dokumente.
 
@@ -237,7 +237,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 
 <p>Dokumente sind die zentrale Datenstruktur von CouchDB und die Idee dahinter ist die von realen Dokumenten auf Papier, wie eine Rechnung, ein Rezept oder eine Visitenkarte. Wir wissen bereits, dass CouchDB Dokumente im JSON Format speichert. Schauen wir wie die Speicherung auf der untersten Ebene funktioniert.
 	
-<p>In CouchDB hat jedes Dokument eine <em>ID</em>, die innerhalb der jeweiligen Datenbank eindeutig ist. Sie können jeden beliebigen String als ID nehmen, wir empfehlen jedoch UUIDs (auch GUIDs) – Universally (bzw. Globally) Unique Identifiers. UUIDs sind Zufallszahlen, die so eine geringe Kollisionswahrscheinlichkeit haben, dass man Tausende UUIDs pro Minute für Millionen von Jahren erzeugen kann, ohne jemals eine doppelt anzulegen. Damit kann man sicherzustellen, dass zwei Menschen, die unabhängig voneinander arbeiten, nicht verschiedene Dokumente mit der gleichen ID anlegen können. Doch warum sollte sie es überhaupt kümmern was andere Leute tun? Zum einen könnten sie selber diese andere Person sein – zu einem späteren Zeitpunkt oder an einem anderen Computer. Zum anderen kann man mithilfe der Replikation Dokumente mit anderen teilen und mit UUIDs stellt man sicher, dass alles funktioniert. Wir gehen später noch einmal genauer darauf ein. Zuerst legen wir ein paar Dokumente an.
+<p>In CouchDB hat jedes Dokument eine <em>ID</em>, die innerhalb der jeweiligen Datenbank eindeutig ist. Sie können jeden beliebigen String als ID nehmen, wir empfehlen jedoch UUIDs (auch GUIDs) – Universally (bzw. Globally) Unique Identifiers. UUIDs sind Zufallszahlen, die so eine geringe Kollisionswahrscheinlichkeit haben, dass man Tausende UUIDs pro Minute für Millionen von Jahren erzeugen kann, ohne jemals eine doppelt anzulegen. Damit kann man sicherzustellen, dass zwei Menschen, die unabhängig voneinander arbeiten, nicht verschiedene Dokumente mit der gleichen ID anlegen können. Doch warum sollte Sie es überhaupt kümmern was andere Leute tun? Zum einen könnten Sie selber diese andere Person sein – zu einem späteren Zeitpunkt oder an einem anderen Computer. Zum anderen kann man mithilfe der Replikation Dokumente mit anderen teilen und mit UUIDs stellt man sicher, dass alles funktioniert. Wir gehen später noch einmal genauer darauf ein. Zuerst legen wir ein paar Dokumente an.
 
 <pre>
 curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"title":"There is Nothing Left to Lose","artist":"Foo Fighters"}'
@@ -253,7 +253,7 @@ curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"
 	
 <div class="aside note">
 
-<p>Wenn sie gerade keine UUID zur Hand haben kann CouchDB eine für sie erzeugen. Das ist genau das was wir gerade gemacht haben ohne explizit darauf hinzuweisen. Um eine UUID von CouchDB erzeugen zu lassen schickt man einen GET Request an <code>/_uuids</code>:
+<p>Wenn Sie gerade keine UUID zur Hand haben kann CouchDB eine für Sie erzeugen. Das ist genau das was wir gerade gemacht haben ohne explizit darauf hinzuweisen. Um eine UUID von CouchDB erzeugen zu lassen schickt man einen GET Request an <code>/_uuids</code>:
 	
 <pre>
 curl -X GET http://127.0.0.1:5984/_uuids
@@ -265,7 +265,7 @@ curl -X GET http://127.0.0.1:5984/_uuids
 {"uuids":["6e1295ed6c29495e54cc05947f18c8af"]}
 </pre>
 
-<p>Voilá, eine UUID. Brauchen sie mehr als eine, so können sie zum Beispiel <code>?count=10</code> mit angeben, um 10 UUIDs zu erzeugen. 
+<p>Voilá, eine UUID. Brauchen Sie mehr als eine, so können Sie zum Beispiel <code>?count=10</code> mit angeben, um 10 UUIDs zu erzeugen. 
 
 </div>
 
@@ -275,7 +275,7 @@ curl -X GET http://127.0.0.1:5984/_uuids
 curl -X GET http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
 </pre>
 
-<p>Wir hoffen, dass sie ein Muster erkennen. Alles in CouchDB hat eine Adresse, eine sogenannte URI und man benutzt verschiedene HTTP Methoden um auf diesen URIs Operationen auszuführen.
+<p>Wir hoffen, dass Sie ein Muster erkennen. Alles in CouchDB hat eine Adresse, eine sogenannte URI und man benutzt verschiedene HTTP Methoden um auf diesen URIs Operationen auszuführen.
 	
 <p>CouchDB antwortet mit:
 
@@ -333,7 +333,7 @@ curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"
 
 <div class="aside warning">
 
-<p>Der Begriff <em>Version</em> sollte ihnen bekannt vorkommen – wenn sie bisher ohne Versionsverwaltung entwickeln, legen sie dieses Buch sofort beiseite und lernen mit einem der gängigen Versionskontrollsysteme umzugehen. Neue Versionen von Dokumenten anzulegen ist sehr ähnlich zu Versionskontrollsystemen, doch es gibt einen entscheidenden Unterschied: CouchDB garantiert <em>nicht</em>, dass alte Versionen immer verfügbar sind.
+<p>Der Begriff <em>Version</em> sollte ihnen bekannt vorkommen – wenn Sie bisher ohne Versionsverwaltung entwickeln, legen Sie dieses Buch sofort beiseite und lernen mit einem der gängigen Versionskontrollsysteme umzugehen. Neue Versionen von Dokumenten anzulegen ist sehr ähnlich zu Versionskontrollsystemen, doch es gibt einen entscheidenden Unterschied: CouchDB garantiert <em>nicht</em>, dass alte Versionen immer verfügbar sind.
 	
 </div>
 
@@ -341,7 +341,7 @@ curl -X PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af -d '{"
 
 <p>Schauen wir uns den Request zum Anlegen eines Dokuments mit <code>curl</code> und der <code>-v</code> Option noch einmal genauer an. Dabei können wir auch gleich noch ein paar weitere Dokumente anlegen, die wir später benötigen.
 
-<p>Wir fügen ein paar mehr unserer Lieblingsalben in die Datenbank ein. Dazu holen wir uns eine neue UUID über die <code>/_uuids</code> URI. Falls sie nicht mehr wissen, wie das geht, blättern sie einfach ein paar Seiten zurück.
+<p>Wir fügen ein paar mehr unserer Lieblingsalben in die Datenbank ein. Dazu holen wir uns eine neue UUID über die <code>/_uuids</code> URI. Falls Sie nicht mehr wissen, wie das geht, blättern Sie einfach ein paar Seiten zurück.
 	
 <pre>
 curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{"title":"Blackened Sky","artist":"Biffy Clyro","year":2002}'
@@ -349,7 +349,7 @@ curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{
 
 <div class="aside note">
 
-<p>Falls sie mehr Details zu Ihren Lieblingsalben kennen, fügen sie einfach weitere Attribute hinzu. Machen sie sich auch keine Gedanken darüber, dass sie im Moment noch nicht alle Informationen über die Alben haben. Die schema-freien Dokumente von CouchDB können enthalten was auch immer sie möchten. Schließlich sollen sie sich entspannen und keine Gedanken über Ihre Daten machen.
+<p>Falls Sie mehr Details zu Ihren Lieblingsalben kennen, fügen Sie einfach weitere Attribute hinzu. Machen Sie sich auch keine Gedanken darüber, dass Sie im Moment noch nicht alle Informationen über die Alben haben. Die schema-freien Dokumente von CouchDB können enthalten was auch immer Sie möchten. Schließlich sollen Sie sich entspannen und keine Gedanken über Ihre Daten machen.
 
 </div>
 
@@ -378,9 +378,9 @@ curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{
 &gt; curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/ artwork.jpg?rev=2-2739352689 --data-binary @artwork.jpg -H "Content-Type: image/jpg"
 </pre>
 
-<p>Mit der <code>-d@</code> Option sagen wir <code>curl</code> den Inhalt einer Datei als HTTP Request Body zu verschicken. Mit der <code>-H</code> Option sagen wir CouchDB, dass wir ein JPEG hochladen. CouchDB merkt sich das und wird entsprechende Header in die Antwort schreiben, wenn der Anhang wieder gelesen wird. Im Falle dieses Bildes wird der Browser das Bild anzeigen anstatt anzubieten, die Datei zu speichern. Das wird später noch nützlich sein. Achten sie darauf, dass wir die aktuelle Versionsnummer zum Request hinzugefügt haben, genauso als wenn wir das Dokument selber aktualiseren würden. Letztendlich ändert das Hinzufügen eines Anhangs das Dokument.
+<p>Mit der <code>-d@</code> Option sagen wir <code>curl</code> den Inhalt einer Datei als HTTP Request Body zu verschicken. Mit der <code>-H</code> Option sagen wir CouchDB, dass wir ein JPEG hochladen. CouchDB merkt sich das und wird entsprechende Header in die Antwort schreiben, wenn der Anhang wieder gelesen wird. Im Falle dieses Bildes wird der Browser das Bild anzeigen anstatt anzubieten, die Datei zu speichern. Das wird später noch nützlich sein. Achten Sie darauf, dass wir die aktuelle Versionsnummer zum Request hinzugefügt haben, genauso als wenn wir das Dokument selber aktualiseren würden. Letztendlich ändert das Hinzufügen eines Anhangs das Dokument.
 	
-<p>Wenn sie mit dem Browser zu folgender URL gehen, sollte das Bild angezeigt werden: <code>http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg</code>.
+<p>Wenn Sie mit dem Browser zu folgender URL gehen, sollte das Bild angezeigt werden: <code>http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg</code>.
 
 <p>Wenn man das Dokument wieder liest, enthält es ein neues Attribut:
 
@@ -448,7 +448,7 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 }
 </pre>
 
-<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn Ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
+<p>CouchDB verwaltet eine <em>Session Historie</em> von Replikationen. Die Antwort auf einen Replication Request enthält die Historie dieser <em>Replikationssession</em>. Zu beachten ist, dass der Request für die Replikation erst beantwortet wird, wenn die Replikation abgeschlossen ist. Bis dahin bleibt die Verbindung offen. Wenn Ihre Datenbank viele Dokumente hat, wird es eine Weile dauern, bis alle kopiert wurden und Sie erhalten keine Antwort, bis dieser Vorgang vollständig abgeschlossen ist. Des weiteren ist es wichtig zu wissen, dass die Datenbank nur bis zu dem Punkt repliziert wird, an dem sie zu Beginn der Replikation war. Alle Veränderungen, die nach Beginn der Replikation erfolgen, werden nicht mit repliziert.
 
 <p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man anschließend auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
@@ -498,4 +498,4 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"http://127.0.0.1:5
 
 <h3 id="wrap">Fassen wir zusammen</h3>
 
-<p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch einen Schritt weiter gekommen und tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten sie soweit gerüstet sein, dass sie anfangen können, mit CouchDB Anwendungen zu schreiben.
+<p>Wir haben immer noch nicht das vollständige CouchDB API vorgestellt, sind jedoch einen Schritt weiter gekommen und tief in die Details eingestiegen. Die Lücken werden wir im Laufe des Buches nacheinander noch füllen. Im Moment sollten Sie soweit gerüstet sein, dass Sie anfangen können, mit CouchDB Anwendungen zu schreiben.
