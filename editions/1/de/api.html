@@ -400,7 +400,7 @@ curl http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
 
 <h3 id="replication">Replikation</h3>
 
-<p>Die Replikation in CouchDB ist ein Mechanismus, um Datenbanken zu synchronisieren. Änhlich wie mit <code>rsync</code> zwei Verzeichnisse lokal oder über ein Netzwerk synchronisiert werden können, synchronisiert die Replikation in CouchDB zwei Datenbanken entweder lockal oder über ein Netzwerk.
+<p>Die Replikation in CouchDB ist ein Mechanismus, um Datenbanken zu synchronisieren. Änhlich wie mit <code>rsync</code> zwei Verzeichnisse lokal oder über ein Netzwerk synchronisiert werden können, synchronisiert die Replikation in CouchDB zwei Datenbanken entweder lokal oder über ein Netzwerk.
 	
 
 <p>Mit einem einfachen POST Request teilt man CouchDB die Quelle (<em>source</em>) und das Ziel (<em>target</em>) der Replikation mit. CouchDB findet anschließend heraus, welche Dokumente und neuen Versionen von Dokumenten in der Quelldatenbank existieren, aber nicht in der Zieldatenbank und wird beginnen, die fehlenden Dokumente und Versionen zu kopieren.
