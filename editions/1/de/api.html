@@ -452,7 +452,7 @@ curl -vX POST http://127.0.0.1:5984/_replicate -d '{"source":"albums","target":"
 
 <p>Wir überspringen die Details nocheinmal, denn <code>"ok": true</code> am Ende sagt uns, das die Replikation erfolgreich war. Wenn man anschließend auf die <code>albums-replica</code> Datenbank schaut, sollten alle Dokumente, die in der <code>albums</code> Datenbank vorhanden sind ebenfalls vorhanden sein. Nett, oder?
 
-<p>Was wir gerade gemacht haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen der Datenbak für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
+<p>Was wir gerade gemacht haben nennt man in CouchDB eine <em>lokale Replikation</em>. Sie haben eine lokale Kopie einer Datenbank angelegt. Das ist hilfreich für Backups oder um Snapshots von bestimmten Zuständen der Datenbank für später aufzuheben. Es kann auch während der Entwicklung von Anwendungen nützlich sein, um gegebenenfalls einen Rollback auf eine stabile Version von Code und Daten durchzuführen.
 
 <p>Es gibt noch weitere Arten der Replikation, die in anderen Situationen sinnvoll sind. Die <code>source</code> und <code>target</code> Parameter in unserem Replikationsrequest sind Links (genau wie in HTML) und bis jetzt haben wir nur relative Links verwendet, die relativ zu dem Server sind, auf dem wir gerade arbeiten (deshalb auch <em>lokale Replikation</em>). Man kann aber auch eine entfernte Datenbank als Ziel angeben:
 
