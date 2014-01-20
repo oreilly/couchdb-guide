@@ -176,7 +176,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 </div>
 
-<p>Nach ein paar Tagen haben sich die Wiedergabelisten geändert und sollen wieder gesichert werden. Nachdem wir die Wiedergabelisten der Backup Anwendung übergeben haben, holt die sich die letzte Version von CouchDB zusammen mit der aktuellen Version des Dokuments. Beim anschließenden Aktualisieren des Dokuments, muss die Versionsnummer wieder mit übergeben werden. 
+<p>Nach ein paar Tagen haben sich die Wiedergabelisten geändert und sollen wieder gesichert werden. Nachdem wir die Wiedergabelisten der Backup Anwendung übergeben haben, holt die sich die letzte Version von CouchDB zusammen mit der aktuellen Version des Dokuments. Beim anschließenden Aktualisieren des Dokuments muss die Versionsnummer wieder mit übergeben werden.
 
 <p>CouchDB stellt dann sicher, dass die übergebene Versionsnummer tatsächlich der aktuellsten Version des Dokuments entspricht. Weil CouchDB die Versionsnummer bei jeder Änderung ebenfalls anpasst, bedeutet ein Unterschied, dass jemand in der Zwischenzeit das Dokument geändert hat. In den allermeisten Fällen ist es dann keine gute Idee das Dokument zu speichern, ohne sich die Änderungen vorher anzusehen. 
 
