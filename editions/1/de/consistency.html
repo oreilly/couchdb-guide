@@ -150,7 +150,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Was passiert, wenn man das gleiche Dokument in zwei verschiedenen Datenbanken ändert und anschließend die Datenbanken synchronisieren möchte? CouchDBs Replikationssystem hat eine automatische Konflikterkennung <em>und</em> Konfliktauflösung. Wenn CouchDB erkennt, dass ein Dokument in beiden Datenbanken geändert wurde, wird es als konfliktbehaftet markiert — genau wie in einem normalen Versionskontrollsystem.
 
-<p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, wird die Version, die <em>gewinnt</em> als aktuelles Dokument gespeichert. Die Version, die <em>verloren</em> hat, wird nicht vergessen, sondern als voherige Version gespeichert, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent in beiden Datenbanken auf die gleiche Weise. 
+<p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, wird die Version, die <em>gewinnt</em> als aktuelles Dokument gespeichert. Die Version, die <em>verloren</em> hat, wird nicht vergessen, sondern als vorherige Version gespeichert, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent in beiden Datenbanken auf die gleiche Weise.
 
 <p>Es ist Aufgabe des Entwicklers zu entscheiden, wie ein Konflikt am besten zu lösen ist. Beide Versionen können in der Datenbank bleiben, es wird zur alten Version zurückgekehrt oder die Anwendung versucht den Konflikt aufzulösen und eine neue Version zu speichern. 
 
