@@ -182,7 +182,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Der Zwang, beim Speichern die korrekte Versionsnummer des Dokuments zu übergeben, ist der Kern von CouchDBs Optimistic Concurrency.
 
-<p>Wenn wir einen Laptop haben und mit dem Desktop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluß daran eine exakte Kopie der Wiedergabelisten haben.
+<p>Wenn wir einen Laptop haben und mit dem Desktop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluss daran eine exakte Kopie der Wiedergabelisten haben.
 
 <p>Nachdem die Wiedergabeliste für Argentinische Tangos auf dem Laptop geändert wurde und wir ein paar neue Songs gekauft haben, sollen die Änderungen gespeichert werden. Die Backup Anwendung speichert die Änderungen in der CouchDB auf dem Laptop und erzeugt eine neue Version des Dokuments. Ein paar Tage später erinnern wir uns und möchten die Wiedergabelisten mit dem Desktop Computer synchronisieren. Wie in <a href="#figure/6">Abbildung 6: Synchronisation zwischen zwei Datenbanken</a> gezeigt wird, kopiert die Backup Anwendung das neue Dokument und die neue Version in die CouchDB auf dem Desktop Computer. Beide Computer haben nun die gleiche Version des Dokuments. 
 
