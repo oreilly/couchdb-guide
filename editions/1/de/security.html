@@ -26,9 +26,9 @@
 
 <p>In den vorangegangen Kapiteln haben wir immer mal wieder erwähnt, wie man CouchDB ohne Admin Party betreibt. Zunächst gibt es den <em>admin</em>, der eine Art von Superuser beschreibt. Dann gibt es <em>Privilegien</em>. Schauen wir uns das genauer an.
     
-<p>CouchDB kennt das Konzept eines <em>Administrator</em> (oder auch Admin User, Super User bzw. root), der innerhalb einer CouchDB Installation alles darf. In der Standardeinstellung ist jeder Benutzer ein Administrator. Falls das nicht gewünscht ist, kann man bestimmte Administrator Konten mit Benutzername und Passwort anlegen.
+<p>CouchDB kennt das Konzept eines <em>Administrator</em> (oder auch Admin User, Super User bzw. root), der innerhalb einer CouchDB Installation alles darf. In der Standardeinstellung ist jeder Benutzer ein Administrator. Falls das nicht gewünscht ist, kann man bestimmte Administratorkonten mit Benutzername und Passwort anlegen.
 
-<p>Des weiteren gibt es eine Gruppe von Requests, die ausschließlich Administratoren vorbehalten sind. Wird ein solcher Request durchgeführt und Administrator Konten sind angelegt, so fragt CouchDB nach der Authetifizierung.
+<p>Des weiteren gibt es eine Gruppe von Requests, die ausschließlich Administratoren vorbehalten sind. Wird ein solcher Request durchgeführt und Administratorkonten sind angelegt, so fragt CouchDB nach der Authetifizierung.
 
 <ul>
 
@@ -56,7 +56,7 @@
 
 <h4 id="users">Neue Administratoren anlegen</h4>
 
-<p>Gehen wir noch einmal mit <code>curl</code> durch das API und schauen, wie sich CouchDB verhält, wenn Administrator Konten angelegt wurden.
+<p>Gehen wir noch einmal mit <code>curl</code> durch das API und schauen, wie sich CouchDB verhält, wenn Administratorkonten angelegt wurden.
 
 <pre>
 &gt; HOST="http://127.0.0.1:5984"
