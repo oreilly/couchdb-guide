@@ -97,7 +97,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 
 </ol>
 
-<p>Um ein Klartext-Passwort während der Authentifizierung mit dem gespeicherten Hashwert zu vergleichen, wird die gleiche Prozedur noch einmal durchgeführt und der errechnete Hashwert mit dem gespeicherten Wert verglichen. Die Wahrscheinlichkeit für zwei Hashwerte zu kollidieren kann man vernachlässigen (vgl. auch Bruce Schneier). Sollte der gespeicherte Hashwert einem Angreifer in die Hände fallen, so ist es nach heutigem Stand der Technik zu aufwändig, das dazugehörige Klartext-Passwort zu finden (d.h. es ist zu teuer und es dauert zu lange).
+<p>Um ein Klartext-Passwort während der Authentifizierung mit dem gespeicherten Hashwert zu vergleichen, wird die gleiche Prozedur noch einmal durchgeführt und der errechnete Hashwert mit dem gespeicherten Wert verglichen. Die Wahrscheinlichkeit, dass zwei Hashwerte kollidieren kann man vernachlässigen (vgl. auch Bruce Schneier). Sollte der gespeicherte Hashwert einem Angreifer in die Hände fallen, so ist es nach heutigem Stand der Technik zu aufwändig, das dazugehörige Klartext-Passwort zu finden (d.h. es ist zu teuer und es dauert zu lange).
     
 <p>Doch was hat es mit dem <code>-hashed-</code> Präfix auf sich? Erinnern wir uns, wie das Configuration API funktoniert. Wenn CouchDB startet, werden eine Gruppe von <code>.ini</code> Dateien mit Konfigurationseinstellungen gelesen. Diese werden in eine interne Datenstruktur – keine Datenbank – geladen. Mit dem Configuration API kann man die aktuelle Konfiguration auslesen, ändern und neue Werte anlegen. CouchDB schreibt die Änderungen dann zurück in die <code>.ini</code> Dateien.
 
