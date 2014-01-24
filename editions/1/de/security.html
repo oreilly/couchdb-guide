@@ -121,7 +121,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 {"ok":true}
 </pre>
 
-<p>Falls sie schon einmal auf einer passwortgeschützten Webseite oder FTP Server waren, sollte der <code>username:password@</code> Teil in der URL ihnen bekannt vorkommen. 
+<p>Falls Sie schon einmal auf einer passwortgeschützten Webseite oder FTP Server waren, sollte der <code>username:password@</code> Teil in der URL ihnen bekannt vorkommen. 
 
 <p>Ist Sicherheit wichtig, sollte das Fehlen von HTTPS Nervosität erzeugen. Immerhin wird das Passwort im Klartext an CouchDB übertragen. Das ist in der Regel nicht so gut. Im aktuellen Fall ist es jedoch nicht ganz so schlimm, weil CouchDB auf <code>127.0.0.1</code> auf unserer eigenen Maschine lauscht. Wer sollte dort das Passwort mithören können?
     
@@ -129,7 +129,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 
 <h4 id="validation">Nocheinmal Update Funktionen</h4>
 
-<p>Erinnern sie sich noch an <a href="validation.html">Kapitel 7: Validierungsfunktionen</a>? Dort haben wir eine Update Validierungsfunktion geschrieben, welche überprüft hat, dass der Autor eines Dokuments mit dem aktuell authentifizierten Benutzernamen übereinstimmt.
+<p>Erinnern Sie sich noch an <a href="validation.html">Kapitel 7: Validierungsfunktionen</a>? Dort haben wir eine Update Validierungsfunktion geschrieben, welche überprüft hat, dass der Autor eines Dokuments mit dem aktuell authentifizierten Benutzernamen übereinstimmt.
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -241,4 +241,4 @@ secret = yours3cr37pr4s3
 
 <h3 id="network">Netzwerk Sicherheit</h3>
 
-<p>CouchDB ist ein Server, der in de Regel in einem Netzwerk betrieben wird. Für solche Installationen gibt es "Best Practices", die den Rahmen dieses Buchs sprengen würden. <a href="source.html">Anhang D: Installation von den Sourcen</a> enthält einige der Best Practices. Setzen sie sich damit auseinander und versuchen sie die Konsequenzen für ihre Anwendung zu verstehen.
+<p>CouchDB ist ein Server, der in de Regel in einem Netzwerk betrieben wird. Für solche Installationen gibt es "Best Practices", die den Rahmen dieses Buchs sprengen würden. <a href="source.html">Anhang D: Installation von den Sourcen</a> enthält einige der Best Practices. Setzen Sie sich damit auseinander und versuchen Sie die Konsequenzen für ihre Anwendung zu verstehen.
