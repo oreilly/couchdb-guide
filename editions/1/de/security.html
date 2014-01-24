@@ -186,7 +186,7 @@ function(newDoc, oldDoc, userCtx) {
 
 <h3 id="cookies">Cookie Authentifizierung</h3>
 
-<p>Basic Authenticaten mit Klartext-Passwörtern ist zwar einfach zu handhaben, ohne zusätzliche Sicherheitsmassnahmen jedoch nicht besonders sicher. Zudem ist die User Experience nicht besonders elegant, da der Browser ein einfaches Dialogfeld ohne jeden Schmuck einblendet auf das man als Entwickler keinen Einfluss hat. Damit zeigt man auch das hier nicht gerade Profis am Werk sind.
+<p>Basic Authentication mit Klartext-Passwörtern ist zwar einfach zu handhaben, ohne zusätzliche Sicherheitsmassnahmen jedoch nicht besonders sicher. Zudem ist die User Experience nicht besonders elegant, da der Browser ein einfaches Dialogfeld ohne jeden Schmuck einblendet auf das man als Entwickler keinen Einfluss hat. Damit zeigt man auch das hier nicht gerade Profis am Werk sind.
 
 <p>Um die Situation zu verbessern unterstützt CouchDB <em>Cookie Authentifizierung</em>. Mit Cookie Authentifizierung muss ihre Anwendung nicht den hässlichen Login Dialog des Browsers nutzen, sondern man nutzt stattdessen ein normales HTML Formular um die Login Daten an CouchDB zu übertragen. Stimmen die Daten erzeugt CouchDB ein eindeutiges Token, welches der Client bei den nächsten Requests anstelle des Benutzernamens und Passwort nutzen kann. Das Token ist dann standardmäßig für 10 Minuten gültig.
 
