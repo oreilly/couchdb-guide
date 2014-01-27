@@ -26,9 +26,9 @@
 
 <p>In den vorangegangen Kapiteln haben wir immer mal wieder erwähnt, wie man CouchDB ohne Admin Party betreibt. Zunächst gibt es den <em>admin</em>, der eine Art von Superuser beschreibt. Dann gibt es <em>Privilegien</em>. Schauen wir uns das genauer an.
     
-<p>CouchDB kennt das Konzept eines <em>Administrator</em> (oder auch Admin User, Super User bzw. root), der innerhalb einer CouchDB Installation alles darf. In der Standardeinstellung ist jeder Benutzer ein Administrator. Falls das nicht gewünscht ist, kann man bestimmte Administrator Konten mit Benutzername und Passwort anlegen.
+<p>CouchDB kennt das Konzept eines <em>Administrator</em> (oder auch Admin User, Super User bzw. root), der innerhalb einer CouchDB Installation alles darf. In der Standardeinstellung ist jeder Benutzer ein Administrator. Falls das nicht gewünscht ist, kann man bestimmte Administratorkonten mit Benutzername und Passwort anlegen.
 
-<p>Des weiteren gibt es eine Gruppe von Requests, die ausschließlich Administratoren vorbehalten sind. Wird ein solcher Request durchgeführt und Administrator Konten sind angelegt, so fragt CouchDB nach der Authetifizierung.
+<p>Des weiteren gibt es eine Gruppe von Requests, die ausschließlich Administratoren vorbehalten sind. Wird ein solcher Request durchgeführt und Administratorkonten sind angelegt, so fragt CouchDB nach der Authentifizierung.
 
 <ul>
 
@@ -44,7 +44,7 @@
 
 <li>Komprimierung auslösen (<code>POST /_compact</code>)</li>
 
-<li>Task Liste lesen (<code>GET /_active_tasks</code>)</li>
+<li>Taskliste lesen (<code>GET /_active_tasks</code>)</li>
 
 <li>Server neu starten (<code>POST /_restart</code>)</li>
 
@@ -56,7 +56,7 @@
 
 <h4 id="users">Neue Administratoren anlegen</h4>
 
-<p>Gehen wir noch einmal mit <code>curl</code> durch das API und schauen, wie sich CouchDB verhält, wenn Administrator Konten angelegt wurden.
+<p>Gehen wir noch einmal mit <code>curl</code> durch das API und schauen, wie sich CouchDB verhält, wenn Administratorkonten angelegt wurden.
 
 <pre>
 &gt; HOST="http://127.0.0.1:5984"
@@ -71,7 +71,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 ""
 </pre>
 
-<p>Gemäß dem Verhalten des <code>_config</code> APIs erhalten wir den vorherigen Wert des gänderten Parameters als Ergebnis zurück. Da unser Administrator noch nicht exisitert hat, bekommen wir einen leeren String zurück.
+<p>Gemäß dem Verhalten des <code>_config</code> APIs erhalten wir den vorherigen Wert des geänderten Parameters als Ergebnis zurück. Da unser Administrator noch nicht existiert hat, bekommen wir einen leeren String zurück.
 
 <p>Wenn wir kurz in die CouchDB Log Dateien schauen, finden wir die folgenden beiden Einträge:
 
@@ -97,9 +97,9 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 
 </ol>
 
-<p>Um ein Klartext-Passwort während der Authentifizierung mit dem gespeicherten Hashwert zu vergleichen, wir die gleiche Prozedur noch einmal durchgeführt und der errechnete Hashwert mit dem gespeicherten vergleichen. Die Wahrscheinlichkeit für zwei Hashwerte zu kollidieren kann man vernachlässigen (vgl. auch Bruce Schneier). Sollte der gespeicherte Hashwert einem Angreifer in die Hände fallen, so ist es nach heutigem Stand der Technik zu aufwändig, das dazugehörige Klartext-Passwort zu finden (d.h. es ist zu teuer und es dauert zu lange).
+<p>Um ein Klartext-Passwort während der Authentifizierung mit dem gespeicherten Hashwert zu vergleichen, wird die gleiche Prozedur noch einmal durchgeführt und der errechnete Hashwert mit dem gespeicherten Wert verglichen. Die Wahrscheinlichkeit, dass zwei Hashwerte kollidieren kann man vernachlässigen (vgl. auch Bruce Schneier). Sollte der gespeicherte Hashwert einem Angreifer in die Hände fallen, so ist es nach heutigem Stand der Technik zu aufwändig, das dazugehörige Klartext-Passwort zu finden (d.h. es ist zu teuer und es dauert zu lange).
     
-<p>Doch was hat es mit dem <code>-hashed-</code> Präfix auf sich? Erinnern wir uns, wie das Configuration API funktoniert. Wenn CouchDB startet, werden eine Gruppe von <code>.ini</code> Dateien mit Konfigurationseinstellungen gelesen. Diese werden in eine interne Datenstruktur – keine Datenbank – geladen. Mit dem Configuration API kann man die aktuelle Konfiguration auslesen, ändern und neue Werte anlegen. CouchDB schreibt die Änderungen dann zurück in die <code>.ini</code> Dateien.
+<p>Doch was hat es mit dem <code>-hashed-</code> Präfix auf sich? Erinnern wir uns, wie das Configuration API funktioniert. Wenn CouchDB startet, werden eine Gruppe von <code>.ini</code> Dateien mit Konfigurationseinstellungen gelesen. Diese werden in eine interne Datenstruktur – keine Datenbank – geladen. Mit dem Configuration API kann man die aktuelle Konfiguration auslesen, ändern und neue Werte anlegen. CouchDB schreibt die Änderungen dann zurück in die <code>.ini</code> Dateien.
 
 <p>Die <code>.ini</code> Dateien können auch von Hand geändert werden, wenn CouchDB nicht läuft. Um ein Administrator Konto anzulegen, können wir auch CouchDB stoppen, die <code>local.ini</code> Datei öffnen, einen Eintrag <code>anna = secret</code> unter <code>[admins]</code> hinzufügen und CouchDB wieder starten. Nach dem Neustart liest CouchDB den neuen Eintrag der <code>local.ini</code> Datei, berechnet den Hashwert des Passworts und schreibt die Änderung zurück in die <code>local.ini</code> Datei. Dabei wird der ursprüngliche Eintrag ersetzt. Damit CouchDB Passwörter nur einmal hasht, bekommen bereits gehashete Passwörter den <code>-hashed-</code> Präfix. So kann CouchDB sie von Klartext-Passwörtern unterscheiden. Das bedeutet zwar, dass ein Passwort nicht mit <code>-hashed-</code> beginnen kann, doch das ist sowieso eher unwahrscheinlich.
     
@@ -121,7 +121,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 {"ok":true}
 </pre>
 
-<p>Falls sie schon einmal auf einer passwortgeschützten Webseite oder FTP Server waren, sollte der <code>username:password@</code> Teil in der URL ihnen bekannt vorkommen. 
+<p>Falls Sie schon einmal auf einer passwortgeschützten Webseite oder FTP Server waren, sollte der <code>username:password@</code> Teil in der URL ihnen bekannt vorkommen. 
 
 <p>Ist Sicherheit wichtig, sollte das Fehlen von HTTPS Nervosität erzeugen. Immerhin wird das Passwort im Klartext an CouchDB übertragen. Das ist in der Regel nicht so gut. Im aktuellen Fall ist es jedoch nicht ganz so schlimm, weil CouchDB auf <code>127.0.0.1</code> auf unserer eigenen Maschine lauscht. Wer sollte dort das Passwort mithören können?
     
@@ -129,7 +129,7 @@ curl -X PUT $HOST/_config/admins/anna -d '"secret"'
 
 <h4 id="validation">Nocheinmal Update Funktionen</h4>
 
-<p>Erinnern sie sich noch an <a href="validation.html">Kapitel 7: Validierungsfunktionen</a>? Dort haben wir eine Update Validierungsfunktion geschrieben, welche überprüft hat, dass der Autor eines Dokuments mit dem aktuell authentifizierten Benutzernamen übereinstimmt.
+<p>Erinnern Sie sich noch an <a href="validation.html">Kapitel 7: Validierungsfunktionen</a>? Dort haben wir eine Update Validierungsfunktion geschrieben, welche überprüft hat, dass der Autor eines Dokuments mit dem aktuell authentifizierten Benutzernamen übereinstimmt.
 
 <pre>
 function(newDoc, oldDoc, userCtx) {
@@ -186,7 +186,7 @@ function(newDoc, oldDoc, userCtx) {
 
 <h3 id="cookies">Cookie Authentifizierung</h3>
 
-<p>Basic Authenticaten mit Klartext-Passwörtern ist zwar einfach zu handhaben, ohne zusätzliche Sicherheitsmassnahmen jedoch nicht besonders sicher. Zudem ist die User Experience nicht besonders elegant, da der Browser ein einfaches Dialogfeld ohne jeden Schmuck einblendet auf das man als Entwickler keinen Einfluss hat. Damit zeigt man auch das hier nicht gerade Profis am Werk sind.
+<p>Basic Authentication mit Klartext-Passwörtern ist zwar einfach zu handhaben, ohne zusätzliche Sicherheitsmassnahmen jedoch nicht besonders sicher. Zudem ist die User Experience nicht besonders elegant, da der Browser ein einfaches Dialogfeld ohne jeden Schmuck einblendet auf das man als Entwickler keinen Einfluss hat. Damit zeigt man auch das hier nicht gerade Profis am Werk sind.
 
 <p>Um die Situation zu verbessern unterstützt CouchDB <em>Cookie Authentifizierung</em>. Mit Cookie Authentifizierung muss ihre Anwendung nicht den hässlichen Login Dialog des Browsers nutzen, sondern man nutzt stattdessen ein normales HTML Formular um die Login Daten an CouchDB zu übertragen. Stimmen die Daten erzeugt CouchDB ein eindeutiges Token, welches der Client bei den nächsten Requests anstelle des Benutzernamens und Passwort nutzen kann. Das Token ist dann standardmäßig für 10 Minuten gültig.
 
@@ -241,4 +241,4 @@ secret = yours3cr37pr4s3
 
 <h3 id="network">Netzwerk Sicherheit</h3>
 
-<p>CouchDB ist ein Server, der in de Regel in einem Netzwerk betrieben wird. Für solche Installationen gibt es "Best Practices", die den Rahmen dieses Buchs sprengen würden. <a href="source.html">Anhang D: Installation von den Sourcen</a> enthält einige der Best Practices. Setzen sie sich damit auseinander und versuchen sie die Konsequenzen für ihre Anwendung zu verstehen.
+<p>CouchDB ist ein Server, der in de Regel in einem Netzwerk betrieben wird. Für solche Installationen gibt es "Best Practices", die den Rahmen dieses Buchs sprengen würden. <a href="source.html">Anhang D: Installation von den Sourcen</a> enthält einige der Best Practices. Setzen Sie sich damit auseinander und versuchen Sie die Konsequenzen für ihre Anwendung zu verstehen.
