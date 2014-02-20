@@ -20,7 +20,7 @@ var l10n = {
         "editionNotice": "This is an outdated edition of the book. Please use\
             the <a href='%s'>latest edition</a> for more up-to-date\
             information.",
-        "footer": "A <a href='http://oreilly.com/'>O’Reilly</a> book\
+        "footer": "An <a href='http://oreilly.com/'>O’Reilly</a> book\
             about <a href='http://couchdb.apache.org/'>CouchDB</a> by\
             <a href='http://www.couchone.com/'>J. Chris Anderson</a>,\
             <a href='http://www.couchone.com/'>Jan Lehnardt</a> and\
