@@ -398,8 +398,10 @@ document.onready = function() {
         template();
         build();
         autolink();
-        chop();
-        sausage();
+        if ($(".stage.home").length < 1) {
+          chop();
+          sausage();
+        }
         track();
     } catch (error) {
         // uh oh
