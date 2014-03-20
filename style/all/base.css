@@ -743,9 +743,7 @@ a.anchor:hover {
 
 iframe {
   width: 100%;
-  min-height: 430px;
-  height:auto !important;
-  height: 430px;
+  min-height: 345px;
   overflow: hidden;
 }
 
@@ -851,10 +849,9 @@ code {
   input[type="text"] {
     width: 100px;
   }
-  
+
   iframe {
     min-height: 400px;
     height:auto !important;
     height: 400px;
   }
-
