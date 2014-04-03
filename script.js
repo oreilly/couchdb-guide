@@ -22,9 +22,9 @@ var l10n = {
             information.",
         "footer": "An <a href='http://oreilly.com/'>O’Reilly</a> book\
             about <a href='http://couchdb.apache.org/'>CouchDB</a> by\
-            <a href='http://www.couchone.com/'>J. Chris Anderson</a>,\
-            <a href='http://www.couchone.com/'>Jan Lehnardt</a> and\
-            <a href='http://nslater.org/'>Noah Slater</a>.",
+            <a href='https://twitter.com/jchris'>J. Chris Anderson</a>,\
+            <a href='https://twitter.com/janl'>Jan Lehnardt</a> and\
+            <a href='https://twitter.com/nslater'>Noah Slater</a>.",
         "home": "Home",
         "nextPage": "Next Page",
         "prevPage": "Previous Page",
