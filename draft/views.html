@@ -450,7 +450,7 @@ function(keys, values, rereduce) {
 
 </div>
 
-<p>CouchDB detects that all values in the subnode include the <code>"chinese"</code> key. It concludes that it can take just the <code>3</code> values associated with that node to compute the final result. It then finds the node left to it and sees that it’s a node with keys outside the requested range (<code>key=</code> requests a range where the beginning and the end are the same value). It concludes that it has to use the <code>"chinese"</code> element’s value and the other node’s value and run them through the reduce function with the <code>rereduce</code> parameter set to <code>true</code>.
+<p>CouchDB detects that all values in the subnode include the <code>"chinese"</code> key. It concludes that it can take just the <code>3</code> value associated with that node to compute the final result. It then finds the node left to it and sees that it’s a node with keys outside the requested range (<code>key=</code> requests a range where the beginning and the end are the same value). It concludes that it has to use the <code>"chinese"</code> element’s value and the other node’s value and run them through the reduce function with the <code>rereduce</code> parameter set to <code>true</code>.
 
 <p>The reduce function effectively calculates <code>3 + 1</code> on query time and returns the desired result. <a href="#example/2">Example 2, “The result is 4”</a> shows some pseudocode that shows the last invocation of the reduce function with actual values.
 
