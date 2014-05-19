@@ -98,7 +98,7 @@ POST /_replicate HTTP/1.1
 <p>Un caso común es iniciar replicación en nodos donde se han activado cuentas de administración. Solamente los administradores pueden crear documentos de diseño (design documents), y si la replicación se inicia sin credenciales de administración, los documentos de diseño fallarán y se reportarán en <code>doc_write_failures</code>. Si tienes administradores, asegúrate de incluir los credenciales en la petición de replicación:
 
 <pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@e127.0.0.1:5984/database"}'
+&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@127.0.0.1:5984/database"}'
 </pre>
 
 <h3 id="continuous">Replicación Continua</h3>
