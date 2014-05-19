@@ -99,7 +99,7 @@ POST /_replicate HTTP/1.1
 <p>Un scénario courant consiste à déclencher la réplication sur les nœuds où les comptes d’administration sont activés. En effet, la création des <em>design documents</em> est réservée aux administrateurs, aussi si la réplication est déclenchée sans ces privilèges, l’écriture de ces documents lors de la réplication échouera, ce qui se retrouvera dans <code>doc_write_failures</code>. Si vous possédez les privilèges d’administration, pensez à les ajouter dans la requête :
 
 <pre>
-&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@e127.0.0.1:5984/database"}'
+&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@127.0.0.1:5984/database"}'
 </pre>
 
 <h3 id="continuous">Réplication permanente</h3>
