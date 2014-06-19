@@ -35,7 +35,7 @@ This list function renders the list of users in a simple HTML page:
 http://mysite/mydb/_design/myapp/_list/mylist/mydocs-by-user
 </pre>
 <pre>
-function(doc, req) {   
+function(head, req) {
     provides("html", function() {
         html = "&lthtml&gt&ltbody&gt&ltol&gt\n";
         while (row = getRow()) {
