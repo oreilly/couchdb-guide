@@ -18,27 +18,27 @@
 
 <p>Banquier, c’est un métier sérieux, qui nécessite des bases de données tout aussi sérieuses pour stocker des transactions sérieuses et des informations sérieuses relatives aux comptes. Ils ne peuvent pas laisser l’argent s’évaporer. Jamais. Pas plus qu’ils ne peuvent créer de l’argent. Une banque doit être équilibrée, en tout temps.
 
-<p>La sagesse populaire dit qu’une base de données doit implémenter les <em>transactions</em> pour être prise au sérieux. CouchDB ne supporte pas les transactions dans le sens traditionnel du terme (bien qu’il fonctionne de manière transactionnelle), aussi pourriez-vous conclure que couchDB n’est pas adapté pour stocker des données bancaires. En outre, qui confierait son argent à un canapé ? Eh bien, nous, nous lui ferions confiance. Ce chapitre explique pourquoi.
+<p>La sagesse populaire dit qu’une base de données doit implémenter les <em>transactions</em> pour être prise au sérieux. CouchDB ne supporte pas les transactions dans le sens traditionnel du terme (bien qu’il fonctionne de manière transactionnelle), aussi pourriez-vous conclure que couchDB n’est pas adapté pour stocker des données bancaires. En outre, qui confierait son argent à un canapé ? Eh bien, nous, nous lui ferions confiance. Ce chapitre explique pourquoi.
 
 <h4 id="erasers">Les comptables n’utilisent pas de blanc</h4>
 
-<p>Disons que vous voulez donner 100 € à votre cousin Paul pour la forêt noire qu’il vous a fait parvenir depuis Marseille. Il y a longtemps, vous auriez dû voyager jusqu’à la cité fosséenne pour le payer en main propre ou vous auriez dû lui envoyer la somme par la poste. Ces deux méthodes s’avéraient considérablement pénibles et des alternatives se sont développées. Par exemple, les banques vous proposaient d’acheminer l’argent à Paul pour vous. Bien sûr, ce service engendrait un surcoût, mais vous étiez prêts à le payer pour éviter de voyager. En fait, la banque envoyait quelqu’un porter votre argent à la banque de Paul ; on faisait la même chose que vous auriez faite, mais par l’intermédiare d’un préposé. Les banques pouvaient aussi regrouper les transferts en lots : plutôt que d’envoyer une persone à chaque fois, elle ne faisait plus qu’un voyage. En cas de problème, par exemple si le destinataire avait changé de banque (rappelez-vous qu’il fallait quatre jours aux postes du XVIIIe siècle pour faire Paris-Lyon-Marseille), l’argent était renvoyé au compte du débiteur.
+<p>Disons que vous voulez donner 100 € à votre cousin Paul pour la forêt noire qu’il vous a fait parvenir depuis Marseille. Il y a longtemps, vous auriez dû voyager jusqu’à la cité fosséenne pour le payer en main propre ou vous auriez dû lui envoyer la somme par la poste. Ces deux méthodes s’avéraient considérablement pénibles et des alternatives se sont développées. Par exemple, les banques vous proposaient d’acheminer l’argent à Paul pour vous. Bien sûr, ce service engendrait un surcoût, mais vous étiez prêts à le payer pour éviter de voyager. En fait, la banque envoyait quelqu’un porter votre argent à la banque de Paul ; on faisait la même chose que vous auriez faite, mais par l’intermédiaire d’un préposé. Les banques pouvaient aussi regrouper les transferts en lots : plutôt que d’envoyer une personne à chaque fois, elle ne faisait plus qu’un voyage. En cas de problème, par exemple si le destinataire avait changé de banque (rappelez-vous qu’il fallait quatre jours aux postes du XVIIIe siècle pour faire Paris-Lyon-Marseille), l’argent était renvoyé au compte du débiteur.
 
-<p>Plus tard, le système bancaire moderne a été introduit et a évité de faire transiter physiquement l’argent sur les routes (au grand dam des bandiers de grand chemin !). Les banques ont l’argent <em>sur le papier</em>, ce qui leur permet de le faire circuler dans envoyer d’objets de valeur. Cependant, le vieux concept est resté dans nos mémoires : pour envoyer de l’argent à quelqu’un, notre banque doit sotir les billets de notre compte et les apporter au compte du créditeur. Aujourd’hui, nous sommes habitués à ce que cela se produise instantanément. Cela ne prend que quelques clis pour commander des biens sur Amazon et qu’ils soient expédiés, alors pourquoi une transaction bancaire prendrait-elle plus de temps ?
+<p>Plus tard, le système bancaire moderne a été introduit et a évité de faire transiter physiquement l’argent sur les routes (au grand dam des bandits de grand chemin !). Les banques ont l’argent <em>sur le papier</em>, ce qui leur permet de le faire circuler dans envoyer d’objets de valeur. Cependant, le vieux concept est resté dans nos mémoires : pour envoyer de l’argent à quelqu’un, notre banque doit sortir les billets de notre compte et les apporter au compte du créditeur. Aujourd’hui, nous sommes habitués à ce que cela se produise instantanément. Cela ne prend que quelques clics pour commander des biens sur Amazon et qu’ils soient expédiés, alors pourquoi une transaction bancaire prendrait-elle plus de temps ?
 
-<p>Les banques sont toutes électroniques de nos jours (et l’ont été depuis longtemps). Quand nous ordonnons un virement, nous nous attendons à ce qu’il parte immédiatement et nous voulons que cela fonctionne de la même manière qu’antan : prend l’argent de mon compte, dépose-le sur celui de Paul ou, si quelque chose se passe mal, rend-le-moi. Bien que ce soit la démarche logique, ce n’est pas vraiment ce qui se passe derrière le comptoir, et cela ne l’a jamais été depuis que les ordinateurs ont été utilisés par les banques.
+<p>Les banques sont toutes électroniques de nos jours (et l’ont été depuis longtemps). Quand nous ordonnons un virement, nous nous attendons à ce qu’il parte immédiatement et nous voulons que cela fonctionne de la même manière qu’antan : prends l’argent de mon compte, dépose-le sur celui de Paul ou, si quelque chose se passe mal, rends-le-moi. Bien que ce soit la démarche logique, ce n’est pas vraiment ce qui se passe derrière le comptoir, et cela ne l’a jamais été depuis que les ordinateurs ont été utilisés par les banques.
 
-<p>Quand vous vous rendez à votre banque et lui demandez d’envoyer de l’argent à Paul, le comptable va <em>amorcer une transaction</em> en prenant note que vous avez demandé d’effectuer un virement. La transaction contiendra la date, la somme et le compte créditeur. Souvenez-vous que les banques doivent toujours être équilibrées : la somme déduite de votre compte ne peut pas se volatiliser. Le comptable va placer votre argent sur un compte <em>de transit</em> que la banque tient pour vous. Le solde de votre compte est alors une agrégation de votre solde courant et des transactions listées dans le compte de transit. Ensuite, la banque vérifie que les coordonnées bancaires de Paul sont correctes et que l’argent peut y être déposé sans problème. Si c’est le cas, l’argent est déplacé dans une autre transaction initiée depuis le compte de transit jusqu’au compte de Paul. Tout est équilibré. Notez qu’il y a plusieurs transactions indépendantes et non une seule qui contiendrait un ensemble d’actions.
+<p>Quand vous vous rendez à votre banque et lui demandez d’envoyer de l’argent à Paul, le comptable va <em>amorcer une transaction</em> en prenant note que vous avez demandé d’effectuer un virement. La transaction contiendra la date, la somme et le compte créditeur. Souvenez-vous que les banques doivent toujours être équilibrées : la somme déduite de votre compte ne peut pas se volatiliser. Le comptable va placer votre argent sur un compte <em>de transit</em> que la banque tient pour vous. Le solde de votre compte est alors une agrégation de votre solde courant et des transactions listées dans le compte de transit. Ensuite, la banque vérifie que les coordonnées bancaires de Paul sont correctes et que l’argent peut y être déposé sans problème. Si c’est le cas, l’argent est déplacé dans une autre transaction initiée depuis le compte de transit jusqu’au compte de Paul. Tout est équilibré. Notez qu’il y a plusieurs transactions indépendantes et non une seule qui contiendrait un ensemble d’actions.
 
-<p>Maintenant, considérons un cas d’erreur : le compte de Paul n’existe plus. La banque s’en rend compte lorsqu’elle traite le lot d’opérations qui contient toutes les transactions depuis les comptes de transit. Une deuxième transaction est alors générée, laquelle renvoie l’argent sur votre compte. Notez que la transaction qui a débité initialement votre compte n’est pas <em>défaite</em>, mais que c’est une nouvelle (troisième) transaction qui est créée.
+<p>Maintenant, considérons un cas d’erreur : le compte de Paul n’existe plus. La banque s’en rend compte lorsqu’elle traite le lot d’opérations qui contient toutes les transactions depuis les comptes de transit. Une deuxième transaction est alors générée, laquelle renvoie l’argent sur votre compte. Notez que la transaction qui a débité initialement votre compte n’est pas <em>défaite</em>, mais que c’est une nouvelle (troisième) transaction qui est créée.
 
-<p>Un autre cas d’erreur : vous n’avez pas assez d’argent sur votre compte pour envoyer 100 € à Paul. Ce sera vérifié par le comptable (ou l’équivalent logiciel) avant que la banque crée la première transaction débitrice. Pour la comptabilité, la banque ne peut pas prétendre qu’il ne s’est rien passé : elle doit garder la trace de l’opération et de son rejet dans un journal. Annuler une opération consiste à effectuer la transaction inverse et jamais en effaçant la première transaction. « Les comptables n’utilisent pas de blanc » est une citation de Pat Helland, un architecte des systèmes transactionnels qui a travaillé pour Microsoft et Amazon.
+<p>Un autre cas d’erreur : vous n’avez pas assez d’argent sur votre compte pour envoyer 100 € à Paul. Ce sera vérifié par le comptable (ou l’équivalent logiciel) avant que la banque crée la première transaction débitrice. Pour la comptabilité, la banque ne peut pas prétendre qu’il ne s’est rien passé : elle doit garder la trace de l’opération et de son rejet dans un journal. Annuler une opération consiste à effectuer la transaction inverse et jamais en effaçant la première transaction. « Les comptables n’utilisent pas de blanc » est une citation de Pat Helland, un architecte des systèmes transactionnels qui a travaillé pour Microsoft et Amazon.
 
-<p>Pour récapituler, une <em>transaction</em> peut aboutir ou faillir, et rien d’autre. La seule opération que CouchDB garantit comme pouvant aboutir ou faillir est l’écriture d’un document. Toutes les opérations qui sont comprises dans une transaction doivent être contenue dans le même document. Si la logique métier détecte la survenance d’une erreur (par ex., il n’y a pas les fonds requis), une nouvelle transaction inverse doit être créée.
+<p>Pour récapituler, une <em>transaction</em> peut aboutir ou faillir, et rien d’autre. La seule opération que CouchDB garantit comme pouvant aboutir ou faillir est l’écriture d’un document. Toutes les opérations qui sont comprises dans une transaction doivent être contenues dans le même document. Si la logique métier détecte la survenance d’une erreur (par ex., il n’y a pas les fonds requis), une nouvelle transaction inverse doit être créée.
 
 <p>Voyons ce qu’il en est avec CouchDB. Nous avons mentionné que le solde de votre compte est une valeur agrégée. Si nous nous en tenons à cette image, les choses sont simples. Plutôt que mettre à jour le solde des deux comptes (le vôtre et celui de Paul, ou le vôtre et celui de transit), nous créons une seule transaction qui décrit ce que nous sommes en train de faire et recourons à une vue pour obtenir le solde agrégé.
 
-<p>Considérons les transactions suivantes :
+<p>Considérons les transactions suivantes :
 
 <pre>
 ...
@@ -48,9 +48,9 @@
 ...
 </pre>
 
-<p>Dans CouchDB, l’écriture d’un document est une opération atomique. Interroger une vue oblige à mettre à jour l’index de la vue en prenant en compte l’ensemble des changements survenus dans tous les documents. La vue résultante est toujours cohérente avec les données présentes dans nos documents. Cela garantie que notre banque est toujours équilibrée. Bien sûr, il existe bien d’autres transactions, mais celles-ci suffiront pour l’exemple.
+<p>Dans CouchDB, l’écriture d’un document est une opération atomique. Interroger une vue oblige à mettre à jour l’index de la vue en prenant en compte l’ensemble des changements survenus dans tous les documents. La vue résultante est toujours cohérente avec les données présentes dans nos documents. Cela garantit que notre banque est toujours équilibrée. Bien sûr, il existe bien d’autres transactions, mais celles-ci suffiront pour l’exemple.
 
-<p>Comment consultons-nous le solde courant ? C’est simple : une vue <em>MapReduce</em>.
+<p>Comment consultons-nous le solde courant ? C’est simple : une vue <em>MapReduce</em>.
 
 <pre>
 function(transaction) {
@@ -65,13 +65,13 @@ function(keys, values) {
 }
 </pre>
 
-<p>Ça n’a pas l’air bien compliqué, n’est-ce pas ? Nous stockerons cela dans une vue <code>balance</code> (NdT : solde) dans un document <code>_design/account</code>. Consultons le solde de Jan :
+<p>Ça n’a pas l’air bien compliqué, n’est-ce pas ? Nous stockerons cela dans une vue <code>balance</code> (NdT : solde) dans un document <code>_design/account</code>. Consultons le solde de Jan :
 
 <pre>
 curl 'http://127.0.0.1:5984/bank/_design/account/_view/balance?key="Jan"'
 </pre>
 
-<p>CouchDB répond :
+<p>CouchDB répond :
 
 <pre>
 {"rows":[
@@ -79,13 +79,13 @@ curl 'http://127.0.0.1:5984/bank/_design/account/_view/balance?key="Jan"'
 ]}
 </pre>
 
-<p>Ça semble correct ! Maintenant, vérifions que notre banque est bien équilibrée. La somme des transactions devrait être égale à zéro :
+<p>Ça semble correct ! Maintenant, vérifions que notre banque est bien équilibrée. La somme des transactions devrait être égale à zéro :
 
 <pre>
 curl http://127.0.0.1:5984/bank/_design/account/_view/balance
 </pre>
 
-<p>CouchDB répond :
+<p>CouchDB répond :
 
 <pre>
 {"rows":[
@@ -95,19 +95,19 @@ curl http://127.0.0.1:5984/bank/_design/account/_view/balance
 
 <h4 id="wrap">Résumé</h4>
 
-<p>Cela devrait explique que les applications qui requiernt une forte cohérence peuvent utiliser CouchDB s’il est possible de découper les grosses transactions et petites. Une banque est une bonne approximation d’un métier sérieux, donc vous pouvez être rassurés quant à la possibilité de modéliser votre transactions importantes en petites transactions CouchDB.
+<p>Cela devrait expliquer que les applications qui requièrent une forte cohérence peuvent utiliser CouchDB s’il est possible de découper les grosses transactions et petites. Une banque est une bonne approximation d’un métier sérieux, donc vous pouvez être rassurés quant à la possibilité de modéliser votre transaction importante en petites transactions CouchDB.
 
 <h3 id="ordering">Trier les listes</h3>
 
-<p>Les vues vous permettent de trier les éléments quelque soit la valeur de vos données — même les clés JSON complexes sont possibles, comme nous l'avons vu dans les chapitres précédents. Le tri par date s'avère très utile pour permettre aux utilisateurs de s'y retrouver rapidement ; un nom est plus facile à trouver dans une liste alphabétique. Les Hommes recourrent naturellement à un algorithme de division et de conquête (cela vous semble-t-il familier ?) et ignorent une bonne partie des données, car ils savent que le nom qu'ils cherchent ne s'y trouvera pas. De la même manière, trier les nombres et les dates est d'une grande aide aux utilisateurs pour gérer leurs données en perpétuelle accumulation.
+<p>Les vues vous permettent de trier les éléments quelle que soit la valeur de vos données — même les clés JSON complexes sont possibles, comme nous l'avons vu dans les chapitres précédents. Le tri par date s'avère très utile pour permettre aux utilisateurs de s'y retrouver rapidement ; un nom est plus facile à trouver dans une liste alphabétique. Les Hommes recourent naturellement à un algorithme de division et de conquête (cela vous semble-t-il familier ?) et ignorent une bonne partie des données, car ils savent que le nom qu'ils cherchent ne s'y trouvera pas. De la même manière, trier les nombres et les dates est d'une grande aide aux utilisateurs pour gérer leurs données en perpétuelle accumulation.
 
-<p>Il existe un autre type de tri un peu plus exotique. Les moteurs de recherche vous donnent les résultats par ordre de pertinence. Cette pertinence est ce que le moteur de recherche devine être le plus pertinent en fonction des mots-clés que vous recherchez (et aussi, potentiellement, votre historique de recherche ou de navigation). Il existe d'autres systèmes qui tentent d'inférer ce qui est le plus pertinent pour vous à partir d'anciennes données, mais ils ont la tâche quasi-impossible de devenir ce qu'un utilisateur désire. Or, les ordinateurs sont d'excécrables devins.
+<p>Il existe un autre type de tri un peu plus exotique. Les moteurs de recherche vous donnent les résultats par ordre de pertinence. Cette pertinence est ce que le moteur de recherche devine être le plus pertinente en fonction des mots-clés que vous recherchez (et aussi, potentiellement, votre historique de recherche ou de navigation). Il existe d'autres systèmes qui tentent d'inférer ce qui est le plus pertinent pour vous à partir d'anciennes données, mais ils ont la tâche quasi impossible de devenir ce qu'un utilisateur désire. Or, les ordinateurs sont d'exécrables devins.
 
-<p>La manière la plus simple pour un ordinateur de comprendre ce qui est le plus pertinent est de laisser l'utilisateur définir les priorités. Prenez une application de liste de tâches (de l'anglais, <em>todo list</em>) : elle permet aux utilisateurs de réordonner les tâches pour qu'ils sachent ce qu'ils ont à faire ensuite. La problématique sous-jacente, qui consiste à mémoriser l'ordre défini par un utilisateur, se retrouve dans de nombreux autres contextes.
+<p>La manière la plus simple pour un ordinateur de comprendre ce qui est le plus pertinent est de laisser l'utilisateur définir les priorités. Prenez une application de liste de tâches (de l'anglais, <em>todo list</em>) : elle permet aux utilisateurs de réordonner les tâches pour qu'ils sachent ce qu'ils ont à faire ensuite. La problématique sous-jacente, qui consiste à mémoriser l'ordre défini par un utilisateur, se retrouve dans de nombreux autres contextes.
 
 <h4 id="integers">Une liste d'entiers</h4>
 
-<p>Restons sur l'exemple de la liste de tâches. Une approche naïve consiste à assigner un nombre à chaque élément, lequel définit la position dans la liste. Nous utilisons une vue pour obtenir tous les tâches dans le bon ordre.
+<p>Restons sur l'exemple de la liste de tâches. Une approche naïve consiste à assigner un nombre à chaque élément, lequel définit la position dans la liste. Nous utilisons une vue pour obtenir toutes les tâches dans le bon ordre.
 
 <p>D’abord, nous avons besoin de quelques documents :
 
@@ -137,7 +137,7 @@ curl http://127.0.0.1:5984/bank/_design/account/_view/balance
 }
 </pre>
 
-<p>Ensuite, nous créons une vue avec une simple fonction qui émet les enregistrements, lesquels sont triés par le champ <code>sort_order</code> de nos documents. La vue qui en résulte correspond à ce que nous attendons :
+<p>Ensuite, nous créons une vue avec une simple fonction qui émet les enregistrements, lesquels sont triés par le champ <code>sort_order</code> de nos documents. La vue qui en résulte correspond à ce que nous attendons :
 
 <pre>
 function(todo) {
@@ -176,7 +176,7 @@ function(todo) {
 }
 </pre>
 
-<p>Cela semble relativement simple, mais pouvez-vous repérer le problème ? Voici un indice : que devez-vous faire si recevoir un cadeau d’Amy devient plus prioritaire que de se souvenir du lait ? Conceptuellement, c’est simple :
+<p>Cela semble relativement simple, mais pouvez-vous repérer le problème ? Voici un indice : que devez-vous faire si recevoir un cadeau d’Amy devient plus prioritaire que de se souvenir du lait ? Conceptuellement, c’est simple :
 
 <ol>
 
@@ -186,11 +186,11 @@ function(todo) {
 
 </ol>
 
-<p>Sous le capot, c’est une autre affaire. Avec couchdb, vous devriez charger chaque document, en incrémenter le <code>sort_order</code> et le sauvegarder. Si vous avez de nombreuses choses à faire, comme moi, celà représente un travail conséquent. Peut-être y a-t-il une meilleure approche.
+<p>Sous le capot, c’est une autre affaire. Avec CouchDB, vous devriez charger chaque document, en incrémenter le <code>sort_order</code> et le sauvegarder. Si vous avez de nombreuses choses à faire, comme moi, cela représente un travail conséquent. Peut-être y a-t-il une meilleure approche.
 
-<h4 id="floats">Une liste de flottants</h4>
+<h4 id="floats">Une liste de réels</h4>
 
-<p>La solution est simple : au lieu d’utiliser un entier pour classer les objets, nous utilisons un flottant :
+<p>La solution est simple : au lieu d’utiliser un entier pour classer les objets, nous utilisons un flottant :
 
 <pre>
 {
@@ -220,9 +220,9 @@ function(todo) {
 
 <p>La vue reste inchangée. La parcourir est aussi aisé. Réordonner les enregistrements est plus facile. L’application conserve une copie des <code>sort_order</code>, de sorte que lorsque l’on déplace un enregistrement, nous avons sa nouvelle position ainsi que celle des deux éléments qui l’entourent.
 
-<p>Déplaçons “Gift for Amy” pour le mettre au-dessus de “Remember the Milk”. Les valeurs des <code>sort_order</code> qui l’entourent sont <code>0.1</code> et <code>0.2</code>. Pour stocker le bon <code>sort_order</code> de  “Gift for Amy”, nous utilisons simplement la valeur médiane des deux éléments qui l’entourent : <code>(0.1 + 0.2) / 2 = 0.3 / 2 = 0.15</code>.
+<p>Déplaçons “Gift for Amy” pour le mettre au-dessus de “Remember the Milk”. Les valeurs des <code>sort_order</code> qui l’entourent sont <code>0.1</code> et <code>0.2</code>. Pour stocker le bon <code>sort_order</code> de  “Gift for Amy”, nous utilisons simplement la valeur médiane des deux éléments qui l’entourent : <code>(0.1 + 0.2) / 2 = 0.3 / 2 = 0.15</code>.
 
-<p>Si nous regardons à nouveau la vue, nous obtenons le résultat souhaité :
+<p>Si nous regardons à nouveau la vue, nous obtenons le résultat souhaité :
 
 <pre>
 {
@@ -253,19 +253,19 @@ function(todo) {
 }
 </pre>
 
-<p>L’inconvénient de cette approche apparaît avec un grand nombre de remaniements : la précision des flottants peut devenir un problème, puisque les nombres « grandissent » indéfiniement. Une solution serait de ne pas s’en soucier, considérant qu’un utilisateur seul n’atteindra pas la limite. Alternativement, une tâche d’administration peut redéfinir les index de la liste à des entiers quand personne n’utilise l’application.
+<p>L’inconvénient de cette approche apparaît avec un grand nombre de remaniements : la précision des flottants peut devenir un problème, puisque les nombres « grandissent » indéfiniment. Une solution serait de ne pas s’en soucier, considérant qu’un utilisateur seul n’atteindra pas la limite. Autrement, une tâche d’administration peut redéfinir les index de la liste à des entiers quand personne n’utilise l’application.
 
 <p>L’avantage de cette approche est que vous n’avez qu’un seul document à mettre à jour, ce qui est efficace pour stocker le nouvel ordre d’une liste et mettre à jour la vue qui maintient l’index ordonné, puisqu’un seul document doit y être stocké.
 
 <h3 id="pagination">Pagination</h3>
 
-<p>Cette recette explique comment paginer les résultats renvoyés par une vue. La pagination est un patron (de l’anglais, <em>pattern</em>) de l’IHM qui permet d’afficher un grand nombre d’enregistrements (le <em>result set</em>) sans devoir tout charger au début dans l’interface. Un sous-ensemble déterminé, la <em>page</em>, est affichée avec les boutons <em>précédent<em/> et <em>suivant</em>, lesquels déplacent le <em>viewport</em> le long du <em>result set</em> jusqu’à couvrir la page souhaitée.
+<p>Cette recette explique comment paginer les résultats renvoyés par une vue. La pagination est un patron (de l’anglais, <em>pattern</em>) de l’IHM qui permet d’afficher un grand nombre d’enregistrements (le <em>result set</em>) sans devoir tout charger au début dans l’interface. Un sous-ensemble déterminé, la <em>page</em>, est affiché avec les boutons <em>précédent<em/> et <em>suivant</em>, lesquels déplacent le <em>viewport</em> le long du <em>result set</em> jusqu’à couvrir la page souhaitée.
 
 <p>Nous considérons que vous savez créer et chercher des documents et des vues, et que vous êtes à l’aise avec les options des requêtes exécutées sur les vues.
 
 <h4 id="data">Cas d’emploi</h4>
 
-<p>Afin d’avoir quelques données à manipuler, nous créons une liste de groupes de musique, à raison d’un document par groupe :
+<p>Afin d’avoir quelques données à manipuler, nous créons une liste de groupes de musique, à raison d’un document par groupe :
 
 <pre>
 { "name":"Biffy Clyro" }
@@ -293,7 +293,7 @@ function(todo) {
 
 <h4 id="view">Une vue</h4>
 
-<p>Nous avons besoin d’une fonction de subdivison (<em>map</em>) toute simple, qui nous donne la liste des groupes de muusique, dans l’ordre alphabétique. Ce devrait être simple, mais nous y incorporons un peu de finesse en ignorant les « The » et « A » qui précèdent le nom :
+<p>Nous avons besoin d’une fonction de subdivision (<em>map</em>) toute simple, qui nous donne la liste des groupes de musique, dans l’ordre alphabétique. Ce devrait être simple, mais nous y incorporons un peu de finesse en ignorant les « The » et « A » qui précèdent le nom :
 
 <pre>
 function(doc) {
@@ -326,7 +326,7 @@ function(doc) {
 
 <h4 id="setup">Paramétrage</h4>
 
-<p>Le fonctionnement de la pagination est très simple :
+<p>Le fonctionnement de la pagination est très simple :
 
 <ul>
 
@@ -342,7 +342,7 @@ function(doc) {
 
 </ul>
 
-<p>Ou, en pseudo-JavaScript :
+<p>Ou, en pseudo-JavaScript :
 
 <pre>
 var result = new Result();
@@ -361,13 +361,13 @@ if(result.hasNext()) {
 
 <h4 id="slow">Pagination lente (À ne surtout pas utiliser)</h4>
 
-<p>N’utilisez surtout pas cette méthode ! Nous la montrons simplement parce qu’elle semble naturelle, aussi devez-vous comprendre pourquoi c’est une mauvaise idée. Pour obtenir les cinq premiers enregistrements, utilisez le paramètre de requête <code>?limit=5</code> :
+<p>N’utilisez surtout pas cette méthode ! Nous la montrons simplement parce qu’elle semble naturelle, aussi devez-vous comprendre pourquoi c’est une mauvaise idée. Pour obtenir les cinq premiers enregistrements, utilisez le paramètre de requête <code>?limit=5</code> :
 
 <pre>
 curl -X GET http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5
 </pre>
 
-<p>Résultat :
+<p>Résultat :
 
 <pre>
 {"total_rows":11,"offset":0,"rows":[
@@ -379,7 +379,7 @@ curl -X GET http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5
 ]}
 </pre>
 
-<p>En comparant le nombre total de résultats (<code>total_rows</code>) à la limite actuelle (<code>limit</code>), nous pouvons déterminer si d’autres pages sont à afficher. Nous savons aussi, en lisant la valeur du décalage (<code>offset</code>), que nous sommes sur la première page. Nous pouvons calculer la valeur de <code>skip=</code> pour obtenir la page suivante :
+<p>En comparant le nombre total de résultats (<code>total_rows</code>) à la limite actuelle (<code>limit</code>), nous pouvons déterminer si d’autres pages sont à afficher. Nous savons aussi, en lisant la valeur du décalage (<code>offset</code>), que nous sommes sur la première page. Nous pouvons calculer la valeur de <code>skip=</code> pour obtenir la page suivante :
 
 <pre>
 var rows_per_page = 5;
@@ -387,7 +387,7 @@ var page = (offset / rows_per_page) + 1; // == 1
 var skip = page * rows_per_page; // == 5 for the first page, 10 for the second ...
 </pre>
 
-<p>Donc, nous requêtons CouchDB avec :
+<p>Donc, nous requêtons CouchDB avec :
 
 <pre>
 curl -X GET 'http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5&amp;skip=5'
@@ -395,7 +395,7 @@ curl -X GET 'http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5
 
 <p>Remarquez que nous devons utiliser <code>'</code> (guillemet simple et droit) pour échapper l’esperluète <code>&amp;</code>, laquelle est un caractère de commande dans le shell où nous lançons <code>curl</code>.
 
-<p>Résultat :
+<p>Résultat :
 
 <pre>
 {"total_rows":11,"offset":5,"rows":[
@@ -407,7 +407,7 @@ curl -X GET 'http://127.0.0.1:5984/artists/_design/artists/_view/by-name?limit=5
 ]}
 </pre>
 
-<p>Implanter les méthodes <code>hasPrev()</code> et <code>hasNext()</code> est assez direct :
+<p>Implanter les méthodes <code>hasPrev()</code> et <code>hasNext()</code> est assez direct :
 
 <pre>
 function hasPrev()
@@ -427,39 +427,39 @@ function hasNext()
 
 <p>Tout cela paraît simple et direct, mais recèle un défaut fatal. Souvenez-vous de la manière dont les résultats d’une vue sont générés par l’index, donc l’arbre B sous-jacent : CouchDB saute le premier enregistrement (ou le premier enregistrement qui correspond à <code>startkey</code> si ce dernier est fourni) et lit chaque enregistrement de l’index l’un après l’autre jusqu’à la fin (ou jusqu’à atteindre <code>limit</code> ou <code>endkey</code>).
 
-<p>L’argument <code>skip</code> fonctionne ainsi : en plus d’aller au premier enregistrement et commencer à lire, <code>skip</code> va zapper autant d’enregistrement que demandé, mais CouchDB lira toujours depuis le premier enregistrement ; simplement, il ne renverra pas les valeurs des enregistrements zappés. Si vous spécifiez <code>skip=100</code>, CouchDB lira 100 enregistrements et ne créera aucune valeur correspondante. Cela ne semble pas catastrophique, mais ça l’est bel et bien, notamment quand vous utilisez <code>1000</code> ou <code>10000</code> comme valeur de <code>skip</code>. CouchDB devra lire toutes ces données futiles. 
+<p>L’argument <code>skip</code> fonctionne ainsi : en plus d’aller au premier enregistrement et commencer à lire, <code>skip</code> va zapper autant d’enregistrement que demandé, mais CouchDB lira toujours depuis le premier enregistrement ; simplement, il ne renverra pas les valeurs des enregistrements zappés. Si vous spécifiez <code>skip=100</code>, CouchDB lira 100 enregistrements et ne créera aucune valeur correspondante. Cela ne semble pas catastrophique, mais ça l’est bel et bien, notamment quand vous utilisez <code>1000</code> ou <code>10000</code> comme valeur de <code>skip</code>. CouchDB devra lire toutes ces données futiles. 
 
-<p>En règle générale, <code>skip</code> ne devrait être utilisé qu’avec une valeur à un chiffre. Bien qu’il soit possible qu’il existe des cas légitimes où il serait nécessaire d’utiliser une valeur supérieure, c’est habituellement révélateur d’un problème de conception. Enfin, pour que les calculs fonctionnent, vous devez ajouter une fonction d’aggrégation (<em>reduce</em>) et effectuer deux appels à la vue pour obtenir la bonne numérotation, et il est encore possible que vous tombiez à côté.
+<p>En règle générale, <code>skip</code> ne devrait être utilisé qu’avec une valeur à un chiffre. Bien qu’il soit possible qu’il existe des cas légitimes où il serait nécessaire d’utiliser une valeur supérieure, c’est habituellement révélateur d’un problème de conception. Enfin, pour que les calculs fonctionnent, vous devez ajouter une fonction d’agrégation (<em>reduce</em>) et effectuer deux appels à la vue pour obtenir la bonne numérotation, et il est encore possible que vous tombiez à côté.
 
 <h4 id="fast">Pagination rapide (À utiliser)</h4>
 
 <p>La bonne solution n’est pas beaucoup plus difficile. Plutôt que découper votre ensemble de résultats en pages de même taille, nous récupérons 10 enregistrements à la fois et utilisons <code>startkey</code> pour atteindre les 10 suivants. Nous utilisons même <code>skip</code>, mais seulement avec la valeur <code>1</code>.
 
-<p>Voici comment cela fonctionne :
+<p>Voici comment cela fonctionne :
 
 <ul>
 
 <li>Récupère <code>rows_per_page</code> + 1 enregistrements depuis la vue</li>
 
-<li>Affiche <code>rows_per_page</code> enregistrements, stocke + 1 enregistrement dans <code>next_startkey</code> et dans <code>next_startkey_docid</code></li>
+<li>Affiche <code>rows_per_page</code> enregistrements, stocke + 1 enregistrement dans <code>next_startkey</code> et dans <code>next_startkey_docid</code></li>
 
 <li>Comme <em>information de pagination</em>, garde <code>startkey</code> et <code>next_startkey</code></li>
 
-<li>Utilise les valeurs de <code>next_*</code> pour conposer le lien <em>suivants</em>, et utiliser les autres pour composer le lien <em>précédents</em>.</li>
+<li>Utilise les valeurs de <code>next_*</code> pour composer le lien <em>suivant</em>, et utiliser les autres pour composer le lien <em>précédent</em>.</li>
 
 </ul>
 
-<p>L’astuce qui permet de trouver la page suivante est assez simple. Plutôt que de demander 10 enregistrements pour chaque page, nous en demandons 11, mais n’en affichons que 10 ; la dernière valeur sert à donner la <code>startkey</code> à la page suivante. Même principe pour la page précédente : envoyer la <code>startkey</code> courante à la page suivante permet de savoir s’il y a une page précédente. S’il n’y a pas de <code>startkey</code> précédente, nous sommes sur la première page. De plus, nous n’affichons plus le lien vers la page suivante si nous récupérons un nombre d’enregistrements inférieur ou égal à <code>rows_per_page</code>. Cette méthode se nomme <em>pagination par liste chaînée</em>, puisque nous allons de page en page, ou de puce en puce (une puce étant un élément d’une liste), plutôt que d’aller sur une page précalculée. Il y a cependant un inconvénient. Le voyez-vous ?
+<p>L’astuce qui permet de trouver la page suivante est assez simple. Plutôt que de demander 10 enregistrements pour chaque page, nous en demandons 11, mais n’en affichons que 10 ; la dernière valeur sert à donner la <code>startkey</code> à la page suivante. Même principe pour la page précédente : envoyer la <code>startkey</code> courante à la page suivante permet de savoir s’il y a une page précédente. S’il n’y a pas de <code>startkey</code> précédente, nous sommes sur la première page. De plus, nous n’affichons plus le lien vers la page suivante si nous récupérons un nombre d’enregistrements inférieur ou égal à <code>rows_per_page</code>. Cette méthode se nomme <em>pagination par liste chaînée</em>, puisque nous allons de page en page, ou de puce en puce (une puce étant un élément d’une liste), plutôt que d’aller sur une page précalculée. Il y a cependant un inconvénient. Le voyez-vous ?
 
-<p>Les clés utilisées par les vues de CouchDB n’ont pas à être uniques ; vous pouvez avoir plusieurs entrées d’index à la valeur <em>read</em>. Que se passe-t-il dans le cas où le nombre d’enregistrements correspondant à la clé <em>read</em> dépasse le nombre d’éléments affichés sur une page ? <code>startkey</code> saute sur le premier, si bien que vous l’auriez dans le baba si CouchDB n’offrait pas un deuxième paramètre pour vous sauver. Toutes les clés identiques d’une vue sont classées par <code>docid</code>, c’est-à-dire par l’identifiant du document qui a donné lieu à cet enregistrement dans la vue. Vous pouvez utiliser les paramètres <code>startkey_docid</code> et <code>endkey_docid</code> afin d’obtenir des sous-ensembles de ces enregistrements. Pour la pagination, nous n’avons pas besoin de <code>endkey_docid</code>, mais <code>startkey_docid</code> est très pratique. Vous l’ajoutez à <code>startkey</code> et <code>limit</code> pour gérer la pagination si et seulement si le onzième enregistrement présente la même valeur que votre <code>startkey</code> actuelle.
+<p>Les clés utilisées par les vues de CouchDB n’ont pas à être uniques ; vous pouvez avoir plusieurs entrées d’index à la valeur <em>read</em>. Que se passe-t-il dans le cas où le nombre d’enregistrements correspondant à la clé <em>read</em> dépasse le nombre d’éléments affichés sur une page ? <code>startkey</code> saute sur le premier, si bien que vous l’auriez dans le baba si CouchDB n’offrait pas un deuxième paramètre pour vous sauver. Toutes les clés identiques d’une vue sont classées par <code>docid</code>, c’est-à-dire par l’identifiant du document qui a donné lieu à cet enregistrement dans la vue. Vous pouvez utiliser les paramètres <code>startkey_docid</code> et <code>endkey_docid</code> afin d’obtenir des sous-ensembles de ces enregistrements. Pour la pagination, nous n’avons pas besoin de <code>endkey_docid</code>, mais <code>startkey_docid</code> est très pratique. Vous l’ajoutez à <code>startkey</code> et <code>limit</code> pour gérer la pagination si et seulement si le onzième enregistrement présente la même valeur que votre <code>startkey</code> actuelle.
 
-<p>Il est essentiel de comprendre que le paramètres <code>*_docid</code> ne sont utiles qu’en complément des paramètres <code>*key</code>, car ils ne servent qu’à affiner la recherche sur une clé dans une vue. Ils ne fonctionnent pas de manière autonome (à l’exception de la vue <code>all_docs</code> qui est déjà triée par ID de document).
+<p>Il est essentiel de comprendre que les paramètres <code>*_docid</code> ne sont utiles qu’en complément des paramètres <code>*key</code>, car ils ne servent qu’à affiner la recherche sur une clé dans une vue. Ils ne fonctionnent pas de manière autonome (à l’exception de la vue <code>all_docs</code> qui est déjà triée par ID de document).
 
-<p>L’avantage de cette approche est de permettre des opérations ultra-rapides sur l’index de l’arbre B qui sous-tend la vue. Obtenir une page ne nécessite pas de parcourir inutilement des centaines ou des milliers d’enregistrements.
+<p>L’avantage de cette approche est de permettre des opérations ultrarapides sur l’index de l’arbre B qui sous-tend la vue. Obtenir une page ne nécessite pas de parcourir inutilement des centaines ou des milliers d’enregistrements.
 
 <h4 id="jump">Atteindre la page…</h4>
 
-<p>Un inconvénient de la pagination par liste chaînée est l’impossibilité de prédéterminer la clé qui permet d’accéder à la page <em>n</em> à partir du nombre d’enregistrements et de la taille d’une page. Cela n’est tout bonnement pas possible. Notre réponse à ce besoin, s’il survient, est de dire : « Même Google ne le fait pas ! » et de faire avec. Sur la première page de résultats, Google prétend toujours en avoir dix de plus. C’est seulements si vous cliquez sur la page numéro 2 (ce que peu de gens font) que Google pourrait vous indiquer qu’il y a en fait moins de pages. Si vous parcourez les pages, vous n’obtenez des liens que vers les 10 pages alentour ; jamais plus. Précalculer les <code>startkey</code> et <code>startkey_docid</code> est une opération possible ainsi qu’une optimisation pragmatique et préférable à calculer les clés d’un ensemble de résultats qui peut dépasser les dizaines de milliers d’enregistrements.
+<p>Un inconvénient de la pagination par liste chaînée est l’impossibilité de prédéterminer la clé qui permet d’accéder à la page <em>n</em> à partir du nombre d’enregistrements et de la taille d’une page. Cela n’est tout bonnement pas possible. Notre réponse à ce besoin, s’il survient, est de dire : « Même Google ne le fait pas ! » et de faire avec. Sur la première page de résultats, Google prétend toujours en avoir dix de plus. C’est seulement si vous cliquez sur la page numéro 2 (ce que peu de gens font) que Google pourrait vous indiquer qu’il y a en fait moins de pages. Si vous parcourez les pages, vous n’obtenez des liens que vers les 10 pages alentour ; jamais plus. Précalculer les <code>startkey</code> et <code>startkey_docid</code> est une opération possible ainsi qu’une optimisation pragmatique et préférable à calculer les clés d’un ensemble de résultats qui peut dépasser les dizaines de milliers d’enregistrements.
 
 <p>Si vous avez vraiment besoin de fournir un lien vers chaque page de résultat (nous avons vu des applications qui en avaient besoin), vous pouvez toujours maintenir un nombre entier en tant que clé utilisée par la vue et adopter une approche hybride concernant la pagination.
 
