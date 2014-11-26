@@ -173,7 +173,7 @@ curl -X GET $HOST/db/_changes?since=1
 
 <h3 id="filters">Filters</h3>
 
-<p>The change notification API and its three modes of operation already give you a lot of options requesting and processing changes in CouchDB. Filters for changes give you an additional level of flexibility. Let’s say the messages from our first scenario have priorities, and a user is interested only in notifications about messages with a <code>high</code> priority.
+<p>The change notification API and its three modes of operation already give you a lot of options for requesting and processing changes in CouchDB. Filters for changes give you an additional level of flexibility. Let’s say the messages from our first scenario have priorities, and a user is interested only in notifications about messages with a <code>high</code> priority.
 
 <p>Enter filters. Similar to view functions, a filter is a JavaScript function that gets stored in a design document and is later executed by CouchDB. They live in special member <code>filters</code> under a name of your choice. Here is an example:
 
