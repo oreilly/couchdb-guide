@@ -371,7 +371,7 @@ curl -vX PUT http://127.0.0.1:5984/albums/70b50bfa0a4b3aed1f8aff9e92dc16a0 -d '{
 &gt; curl -vX PUT http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/ artwork.jpg?rev=2-2739352689 --data-binary @artwork.jpg -H "Content-Type: image/jpg"
 </pre>
 
-<p>The <code>-d@</code> option tells <code>curl</code> to read a file’s contents into the HTTP request body. We’re using the <code>-H</code> option to tell CouchDB that we’re uploading a JPEG file. CouchDB will keep this information around and will send the appropriate header when requesting this attachment; in case of an image like this, a browser will render the image instead of offering you the data for download. This will come in handy later. Note that you need to provide the current revision number of the document you’re attaching the artwork to, just as if you would update the document. Because, after all, attaching some data is changing the document.
+<p>The <code>--data-binary @filename</code> option tells <code>curl</code> to read a file’s contents into the HTTP request body. We’re using the <code>-H</code> option to tell CouchDB that we’re uploading a JPEG file. CouchDB will keep this information around and will send the appropriate header when requesting this attachment; in case of an image like this, a browser will render the image instead of offering you the data for download. This will come in handy later. Note that you need to provide the current revision number of the document you’re attaching the artwork to, just as if you would update the document. Because, after all, attaching some data is changing the document.
 
 <p>You should now see your artwork image if you point your browser to <code>http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af/artwork.jpg</code>.
 
