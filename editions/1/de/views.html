@@ -110,7 +110,7 @@ function(doc) {
 
 <p>Das View Ergebnis wird in einem B-Baum gespeichert, genau wie die Struktur, welche für das Halten der Dokumente verantwortlich ist. View B-Bäume werden in separaten Dateien gespeichert so, dass für High-Performance Zugriffe die CouchDB diese auf ihrer eigenen Festplatte hat. Die B-Bäume stellen eine sehr schnelle Ausführung von Lookups von Rows mittels Keys sicher. Genauso schnell ist die Suche nach Bereichen von Keys. In unserem Beispiel kann eine einzelne View alle Anfragen beantworten: "Gibt mir alle Blogposts von letzter Woche" oder "vom letzten Monat" oder "von diesem Jahr". Lies mehr über die Arbeit von CouchDB mit B-Bäumen im <a href="btree.html">Anhang F, Die Macht der B-Bäume</a>.
 
-<p>Wenn wir unsere View aufrufen, bekommen wir eine Liste aller Dokumente, sortiert nach Datum, zurückgeliefert. Jede Zeile besitzt einen Post-Titel so, dass wir Links zu Posts erstellen können. <a href="#table/1">Tabelle 1: “View Ergebnismenge”</a> ist dabei nur eine graphische Repräsentation. Das eigentliche Ergebnis ist formatiert in JSON und beinhaltet ein mehr Metadaten.
+<p>Wenn wir unsere View aufrufen, bekommen wir eine Liste aller Dokumente, sortiert nach Datum, zurückgeliefert. Jede Zeile besitzt einen Post-Titel so, dass wir Links zu Posts erstellen können. <a href="#table/1">Tabelle 1: “View Ergebnismenge”</a> ist dabei nur eine graphische Repräsentation. Das eigentliche Ergebnis ist formatiert in JSON und beinhaltet ein paar mehr Metadaten.
 
 <pre>
 {
