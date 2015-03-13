@@ -514,7 +514,7 @@ function(keys, values, rereduce) {
 
 <p>Dies erklärt <a href="#figure/4">Figur 4, “Ein überlaufenden Reduceindex”</a>.
 
-<p>We hope you get the picture. The way the B-tree storage works means that if you don’t actually reduce your data in the reduce function, you end up having CouchDB copy huge amounts of data around that grow linearly, if not faster with the number of rows in your view.
+<p>Wir hoffen, sie verstehen das Bild. Die Art, wie der <code>B-tree</code> Speicher arbeitet bedeutet, dass sie besser ihre Daten in der <code>reduce</code> Funktion reduzieren, damit nicht CouchDB große Mengen an Daten, linear wachsend, kopiert, falls nicht sogar schneller mit der Anzahl der Zeilen in der Ansicht.
 
 <p>­CouchDB ist in der Lage das endgültige Ergebnis, bei einer <code>view</code> mit einer geringen Zeilen Anzahl, zu berechnen. Größere ­<code>views</code> hingegen brauchen nahezu unendlich lange um ein Ergebnis zu erzielen. Um dies zu vermeiden, schmeißt CouchDB (seit Version 0.10.0) dann einen Fehler, wenn ihre <code>reduce function</code> nicht die eigenen input werte reduziert.
 
