@@ -516,7 +516,7 @@ function(keys, values, rereduce) {
 
 <p>We hope you get the picture. The way the B-tree storage works means that if you don’t actually reduce your data in the reduce function, you end up having CouchDB copy huge amounts of data around that grow linearly, if not faster with the number of rows in your view.
 
-<p>CouchDB will be able to compute the final result, but only for views with a few rows. Anything larger will experience a ridiculously slow view build time. To help with that, CouchDB since version 0.10.0 will throw an error if your reduce function does not reduce its input values.
+<p>­CouchDB ist in der Lage das endgültige Ergebnis, bei einer <code>view</code> mit einer geringen Zeilen Anzahl, zu berechnen. Größere ­<code>views</code> hingegen brauchen nahezu unendlich lange um ein Ergebnis zu erzielen. Um dies zu vermeiden, schmeißt CouchDB (seit Version 0.10.0) dann einen Fehler, wenn ihre <code>reduce function</code> nicht die eigenen input werte reduziert.
 
 <p>See <a href="cookbook.html">Chapter 21, View Cookbook for SQL Jockeys</a> for an example of how to compute unique lists with views.
 
