@@ -514,11 +514,11 @@ function(keys, values, rereduce) {
 
 <p>Dies erklärt <a href="#figure/4">Figur 4, “Ein überlaufenden Reduceindex”</a>.
 
-<p>We hope you get the picture. The way the B-tree storage works means that if you don’t actually reduce your data in the reduce function, you end up having CouchDB copy huge amounts of data around that grow linearly, if not faster with the number of rows in your view.
+<p>Wir hoffen, sie verstehen das Bild. Die Art, wie der <code>B-tree</code> Speicher arbeitet bedeutet, dass sie besser ihre Daten in der <code>reduce</code> Funktion reduzieren, damit nicht CouchDB große Mengen an Daten, linear wachsend, kopiert, falls nicht sogar schneller mit der Anzahl der Zeilen in der Ansicht.
 
-<p>CouchDB will be able to compute the final result, but only for views with a few rows. Anything larger will experience a ridiculously slow view build time. To help with that, CouchDB since version 0.10.0 will throw an error if your reduce function does not reduce its input values.
+<p>­CouchDB ist in der Lage das endgültige Ergebnis, bei einer <code>view</code> mit einer geringen Zeilen Anzahl, zu berechnen. Größere ­<code>views</code> hingegen brauchen nahezu unendlich lange um ein Ergebnis zu erzielen. Um dies zu vermeiden, schmeißt CouchDB (seit Version 0.10.0) dann einen Fehler, wenn ihre <code>reduce</code> Funktion nicht die eigenen input Werte reduziert.
 
-<p>See <a href="cookbook.html">Chapter 21, View Cookbook for SQL Jockeys</a> for an example of how to compute unique lists with views.
+<p>Für Beispiele, wie man einzigartige Listen mit views berechnet, schauen sie sich <a href="cookbook.html">Kapitel 21, View Cookbook for SQL Jockeys</a> an.
 
 <div class="figure" id="figure/4">
 
@@ -528,15 +528,19 @@ function(keys, values, rereduce) {
 
 </div>
 
-<h4 id="lessons">Lessons Learned</h4>
+<h4 id="lessons">Was wir in dieser Lektion gelernt haben/h4>
 
 <ul>
 
-<li>If you don’t use the key field in the map function, you are probably doing it wrong.</li>
+<li>Falls sie auf das <code>key</code> Feld in der <code>map</code> Funktion verzichten, machen sie höchst wahrscheinlich einen Fehler.</li>
 
-<li>If you are trying to make a list of values unique in the reduce functions, you are probably doing it wrong.</li>
+<li>Falls sie versuchen, eine Liste mit Werten, in der <code>reduce</code> Funktion einzigartig zu halten, machen sie höchst wahrscheinlich einen Fehler.</li>
 
-<li>If you don’t reduce your values to a single scalar value or a small fixed-sized object or array with a fixed number of scalar values of small sizes, you are probably doing it wrong.</li>
+<li>Falls sie auf das Reduzieren Ihrer Werte:
+<br> - zu einem einzigen skalaren Wert,
+<br> - einem Objekt mit fester Größe,
+<br> - oder einem Array, mit einer festen Anzahl an skalaren Werten, in kleiner Größe
+<br> verzichten, machen sie höchst wahrscheinlich einen Fehler.</li>
 
 </ul>
 
