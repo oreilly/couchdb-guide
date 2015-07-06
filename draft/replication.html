@@ -12,7 +12,7 @@
 
 <h2 id="replication">Replication</h2>
 
-<p>Before you start: For security reasons, CouchDB is by default configured to listen to localhost/127.0.0.1 only. In order to replicate to a remote CouchDB server, CouchDB has to bound to <em>0.0.0.0</em>. Find the option <pre>bind_address</pre> in the http section of the <a href="http://localhost:5984/_utils/config.html">Futon configuration page</a>.</p>
+<p>Before you start: For security reasons, CouchDB is by default configured to listen to localhost/127.0.0.1 only. In order to replicate to a remote CouchDB server, the remote CouchDB has to bound to <em>0.0.0.0</em>, the source server can remain private on 127.0.0.1. Find the option <pre>bind_address</pre> in the http section of the <a href="http://localhost:5984/_utils/config.html">Futon configuration page</a>.</p>
 
 <p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access to data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
 
