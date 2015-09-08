@@ -112,7 +112,11 @@ Content-Type: application/json
 &gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}' -H "Content-Type: application/json"
 </pre>
 
-<p>At the time of writing, CouchDB doesn’t remember continuous replications over a server restart. For the time being, you are required to trigger them again when you restart CouchDB. In the future, CouchDB will allow you to define permanent continuous replications that survive a server restart without you having to do anything.
+<h3 id="replicator-db">The replicator database</h3>
+
+<p>Requests posted to <code>/_replicate/</code> trigger a single replication operation, or if the <code>continuous</code> flag is set, a single replication thread that will continue replicating until the server dies.</p>
+
+<p>Since CouchDB 1.1.0, permanent continuous replications that survive a server restart without you having to do anything can be defined by inserting documents in the <em>replicator</em> database (which by default is named <code>_replicator</code>). These documents have the same syntax as the JSON objects posted to <code>/_replicate/</code>.
 
 <h3 id="more">That’s It?</h3>
 
