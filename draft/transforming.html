@@ -41,7 +41,7 @@ function(head, req) {
         while (row = getRow()) {
             html += "&ltli&gt" + row.key + ":" + row.value + "&lt/li&gt\n";
         }   
-        html += "&lt/ol&gt&lt/body&gt&lt/head&gt";
+        html += "&lt/ol&gt&lt/body&gt&lt/html&gt";
         return html;
     }); 
 }
