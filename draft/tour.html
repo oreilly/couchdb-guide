@@ -363,7 +363,7 @@ function(doc) {
 }
 </pre>
 
-<p>Here, we first check that the document has the fields we want to use. CouchDB recovers gracefully from a few isolated map function failures, but when a map function fails regularly (due to a missing required field or other JavaScript exception), CouchDB shuts off its indexing to prevent any further resource usage. For this reason, it’s important to check for the existence of any fields before you use them. In this case, our map function will skip the first “hello world” document we created without emitting any rows or encountering any errors. The result of this query should look like <a href="#figure/9">Figure 9, “The results of running a view after grouping by item type and price”</a>.
+<p>Here, we first check that the document has the fields we want to use, skipping the first “hello world” document we created. The result of this query should look like <a href="#figure/9">Figure 9, “The results of running a view after grouping by item type and price”</a>.
 
 <div class="figure" id="figure/9">
 
