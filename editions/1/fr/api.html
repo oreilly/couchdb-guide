@@ -164,7 +164,7 @@ curl -vX PUT http://127.0.0.1:5984/albums-backup
 &lt; HTTP/1.1 201 Created
 </pre>
 
-<p>La première ligne de la réponse HTTP envoyée par CouchDB inclut la version du protocole HTTP (pour permettre le traitement de son format), un <em>code d’état</em> et un <em>message d’état</em>. Des requêtes différentes appellent des réponses différentes. Il en existe une ribambelle qui indique au client (<code>curl</code> dans notre cas) quel effet a eu la requête, que ce soit un succès ou un échec. La RFC 2616 (spécifiant HTTP 1.1) définit le comportement à avoir selon le code d’état. CouchDB se conforme parfaitement à cette RFC. 
+<p>La première ligne de la réponse HTTP envoyée par CouchDB inclut la version du protocole HTTP (pour permettre le traitement de son format), un <em>code d’état</em> et un <em>message d’état</em>. Des requêtes différentes appellent des réponses différentes. Il en existe une ribambelle qui indique au client (<code>curl</code> dans notre cas) quel effet a eu la requête, que ce soit un succès ou un échec. La RFC 2616 (spécifiant HTTP 1.1) définit le comportement à avoir selon le code d’état. CouchDB se conforme parfaitement à cette RFC.
 
 <p>Le code <em>201 Created</em> indique au client que la ressource qu’il a sollicitée a été créée. Aucune surprise ici, mais si vous vous souvenez du code d’erreur que nous avons eu quand nous avons tenté de recréer une base de données existante, vous savez qu’il aurait pu en être tout autrement. Réagir aux réponses en se basant sur le code d’état est une pratique courante. Par exemple, tous les codes supérieurs ou égaux à 400 signalent une erreur. Si vous vouliez simplifier votre logique de traitement et réagir immédiatement à une erreur, vous pourriez simplement vérifier si le code d’état est <code>&gt;= 400</code>.
 
@@ -283,7 +283,7 @@ curl -X GET http://127.0.0.1:5984/albums/6e1295ed6c29495e54cc05947f18c8af
 {"_id":"6e1295ed6c29495e54cc05947f18c8af","_rev":"1-2902191555","title":"There is Nothing Left to Lose","artist":"Foo Fighters"}
 </pre>
 
-<p>Cela ressemble beaucoup au document que nous avons soumis à CouchDB ; tant mieux ! Mais vous devriez aussi noter que CouchDB a jouté deux champs à votre structure JSON. Le premier est <code>_id</code> qui stocke l’UUID que nous avons spécifié. Nous connaissons toujours l’identifiant d’un document, ce qui est très pratique (si le champ est retourné par la vue). Le deuxième est <code>_rev</code> qui signifie <em>numéro de version</em> [NdT : <em>revision number</em> en anglais].
+<p>Cela ressemble beaucoup au document que nous avons soumis à CouchDB ; tant mieux ! Mais vous devriez aussi noter que CouchDB a ajouté deux champs à votre structure JSON. Le premier est <code>_id</code> qui stocke l’UUID que nous avons spécifié. Nous connaissons toujours l’identifiant d’un document, ce qui est très pratique (si le champ est retourné par la vue). Le deuxième est <code>_rev</code> qui signifie <em>numéro de version</em> [NdT : <em>revision number</em> en anglais].
 
 <h4 id="revisions">Versions</h4>
 
