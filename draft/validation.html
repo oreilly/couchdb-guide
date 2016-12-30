@@ -203,6 +203,33 @@ function(newDoc, oldDoc, userCtx) {
 }
 </pre>
 
+<h3>How to create</h3>
+
+<p>We can create validation functions as we would do with regular documents.</p>
+
+<h4>Through Fauxton</h4>
+<p>Navigate to: Databases -> [select your database name here] -> All Documents -> New Doc, then fill up the text area with your desired validation using the JSON boilerplate below and click Save:</p>
+<pre>
+{
+  "_id": "_design/my_validation_name",
+  "validate_doc_update": "function(newDoc, oldDoc, userCtx) {throw({forbidden : 'not able now!'});}"
+}
+</pre>
+
+<h4>Through curl</h4>
+<pre>
+curl -X PUT http://127.0.0.1:5984/my_database/_design/my_validation_name -d '{"validate_doc_update": "function(newDoc, oldDoc, userCtx) { throw({forbidden: \"not able now!\" });}"}'
+</pre>
+  
+<p>The DocID must be prefixed by "_design/" and the key of the function must be "validate_doc_update". Note the function as string.</p>
+
+<p>After the validation set, if we try to create a document you must see the error "not able now!"..</p>
+
+<pre>
+curl -X PUT http://127.0.0.1:5984/my_database/foo -d '{"foo" : "bar"}'
+# {"error":"forbidden","reason":"not able now!"}
+</pre>
+
 <h3 id="wrap">Wrapping Up</h3>
 
 <p>Validation functions are a powerful tool to ensure that only documents you expect end up in your databases. You can test writes to your database by content, by structure, and by user who is making the document request. Together, these three angles let you build sophisticated validation routines that will stop anyone from tampering with your database.
