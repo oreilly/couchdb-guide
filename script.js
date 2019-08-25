@@ -386,8 +386,8 @@ function track() {
 function access(evt){
     if (evt.shiftKey || evt.altKey || evt.ctrlKey || evt.metaKey) return;
     prevNext=document.getElementsByTagName("link");
-    if(evt.keyCode==37){location=prevNext[1].href}
-    if(evt.keyCode==39){location=prevNext[2].href}
+    if(evt.keyCode==37 && !evt.altKey){location=prevNext[1].href}
+    if(evt.keyCode==39 && !evt.altKey){location=prevNext[2].href}
 }
 
 document.onready = function() {
