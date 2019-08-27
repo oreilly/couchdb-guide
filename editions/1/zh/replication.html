@@ -1,0 +1,118 @@
+<title>Replication</title>
+
+<meta charset="utf-8">
+
+<link rel="stylesheet" href="../../../style.css">
+
+<link rel="prev" href="scaling.html">
+
+<link rel="next" href="conflicts.html">
+
+<script src="../../../script.js"></script>
+
+<h2 id="replication">Replication</h2>
+
+<p>This chapter introduces CouchDB’s world-class replication system. Replication synchronizes two copies of the same database, allowing users to have low latency access data no matter where they are. These databases can live on the same server or on two different servers—CouchDB doesn’t make a distinction. If you change one copy of the database, replication will send these changes to the other copy.
+
+<p>Replication is a one-off operation: you send an HTTP request to CouchDB that includes a <em>source</em> and a <em>target</em> database, and CouchDB will send the changes from the source to the target. That is all. Granted, calling something world-class and then only needing one sentence to explain it does seem odd. But part of the reason why CouchDB’s replication is so powerful lies in its simplicity.
+
+<p>Let’s see what replication looks like:
+
+<pre>
+POST /_replicate HTTP/1.1
+{"source":"database","target":"http://example.org/database"}
+</pre>
+
+<p>This call sends all the documents in the local database <code>database</code> to the remote database <code>http://example.org/database</code>. A database is considered “local” when it is on the same CouchDB instance you send the <code>POST /_replicate</code> HTTP request to. All other instances of CouchDB are “remote.”
+
+<p>If you want to send changes from the target to the source database, you just make the same HTTP requests, only with source and target database swapped. That is all.
+
+<pre>
+POST /_replicate HTTP/1.1
+{"source":"http://example.org/database","target":"database"}
+</pre>
+
+<p>A remote database is identified by the same URL you use to talk to it. CouchDB replication works over HTTP using the same mechanisms that are available to you. This example shows that replication is a <em>unidirectional</em> process. Documents are copied from one database to another and not automatically vice versa. If you want <em>bidirectional</em> replication, you need to trigger two replications with <em>source</em> and <em>target</em> swapped.
+
+<h3 id="magic">The Magic</h3>
+
+<p>When you ask CouchDB to replicate one database to another, it will go and compare the two databases to find out which documents on the source differ from the target and then submit a batch of the changed documents to the target until all changes are transferred. Changes include new documents, changed documents, and deleted documents. Documents that already exist on the target in the same revision are not transferred; only newer revisions are.
+
+<p>Databases in CouchDB have a <em>sequence number</em> that gets incremented every time the database is changed. CouchDB remembers what changes came with which sequence number. That way, CouchDB can answer questions like, “What changed in database A between sequence number 212 and now?” by returning a list of new and changed documents. Finding the differences between databases this way is an efficient operation. It also adds to the robustness of replication.
+
+<div class="aside note">
+
+<p>CouchDB views use the same mechanism when determining when a view needs updating and which documents to replication. You can use this to build your own solutions as well.
+
+</div>
+
+<p>You can use replication on a single CouchDB instance to create snapshots of your databases to be able to test code changes without risking data loss or to be able to refer back to older states of your database. But replication gets really fun if you use two or more different computers, potentially geographically spread out.
+
+<p>With different servers, potentially hundreds or thousands of miles apart, problems are bound to happen. Servers crash, network connections break off, things go wrong. When a replication process is interrupted, it leaves two replicating CouchDBs in an inconsistent state. Then, when the problems are gone and you trigger replication again, it continues where it left off.
+
+<h3 id="simple">Simple Replication with the Admin Interface</h3>
+
+<p>You can run replication from your web browser using Futon, CouchDB’s built-in administration interface. Start CouchDB and open your browser to <code>http://127.0.0.1:5984/_utils/</code>. On the righthand side, you will see a list of things to visit in Futon. Click on “Replication.”
+
+<p>Futon will show you an interface to start replication. You can specify a source and a target by either picking a database from the list of local databases or filling in the URL of a remote database.
+
+<p>Click on the Replicate button, wait a bit, and have a look at the lower half of the screen where CouchDB gives you some statistics about the replication run or, if an error occurred, an explanatory message.
+
+<p>Congratulations—you ran your first replication.
+
+<h3 id="detail">Replication in Detail</h3>
+
+<p>So far, we’ve skipped over the result from a replication request. Now is a good time to look at it in detail. Here’s a nicely formatted example:
+
+<pre>
+{
+  "ok": true,
+  "source_last_seq": 10,
+  "session_id": "c7a2bbbf9e4af774de3049eb86eaa447",
+  "history": [
+    {
+      "session_id": "c7a2bbbf9e4af774de3049eb86eaa447",
+      "start_time": "Mon, 24 Aug 2009 09:36:46 GMT",
+      "end_time": "Mon, 24 Aug 2009 09:36:47 GMT",
+      "start_last_seq": 0,
+      "end_last_seq": 1,
+      "recorded_seq": 1,
+      "missing_checked": 0,
+      "missing_found": 1,
+      "docs_read": 1,
+      "docs_written": 1,
+      "doc_write_failures": 0,
+    }
+  ]
+}
+</pre>
+
+<p>The <code>"ok": true</code> part, similar to other responses, tells us everything went well. <code>source_last_seq</code> includes the source’s <code>update_seq</code> value that was considered by this replication. Each replication request is assigned a <code>session_id</code>, which is just a UUID; you can also talk about a <em>replication session</em> identified by this ID.
+
+<p>The next bit is the replication <em>history</em>. CouchDB maintains a list of history sessions for future reference. The history array is currently capped at 50 entries. Each unique replication trigger object (the JSON string that includes the source and target databases as well as potential options) gets its own history. Let’s see what a history entry is all about.
+
+<p>The <code>session_id</code> is recorded here again for convenience. The start and end time for the replication session are recorded. The <code>_last_seq</code> denotes the <code>update_seq</code>s that were valid at the beginning and the end of the session. <code>recorded_seq</code> is the <code>update_seq</code> of the target again. It’s different from <code>end_last_seq</code> if a replication process dies in the middle and is restarted. <code>missing_checked</code> is the number of docs on the target that are already there and don’t need to be replicated. <code>missing_found</code> is the number of missing documents on the source.
+
+<p>The last three—<code>docs_read</code>, <code>docs_written</code>, and <code>doc_write_failures</code>—show how many documents we read from the source, wrote to the target, and how many failed. If all is well, <code>_read</code> and <code>_written</code> are identical and <code>doc_write_failures</code> is 0. If not, you know something went wrong during replication. Possible failures are a server crash on either side, a lost network connection, or a <code>validate_doc_update</code> function rejecting a document write.
+
+<p>One common scenario is triggering replication on nodes that have admin accounts enabled. Creating design documents is restricted to admins, and if the replication is triggered without admin credentials, writing the design documents during replication will fail and be recorded as <code>doc_write_failures</code>. If you have admins, be sure to include the credentials in the replication request:
+
+<pre>
+&gt; curl -X POST http://127.0.0.1:5984/_replicate  -d '{"source":"http://example.org/database", "target":"http://admin:password@e127.0.0.1:5984/database"}'
+</pre>
+
+<h3 id="continuous">Continuous Replication</h3>
+
+<p>Now that you know how replication works under the hood, we share a neat little trick. When you add <code>"continuous":true</code> to the replication trigger object, CouchDB will not stop after replicating all missing documents from the source to the target. It will listen on CouchDB’s <code>_changes</code> API (see <a href="notifications.html">Chapter 20, Change Notifications</a>) and automatically replicate over any new docs as they come into the source to the target. In fact, they are not replicated right away; there’s a complex algorithm determining the ideal moment to replicate for maximum performance. The algorithm is complex and is fine-tuned every once in a while, and documenting it here wouldn’t make much sense.
+
+<pre>
+&gt; curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"db", "target":"db-replica", "continuous":true}'
+</pre>
+
+<p>At the time of writing, CouchDB doesn’t remember continuous replications over a server restart. For the time being, you are required to trigger them again when you restart CouchDB. In the future, CouchDB will allow you to define permanent continuous replications that survive a server restart without you having to do anything.
+
+<h3 id="more">That’s It?</h3>
+
+<p>Replication is the foundation on which the following chapters build on. Make sure you have understood this chapter. If you don’t feel comfortable yet, just read it again and play around with the replication interface in Futon.
+
+<p>We haven’t yet told you everything about replication. The next chapters show you how to manage replication conflicts (see <a href="conflicts.html">Chapter 17, Conflict Management</a>), how to use a set of synchronized CouchDB instances for load balancing (see <a href="balancing.html">Chapter 18, Load Balancing</a>), and how to build a cluster of CouchDBs that can handle more data or write requests than a single node (see <a href="clustering.html">Chapter 19, Clustering</a>).
