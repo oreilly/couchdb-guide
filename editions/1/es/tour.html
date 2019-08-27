@@ -1,4 +1,4 @@
-<title>Getting Started</title>
+<title>Primeros pasos</title>
 
 <meta charset="utf-8">
 
@@ -10,49 +10,49 @@
 
 <script src="../../../script.js"></script>
 
-<h2 id="tour">Getting Started</h2>
+<h2 id="tour">Primeros pasos</h2>
 
-<p>In this chapter, we’ll take a quick tour of CouchDB’s features, familiarizing ourselves with <em>Futon</em>, the built-in administration interface. We’ll create our first document and experiment with CouchDB views. Before we start, skip to <a href="source.html">Appendix D, Installing from Source</a> and look for your operating system. You will need to follow those instructions and get CouchDB installed before you can progress.
+<p>En éste capítulo haremos un tour rápido por las características de CouchDB y nos familiarizaremos con <em>Futon</em>, la interfaz de administración. Crearemos nuestro primer documento y experimentaremos con las vistas (views) de CouchDB. Antes de comenzar, de una mirada a <a href="source.html">Apéndice D, Instalación desde el Source</a> y allí busque su sistema operativo. Va a necesitar seguir las instrucciones allí detalladas e instalar su CouchDB para poder continuar.
 
-<h3 id="go">All Systems Are Go!</h3>
+<h3 id="go">¡Todos los sistemas funcionando!</h3>
 
-<p>We’ll have a very quick look at CouchDB’s bare-bones <em>Application Programming Interface (API)</em> by using the command-line utility <code>curl</code>. Please note that this is only one way of talking to CouchDB. We will show you plenty more throughout the rest of the book. What’s interesting about <code>curl</code> is that it gives you control over raw HTTP requests, and you can see exactly what is going on “underneath the hood” of your database.
+<p>Demos una rápida mirada al esqueleto de CouchDB <em>Application Programming Interface (API)</em> por medio de la utilidad de comando <code>curl</code>. Note que ésta es solo una de las formas de comunicarse con CouchDB. Le mostraremos muchas otras durante el resto del libro. Lo interesante de <code>curl</code> es que nos da control sobre direct los requerimientos HTTP, y nos permite ver exactamente que está ocurriendo "debajo de la superficie" en nuestra base de datos.
 
-<p>Make sure CouchDB is still running, and then do:
+<p>Asegúrece que CouchDB está corriendo haciendo:
 
 <pre>
 curl http://127.0.0.1:5984/
 </pre>
 
-<p>This issues a <code>GET</code> request to your newly installed CouchDB instance.
+<p>Esto emite un requerimiento <code>GET</code> a su recien instalada instancia de CouchDB.
 
-<p>The reply should look something like:
+<p>La respuesta debe ser algo del estilo de:
 
 <pre>
 {"couchdb":"Welcome","version":"0.10.1"}
 </pre>
 
-<p>Not all that spectacular. CouchDB is saying “hello” with the running version number.
+<p>Nada muy espectacular. Solo CouchDB está diciendo “hola” y mostrando su número de version.
 
-<p>Next, we can get a list of databases:
+<p>Ahora, podemos obtener una lista de las bases de datos instalada:
 
 <pre>
 curl -X GET http://127.0.0.1:5984/_all_dbs
 </pre>
 
-<p>All we added to the previous request is the <code>_all_dbs</code> string.
+<p>Todo lo agregado a la consulta anterior es el <code>_all_dbs</code>.
 
-<p>The response should look like:
+<p>La respuesta debería mostrar algo así:
 
 <pre>
 []
 </pre>
 
-<p>Oh, that’s right, we didn’t create any databases yet! All we see is an empty list.
+<p>Oh, está bien, no hemos creado ninguna base de datos todavía, por eso solo vemos una lista vacía.
 
 <div class="aside note">
 
-<p>The <code>curl</code> command issues <code>GET</code> requests by default. You can issue <code>POST</code> requests using <code>curl -X POST</code>. To make it easy to work with our terminal history, we usually use the <code>-X</code> option even when issuing <code>GET</code> requests. If we want to send a <code>POST</code> next time, all we have to change is the method.
+<p>El comando <code>curl</code> emite por defecto un requerimiento <code>GET</code>. Tu puedes emitir un requerimiento <code>POST</code> usando <code>curl -X POST</code>. Para facilitar el trabajo con el historial de la terminal, normalmente también usamos la opción <code>-X</code> explicitamente cada vez que hacemos un <code>GET</code>. si queremos enviar un <code>POST</code> la próxima vez, solo cambiamos el método.
 
 <p>HTTP does a bit more under the hood than you can see in the examples here. If you’re interested in every last detail that goes over the wire, pass in the <code>-v</code> option (e.g., <code>curl -vX GET</code>), which will show you the server <code>curl</code> tries to connect to, the request headers it sends, and response headers it receives back. Great for debugging!
 
