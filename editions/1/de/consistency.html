@@ -150,7 +150,7 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 <p>Was passiert, wenn man das gleiche Dokument in zwei verschiedenen Datenbanken ändert und anschließend die Datenbanken synchronisieren möchte? CouchDBs Replikationssystem hat eine automatische Konflikterkennung <em>und</em> Konfliktauflösung. Wenn CouchDB erkennt, dass ein Dokument in beiden Datenbanken geändert wurde, wird es als konfliktbehaftet markiert — genau wie in einem normalen Versionskontrollsystem.
 
-<p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, wird die Version, die <em>gewinnt</em> als aktuelles Dokument gespeichert. Die Version, die <em>verloren</em> hat, wird nicht vergessen, sondern als voherige Version gespeichert, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent in beiden Datenbanken auf die gleiche Weise. 
+<p>Das ist nicht so ein großes Problem wie es zunächst scheinen mag. Wenn zwei Versionen des gleichen Dokuments kollidieren, wird die Version, die <em>gewinnt</em> als aktuelles Dokument gespeichert. Die Version, die <em>verloren</em> hat, wird nicht vergessen, sondern als vorherige Version gespeichert, so dass man darauf zugreifen kann, wenn man möchte. Das geschieht automatisch und konsistent in beiden Datenbanken auf die gleiche Weise.
 
 <p>Es ist Aufgabe des Entwicklers zu entscheiden, wie ein Konflikt am besten zu lösen ist. Beide Versionen können in der Datenbank bleiben, es wird zur alten Version zurückgekehrt oder die Anwendung versucht den Konflikt aufzulösen und eine neue Version zu speichern. 
 
@@ -176,13 +176,13 @@ ist es wichtig zu verstehen, wie ein einzelner CouchDB Knoten arbeitet. Das Couc
 
 </div>
 
-<p>Nach ein paar Tagen haben sich die Wiedergabelisten geändert und sollen wieder gesichert werden. Nachdem wir die Wiedergabelisten der Backup Anwendung übergeben haben, holt die sich die letzte Version von CouchDB zusammen mit der aktuellen Version des Dokuments. Beim anschließenden Aktualisieren des Dokuments, muss die Versionsnummer wieder mit übergeben werden. 
+<p>Nach ein paar Tagen haben sich die Wiedergabelisten geändert und sollen wieder gesichert werden. Nachdem wir die Wiedergabelisten der Backup Anwendung übergeben haben, holt die sich die letzte Version von CouchDB zusammen mit der aktuellen Version des Dokuments. Beim anschließenden Aktualisieren des Dokuments muss die Versionsnummer wieder mit übergeben werden.
 
 <p>CouchDB stellt dann sicher, dass die übergebene Versionsnummer tatsächlich der aktuellsten Version des Dokuments entspricht. Weil CouchDB die Versionsnummer bei jeder Änderung ebenfalls anpasst, bedeutet ein Unterschied, dass jemand in der Zwischenzeit das Dokument geändert hat. In den allermeisten Fällen ist es dann keine gute Idee das Dokument zu speichern, ohne sich die Änderungen vorher anzusehen. 
 
 <p>Der Zwang, beim Speichern die korrekte Versionsnummer des Dokuments zu übergeben, ist der Kern von CouchDBs Optimistic Concurrency.
 
-<p>Wenn wir einen Laptop haben und mit dem Deskop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluß daran eine exakte Kopie der Wiedergabelisten haben.
+<p>Wenn wir einen Laptop haben und mit dem Desktop Computer synchron bleiben wollen, ist der erste Schritt das "Wiederherstellen einer Sicherung". Da dies das erste Mal ist, sollte der Laptop im Anschluss daran eine exakte Kopie der Wiedergabelisten haben.
 
 <p>Nachdem die Wiedergabeliste für Argentinische Tangos auf dem Laptop geändert wurde und wir ein paar neue Songs gekauft haben, sollen die Änderungen gespeichert werden. Die Backup Anwendung speichert die Änderungen in der CouchDB auf dem Laptop und erzeugt eine neue Version des Dokuments. Ein paar Tage später erinnern wir uns und möchten die Wiedergabelisten mit dem Desktop Computer synchronisieren. Wie in <a href="#figure/6">Abbildung 6: Synchronisation zwischen zwei Datenbanken</a> gezeigt wird, kopiert die Backup Anwendung das neue Dokument und die neue Version in die CouchDB auf dem Desktop Computer. Beide Computer haben nun die gleiche Version des Dokuments. 
 
